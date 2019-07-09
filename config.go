@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -19,11 +19,6 @@ type Config struct {
 	LogFormat           string
 	LogLevel            string
 	LogRequestsDisabled bool
-	MongoDBUri          string
-	SysAdminEmail       string
-	SysAdminPassword    string
-	SysAdminUsername    string
-	TokenSecret         string
 }
 
 // NewConfig creates a Config instance
@@ -36,11 +31,6 @@ func NewConfig() *Config {
 		LogFormat:           "text",
 		LogLevel:            "info",
 		LogRequestsDisabled: false,
-		MongoDBUri:          "mongodb://",
-		SysAdminEmail:       "admin@example.com",
-		SysAdminPassword:    "",
-		SysAdminUsername:    "admin",
-		TokenSecret:         "changeme",
 	}
 	return &cnf
 }
@@ -58,14 +48,6 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 		"Valid log levels: debug, info, warning, error and critical.")
 	fs.BoolVar(&cnf.LogRequestsDisabled, "log-requests-disabled", cnf.LogRequestsDisabled,
 		"Disables HTTP requests logging.")
-	fs.StringVar(&cnf.MongoDBUri, "mongodb-uri", cnf.MongoDBUri, "MongoDB URI")
-	fs.StringVar(&cnf.SysAdminEmail, "sysadmin-email", cnf.SysAdminEmail,
-		"Email address for the system administrator user.")
-	fs.StringVar(&cnf.SysAdminPassword, "sysadmin-password", cnf.SysAdminPassword,
-		"Password for the system administrator user. Empty means one will be generated automatically.")
-	fs.StringVar(&cnf.SysAdminUsername, "sysadmin-username", cnf.SysAdminUsername,
-		"Username for the system administrator user.")
-	fs.StringVar(&cnf.TokenSecret, "token-secret", cnf.TokenSecret, "Secret to sign access tokens with.")
 }
 
 // wordSepNormalizeFunc changes all flags that contain "_" separators
@@ -82,7 +64,7 @@ func (cnf *Config) BindFlags() {
 	err := viper.BindPFlags(pflag.CommandLine)
 	if err != nil {
 		m := fmt.Sprintf("Error binding flags: %v", err)
-		log.Panic(m)
+		logrus.Panic(m)
 		panic(m)
 	}
 
@@ -92,7 +74,7 @@ func (cnf *Config) BindFlags() {
 	n := viper.GetString("app-name")
 	if len(n) < 1 {
 		m := fmt.Sprint("Application name cannot be empty!")
-		log.Panic(m)
+		logrus.Panic(m)
 		panic(m)
 	}
 

@@ -1,13 +1,8 @@
 package handlers
 
-import (
-	"github.com/admiralobvious/echo-boilerplate/database"
-)
-
 type (
 	// Handler represents the structure of our resource
 	Handler struct {
-		DB database.DB
 	}
 )
 
