@@ -22,4 +22,4 @@ COPY --from=builder /build/echo-boilerplate /echo-boilerplate
 ENTRYPOINT ["/echo-boilerplate"]
 
 EXPOSE 1323
-CMD ["--address", "0.0.0.0:5140"]
+CMD ["--address", "0.0.0.0:1323"]
