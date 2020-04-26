@@ -1,4 +1,4 @@
-FROM golang:1.14.1-alpine as builder
+FROM golang:1.14.2-alpine as builder
 MAINTAINER Alexandre Ferland <aferlandqc@gmail.com>
 
 ENV GO111MODULE=on
@@ -14,12 +14,13 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./cmd/app
 
 FROM scratch
-COPY --from=builder /build/echo-boilerplate /echo-boilerplate
+COPY --from=builder /build/app /app
+COPY --from=builder /build/configs /configs
 
-ENTRYPOINT ["/echo-boilerplate"]
+ENTRYPOINT ["/app"]
 
 EXPOSE 1323
-CMD ["--address", "0.0.0.0:1323"]
+CMD ["--env-name", "prod"]
