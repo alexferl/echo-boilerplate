@@ -59,7 +59,7 @@ func NewConfig() *Config {
 
 // addFlags adds all the flags from the command line
 func (cnf *Config) addFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&cnf.AppName, "app-name", cnf.AppName, "The name of the application."+
+	fs.StringVar(&cnf.AppName, "app-name", cnf.AppName, "The name of the application. "+
 		"Used to prefix environment variables.")
 	fs.StringVar(&cnf.EnvName, "env-name", cnf.EnvName, "The environment of the application. "+
 		"Used to load the right config file.")
@@ -76,7 +76,7 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&cnf.LogRequestsDisabled, "log-requests-disabled", cnf.LogRequestsDisabled,
 		"Disables HTTP requests logging.")
 	fs.StringSliceVar(&cnf.CORS.AllowOrigins, "cors-allow-origins", cnf.CORS.AllowOrigins,
-		"Indicates whether the response can be shared with requesting code from the given origin")
+		"Indicates whether the response can be shared with requesting code from the given origin.")
 	fs.StringSliceVar(&cnf.CORS.AllowMethods, "cors-allow-methods", cnf.CORS.AllowMethods,
 		"Indicates which HTTP methods are allowed for cross-origin requests.")
 	fs.StringSliceVar(&cnf.CORS.AllowHeaders, "cors-allow-headers", cnf.CORS.AllowHeaders,
