@@ -15,6 +15,7 @@ type ErrorResponse struct {
 	Message string `json:"error"`
 }
 
+// Register routes with echo
 func Register(e *echo.Echo) {
 	h := &Handler{}
 	e.GET("/", h.Root)

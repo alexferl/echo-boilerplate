@@ -13,7 +13,7 @@ import (
 	"github.com/admiralobvious/echo-boilerplate/internal/config"
 	"github.com/admiralobvious/echo-boilerplate/internal/handlers"
 	"github.com/admiralobvious/echo-boilerplate/internal/logging"
-	"github.com/admiralobvious/echo-boilerplate/internal/middlewares"
+	"github.com/admiralobvious/echo-boilerplate/internal/middleware"
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 func main() {
 	e := echo.New()
 
-	middlewares.Register(e)
+	middleware.Register(e)
 	handlers.Register(e)
 
 	// Start server
@@ -36,7 +36,7 @@ func main() {
 		}
 	}()
 
-	timeout :=  time.Duration(viper.GetInt64("graceful-timeout")) * time.Second
+	timeout := time.Duration(viper.GetInt64("graceful-timeout")) * time.Second
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

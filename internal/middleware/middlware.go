@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	logrusmiddleware "github.com/admiralobvious/echo-logrusmiddleware"
@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Register middleware with echo
 func Register(e *echo.Echo) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

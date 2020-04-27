@@ -39,8 +39,8 @@ func NewConfig() *Config {
 		LogLevel:            "info",
 		LogRequestsDisabled: false,
 		CORS: middleware.CORSConfig{
-			AllowOrigins:     []string{"*"},
-			AllowMethods:     []string{
+			AllowOrigins: []string{"*"},
+			AllowMethods: []string{
 				http.MethodGet,
 				http.MethodHead,
 				http.MethodPut,
@@ -59,9 +59,9 @@ func NewConfig() *Config {
 
 // addFlags adds all the flags from the command line
 func (cnf *Config) addFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&cnf.AppName, "app-name", cnf.AppName, "The name of the application." +
+	fs.StringVar(&cnf.AppName, "app-name", cnf.AppName, "The name of the application."+
 		"Used to prefix environment variables.")
-	fs.StringVar(&cnf.EnvName, "env-name", cnf.EnvName, "The environment of the application. " +
+	fs.StringVar(&cnf.EnvName, "env-name", cnf.EnvName, "The environment of the application. "+
 		"Used to load the right config file.")
 	fs.IPVar(&cnf.BindAddress, "bind-address", cnf.BindAddress, "The IP address to listen at.")
 	fs.UintVar(&cnf.BindPort, "bind-port", cnf.BindPort, "The port to listen at.")
@@ -82,8 +82,8 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringSliceVar(&cnf.CORS.AllowHeaders, "cors-allow-headers", cnf.CORS.AllowHeaders,
 		"Indicate which HTTP headers can be used during an actual request.")
 	fs.BoolVar(&cnf.CORS.AllowCredentials, "cors-allow-credentials", cnf.CORS.AllowCredentials,
-		"Tells browsers whether to expose the response to frontend JavaScript code when the request's credentials " +
-		"mode (Request.credentials) is 'include'.")
+		"Tells browsers whether to expose the response to frontend JavaScript code when the request's credentials "+
+			"mode (Request.credentials) is 'include'.")
 	fs.StringSliceVar(&cnf.CORS.ExposeHeaders, "cors-expose-headers", cnf.CORS.ExposeHeaders,
 		"Indicates which headers can be exposed as part of the response by listing their name.")
 	fs.IntVar(&cnf.CORS.MaxAge, "cors-max-age", cnf.CORS.MaxAge,
@@ -129,7 +129,6 @@ func (cnf *Config) BindFlags() {
 	viper.AddConfigPath("./configs")
 	viper.AddConfigPath("/configs")
 
-	err = viper.ReadInConfig()
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			logrus.Errorf("Config file not found: %v", err)
