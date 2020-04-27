@@ -1,4 +1,5 @@
-# echo-boilerplate
+# echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/admiralobvious/echo-boilerplate)](https://goreportcard.com/report/github.com/admiralobvious/echo-boilerplate)
+
 A small boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework
 with [12-factor](https://12factor.net/) and following golang-standards' [project-layout](https://github.com/golang-standards/project-layout).
 
