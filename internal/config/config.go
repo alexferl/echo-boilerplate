@@ -118,17 +118,16 @@ func (cnf *Config) BindFlags() {
 		panic(m)
 	}
 
-	configName := fmt.Sprintf("config.%s", strings.ToLower(viper.GetString("env-name")))
-
-	viper.SetConfigName(configName)
-	viper.SetConfigType("toml")
-	viper.AddConfigPath("./configs")
-	viper.AddConfigPath("/configs")
-
 	viper.SetEnvPrefix(n)
 	replacer := strings.NewReplacer("-", "_")
 	viper.SetEnvKeyReplacer(replacer)
 	viper.AutomaticEnv()
+
+	configName := fmt.Sprintf("config.%s", strings.ToLower(viper.GetString("env-name")))
+	viper.SetConfigName(configName)
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("./configs")
+	viper.AddConfigPath("/configs")
 
 	err = viper.ReadInConfig()
 	if err := viper.ReadInConfig(); err != nil {
