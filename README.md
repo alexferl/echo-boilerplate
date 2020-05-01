@@ -18,6 +18,7 @@ Usage of ./app:
       --cors-allow-headers strings    Indicate which HTTP headers can be used during an actual request.
       --cors-allow-methods strings    Indicates which HTTP methods are allowed for cross-origin requests. (default [GET,HEAD,PUT,PATCH,POST,DELETE])
       --cors-allow-origins strings    Indicates whether the response can be shared with requesting code from the given origin. (default [*])
+      --cors-enabled                  Enable cross-origin resource sharing.
       --cors-expose-headers strings   Indicates which headers can be exposed as part of the response by listing their name.
       --cors-max-age int              Indicates how long the results of a preflight request can be cached.
       --env-name string               The environment of the application. Used to load the right config file. (default "local")
