@@ -18,6 +18,7 @@ type Config struct {
 	EnvName             string
 	BindAddress         net.IP
 	BindPort            uint
+	CORSEnabled         bool
 	GracefulTimeout     uint
 	LogFile             string
 	LogFormat           string
@@ -33,6 +34,7 @@ func NewConfig() *Config {
 		EnvName:             "local",
 		BindAddress:         net.ParseIP("127.0.0.1"),
 		BindPort:            1323,
+		CORSEnabled:         false,
 		GracefulTimeout:     30,
 		LogFile:             "stdout",
 		LogFormat:           "text",
@@ -65,6 +67,7 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 		"Used to load the right config file.")
 	fs.IPVar(&cnf.BindAddress, "bind-address", cnf.BindAddress, "The IP address to listen at.")
 	fs.UintVar(&cnf.BindPort, "bind-port", cnf.BindPort, "The port to listen at.")
+	fs.BoolVar(&cnf.CORSEnabled, "cors-enabled", cnf.CORSEnabled, "Enable cross-origin resource sharing.")
 	fs.UintVar(&cnf.GracefulTimeout, "graceful-timeout", cnf.GracefulTimeout,
 		"Timeout for graceful shutdown.")
 	fs.StringVar(&cnf.LogFile, "log-file", cnf.LogFile, "The log file to write to. "+
