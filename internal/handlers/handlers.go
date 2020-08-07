@@ -19,4 +19,5 @@ type ErrorResponse struct {
 func Register(e *echo.Echo) {
 	h := &Handler{}
 	e.GET("/", h.Root)
+	e.GET("/healthz", h.Healthz)
 }
