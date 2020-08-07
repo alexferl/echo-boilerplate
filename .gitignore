@@ -15,4 +15,5 @@
 .idea
 
 # binary
-./app
+app
+!cmd/app

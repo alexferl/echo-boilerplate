@@ -10,10 +10,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 
-	"github.com/admiralobvious/echo-boilerplate/internal/config"
-	"github.com/admiralobvious/echo-boilerplate/internal/handlers"
-	"github.com/admiralobvious/echo-boilerplate/internal/logging"
-	"github.com/admiralobvious/echo-boilerplate/internal/middleware"
+	"github.com/alexferl/echo-boilerplate/internal/config"
+	"github.com/alexferl/echo-boilerplate/internal/handlers"
+	"github.com/alexferl/echo-boilerplate/internal/logging"
+	"github.com/alexferl/echo-boilerplate/internal/middleware"
 )
 
 func init() {

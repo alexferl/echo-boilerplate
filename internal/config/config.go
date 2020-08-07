@@ -18,13 +18,13 @@ type Config struct {
 	EnvName             string
 	BindAddress         net.IP
 	BindPort            uint
+	CORS                middleware.CORSConfig
 	CORSEnabled         bool
 	GracefulTimeout     uint
 	LogFile             string
 	LogFormat           string
 	LogLevel            string
 	LogRequestsDisabled bool
-	CORS                middleware.CORSConfig
 }
 
 // NewConfig creates a Config instance
@@ -34,12 +34,6 @@ func NewConfig() *Config {
 		EnvName:             "local",
 		BindAddress:         net.ParseIP("127.0.0.1"),
 		BindPort:            1323,
-		CORSEnabled:         false,
-		GracefulTimeout:     30,
-		LogFile:             "stdout",
-		LogFormat:           "text",
-		LogLevel:            "info",
-		LogRequestsDisabled: false,
 		CORS: middleware.CORSConfig{
 			AllowOrigins: []string{"*"},
 			AllowMethods: []string{
@@ -55,6 +49,12 @@ func NewConfig() *Config {
 			ExposeHeaders:    []string{},
 			MaxAge:           0,
 		},
+		CORSEnabled:         false,
+		GracefulTimeout:     30,
+		LogFile:             "stdout",
+		LogFormat:           "text",
+		LogLevel:            "info",
+		LogRequestsDisabled: false,
 	}
 	return &cnf
 }
@@ -67,17 +67,6 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 		"Used to load the right config file.")
 	fs.IPVar(&cnf.BindAddress, "bind-address", cnf.BindAddress, "The IP address to listen at.")
 	fs.UintVar(&cnf.BindPort, "bind-port", cnf.BindPort, "The port to listen at.")
-	fs.BoolVar(&cnf.CORSEnabled, "cors-enabled", cnf.CORSEnabled, "Enable cross-origin resource sharing.")
-	fs.UintVar(&cnf.GracefulTimeout, "graceful-timeout", cnf.GracefulTimeout,
-		"Timeout for graceful shutdown.")
-	fs.StringVar(&cnf.LogFile, "log-file", cnf.LogFile, "The log file to write to. "+
-		"'stdout' means log to stdout, 'stderr' means log to stderr and 'null' means discard log messages.")
-	fs.StringVar(&cnf.LogFormat, "log-format", cnf.LogFormat,
-		"The log format. Valid format values are: text, json.")
-	fs.StringVar(&cnf.LogLevel, "log-level", cnf.LogLevel, "The granularity of log outputs. "+
-		"Valid log levels: debug, info, warning, error and critical.")
-	fs.BoolVar(&cnf.LogRequestsDisabled, "log-requests-disabled", cnf.LogRequestsDisabled,
-		"Disables HTTP requests logging.")
 	fs.StringSliceVar(&cnf.CORS.AllowOrigins, "cors-allow-origins", cnf.CORS.AllowOrigins,
 		"Indicates whether the response can be shared with requesting code from the given origin.")
 	fs.StringSliceVar(&cnf.CORS.AllowMethods, "cors-allow-methods", cnf.CORS.AllowMethods,
@@ -91,6 +80,17 @@ func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 		"Indicates which headers can be exposed as part of the response by listing their name.")
 	fs.IntVar(&cnf.CORS.MaxAge, "cors-max-age", cnf.CORS.MaxAge,
 		"Indicates how long the results of a preflight request can be cached.")
+	fs.BoolVar(&cnf.CORSEnabled, "cors-enabled", cnf.CORSEnabled, "Enable cross-origin resource sharing.")
+	fs.UintVar(&cnf.GracefulTimeout, "graceful-timeout", cnf.GracefulTimeout,
+		"Timeout for graceful shutdown.")
+	fs.StringVar(&cnf.LogFile, "log-file", cnf.LogFile, "The log file to write to. "+
+		"'stdout' means log to stdout, 'stderr' means log to stderr and 'null' means discard log messages.")
+	fs.StringVar(&cnf.LogFormat, "log-format", cnf.LogFormat,
+		"The log format. Valid format values are: text, json.")
+	fs.StringVar(&cnf.LogLevel, "log-level", cnf.LogLevel, "The granularity of log outputs. "+
+		"Valid log levels: debug, info, warning, error and critical.")
+	fs.BoolVar(&cnf.LogRequestsDisabled, "log-requests-disabled", cnf.LogRequestsDisabled,
+		"Disables HTTP requests logging.")
 }
 
 // wordSepNormalizeFunc changes all flags that contain "_" separators

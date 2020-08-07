@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	logrusmiddleware "github.com/admiralobvious/echo-logrusmiddleware"
+	logrusmiddleware "github.com/alexferl/echo-logrusmiddleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
