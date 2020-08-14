@@ -15,5 +15,6 @@
 .idea
 
 # binary
-app
-!cmd/app
+httpserver
+!cmd/httpserver
+!internal/app/httpserver

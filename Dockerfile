@@ -14,10 +14,10 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./cmd/app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./cmd/httpserver
 
 FROM scratch
-COPY --from=builder /build/app /app
+COPY --from=builder /build/httpserver /app
 COPY --from=builder /build/configs /configs
 
 ENTRYPOINT ["/app"]

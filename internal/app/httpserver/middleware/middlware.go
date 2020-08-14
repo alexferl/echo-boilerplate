@@ -1,16 +1,19 @@
 package middleware
 
 import (
-	logrusmiddleware "github.com/alexferl/echo-logrusmiddleware"
+	"os"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/sirupsen/logrus"
+	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
+	"github.com/ziflex/lecho/v2"
 )
 
 // Register middleware with echo
 func Register(e *echo.Echo) {
 	e.Use(middleware.Recover())
+	e.Use(middleware.RequestID())
 
 	if viper.GetBool("cors-enabled") {
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -24,7 +27,15 @@ func Register(e *echo.Echo) {
 	}
 
 	if !viper.GetBool("log-requests-disabled") {
-		e.Logger = logrusmiddleware.Logger{Logger: logrus.StandardLogger()}
-		e.Use(logrusmiddleware.Hook())
+		logger := lecho.New(
+			os.Stdout,
+			lecho.WithCaller(),
+			lecho.WithTimestamp(),
+			lecho.WithLevel(log.INFO),
+		)
+		e.Logger = logger
+		e.Use(lecho.Middleware(lecho.Config{
+			Logger: logger,
+		}))
 	}
 }

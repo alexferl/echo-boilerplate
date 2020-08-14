@@ -1,4 +1,4 @@
-package main
+package httpserver
 
 import (
 	"context"
@@ -10,19 +10,24 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 
-	"github.com/alexferl/echo-boilerplate/internal/config"
-	"github.com/alexferl/echo-boilerplate/internal/handlers"
-	"github.com/alexferl/echo-boilerplate/internal/logging"
-	"github.com/alexferl/echo-boilerplate/internal/middleware"
+	"echo-boilerplate/internal/app/httpserver/config"
+	"echo-boilerplate/internal/app/httpserver/handlers"
+	"echo-boilerplate/internal/app/httpserver/middleware"
+	"echo-boilerplate/internal/pkg/logging"
 )
 
 func init() {
-	cnf := config.NewConfig()
-	cnf.BindFlags()
-	logging.InitLogging()
+	hsc := config.NewHTTPServerConfig()
+	hsc.BindFlags()
+	lc := &logging.Config{
+		LogLevel: viper.GetString("log-level"),
+		LogOutput: viper.GetString("log-output"),
+		LogWriter: viper.GetString("log-writer"),
+	}
+	logging.Init(lc)
 }
 
-func main() {
+func Start() {
 	e := echo.New()
 
 	middleware.Register(e)

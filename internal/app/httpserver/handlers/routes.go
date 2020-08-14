@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
+
+	"echo-boilerplate/internal/app/httpserver/handlers/healthz"
+	"echo-boilerplate/internal/app/httpserver/handlers/root"
 )
 
 type (
@@ -17,7 +20,6 @@ type ErrorResponse struct {
 
 // Register routes with echo
 func Register(e *echo.Echo) {
-	h := &Handler{}
-	e.GET("/", h.Root)
-	e.GET("/healthz", h.Healthz)
+	e.GET("/", root.Root)
+	e.GET("/healthz", healthz.Healthz)
 }
