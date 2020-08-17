@@ -5,7 +5,7 @@ with [12-factor](https://12factor.net/) and following golang-standards' [project
 
 ### Building & Running locally
 ```shell script
-go build ./cmd/app && ./app
+go build ./cmd/httpserver && ./httpserver
 ```
 
 ### Usage
