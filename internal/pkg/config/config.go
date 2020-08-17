@@ -13,16 +13,16 @@ import (
 
 // Config holds all global configuration for our program
 type Config struct {
-	Logging *logging.Config
-	AppName   string
-	EnvName   string
+	Logging      *logging.Config
+	AppName      string
+	EnvName      string
 	EnvVarPrefix string
 }
 
 // NewConfig creates a Config instance
 func NewConfig() *Config {
 	cnf := Config{
-		Logging:       logging.NewConfig(),
+		Logging:      logging.NewConfig(),
 		AppName:      "app",
 		EnvName:      "local",
 		EnvVarPrefix: "app",

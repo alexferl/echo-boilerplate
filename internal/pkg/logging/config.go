@@ -2,6 +2,7 @@ package logging
 
 import "github.com/spf13/pflag"
 
+// Config contains the global settings
 type Config struct {
 	LogLevel  string
 	LogOutput string

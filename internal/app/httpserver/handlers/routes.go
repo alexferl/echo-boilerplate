@@ -7,17 +7,6 @@ import (
 	"echo-boilerplate/internal/app/httpserver/handlers/root"
 )
 
-type (
-	// Handler represents the structure of our resource
-	Handler struct {
-	}
-)
-
-// ErrorResponse holds an error message
-type ErrorResponse struct {
-	Message string `json:"error"`
-}
-
 // Register routes with echo
 func Register(e *echo.Echo) {
 	e.GET("/", root.Root)

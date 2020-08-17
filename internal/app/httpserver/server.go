@@ -20,13 +20,14 @@ func init() {
 	hsc := config.NewHTTPServerConfig()
 	hsc.BindFlags()
 	lc := &logging.Config{
-		LogLevel: viper.GetString("log-level"),
+		LogLevel:  viper.GetString("log-level"),
 		LogOutput: viper.GetString("log-output"),
 		LogWriter: viper.GetString("log-writer"),
 	}
 	logging.Init(lc)
 }
 
+// Start starts the echo HTTP server
 func Start() {
 	e := echo.New()
 
