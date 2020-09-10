@@ -1,4 +1,4 @@
-package httpserver
+package httpd
 
 import (
 	"context"
@@ -8,23 +8,27 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
-	"echo-boilerplate/internal/app/httpserver/config"
-	"echo-boilerplate/internal/app/httpserver/handlers"
-	"echo-boilerplate/internal/app/httpserver/middleware"
+	"echo-boilerplate/internal/app/httpd/config"
+	"echo-boilerplate/internal/app/httpd/handlers"
+	"echo-boilerplate/internal/app/httpd/middleware"
 	"echo-boilerplate/internal/pkg/logging"
 )
 
 func init() {
-	hsc := config.NewHTTPServerConfig()
-	hsc.BindFlags()
-	lc := &logging.Config{
+	c := config.NewConfig()
+	c.BindFlags()
+	lc := logging.Config{
 		LogLevel:  viper.GetString("log-level"),
 		LogOutput: viper.GetString("log-output"),
 		LogWriter: viper.GetString("log-writer"),
 	}
-	logging.Init(lc)
+	err := logging.Init(lc)
+	if err != nil {
+		log.Panic().Msgf("Panic initializing logger: '%v'", err)
+	}
 }
 
 // Start starts the echo HTTP server

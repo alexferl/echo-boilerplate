@@ -13,21 +13,21 @@ import (
 
 // Config holds all global configuration for our program
 type Config struct {
-	Logging      *logging.Config
 	AppName      string
 	EnvName      string
 	EnvVarPrefix string
+	Logging      logging.Config
 }
 
 // NewConfig creates a Config instance
-func NewConfig() *Config {
+func NewConfig() Config {
 	cnf := Config{
 		Logging:      logging.NewConfig(),
 		AppName:      "app",
 		EnvName:      "local",
 		EnvVarPrefix: "app",
 	}
-	return &cnf
+	return cnf
 }
 
 // addFlags adds all the flags from the command line

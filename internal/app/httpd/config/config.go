@@ -7,12 +7,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/pflag"
 
-	global "echo-boilerplate/internal/pkg/config"
+	"echo-boilerplate/internal/pkg/config"
 )
 
-// HTTPServerConfig holds all configuration for our program
-type HTTPServerConfig struct {
-	*global.Config
+// Config holds all configuration for our program
+type Config struct {
+	config.Config
 	BindAddress         net.IP
 	BindPort            uint
 	CORS                middleware.CORSConfig
@@ -21,10 +21,10 @@ type HTTPServerConfig struct {
 	LogRequestsDisabled bool
 }
 
-// NewHTTPServerConfig creates a HTTPServerConfig instance
-func NewHTTPServerConfig() *HTTPServerConfig {
-	cnf := HTTPServerConfig{
-		Config:      global.NewConfig(),
+// NewConfig creates a Config instance
+func NewConfig() Config {
+	cnf := Config{
+		Config:      config.NewConfig(),
 		BindAddress: net.ParseIP("127.0.0.1"),
 		BindPort:    1323,
 		CORS: middleware.CORSConfig{
@@ -46,11 +46,11 @@ func NewHTTPServerConfig() *HTTPServerConfig {
 		GracefulTimeout:     30,
 		LogRequestsDisabled: false,
 	}
-	return &cnf
+	return cnf
 }
 
 // addFlags adds all the flags from the command line
-func (cnf *HTTPServerConfig) addFlags(fs *pflag.FlagSet) {
+func (cnf *Config) addFlags(fs *pflag.FlagSet) {
 	fs.IPVar(&cnf.BindAddress, "bind-address", cnf.BindAddress, "The IP address to listen at.")
 	fs.UintVar(&cnf.BindPort, "bind-port", cnf.BindPort, "The port to listen at.")
 	fs.StringSliceVar(&cnf.CORS.AllowOrigins, "cors-allow-origins", cnf.CORS.AllowOrigins,
@@ -74,7 +74,7 @@ func (cnf *HTTPServerConfig) addFlags(fs *pflag.FlagSet) {
 }
 
 // BindFlags normalizes and parses the command line flags
-func (cnf *HTTPServerConfig) BindFlags() {
+func (cnf *Config) BindFlags() {
 	cnf.addFlags(pflag.CommandLine)
 	cnf.Config.BindFlags()
 }

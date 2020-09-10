@@ -2,21 +2,38 @@ package logging
 
 import "github.com/spf13/pflag"
 
-// Config contains the global settings
 type Config struct {
 	LogLevel  string
 	LogOutput string
 	LogWriter string
 }
 
-// NewConfig creates a Config instance
-func NewConfig() *Config {
-	cnf := Config{
+var (
+	DefaultConfig = Config{
+		LogLevel:  "info",
 		LogOutput: "stdout",
 		LogWriter: "json",
-		LogLevel:  "info",
 	}
-	return &cnf
+)
+
+func NewConfig() Config {
+	return NewConfigWithConfig(DefaultConfig)
+}
+
+func NewConfigWithConfig(config Config) Config {
+	if config.LogLevel == "" {
+		config.LogLevel = DefaultConfig.LogLevel
+	}
+
+	if config.LogOutput == "" {
+		config.LogOutput = DefaultConfig.LogOutput
+	}
+
+	if config.LogWriter == "" {
+		config.LogWriter = DefaultConfig.LogWriter
+	}
+
+	return config
 }
 
 // AddFlags adds all the flags from the command line

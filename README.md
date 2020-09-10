@@ -5,12 +5,12 @@ with [12-factor](https://12factor.net/) and following golang-standards' [project
 
 ### Building & Running locally
 ```shell script
-go build ./cmd/app && ./app
+go build ./cmd/httpd && ./httpd
 ```
 
 ### Usage
 ```shell script
-Usage of ./httpserver:
+Usage of ./httpd:
       --app-name string               The name of the application. (default "app")
       --bind-address ip               The IP address to listen at. (default 127.0.0.1)
       --bind-port uint                The port to listen at. (default 1323)

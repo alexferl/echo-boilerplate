@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -9,7 +11,7 @@ import (
 )
 
 // Init initializes the logger based on the config
-func Init(config *Config) {
+func Init(config Config) error {
 	logLevel := strings.ToLower(config.LogLevel)
 	logOutput := strings.ToLower(config.LogOutput)
 	logWriter := strings.ToLower(config.LogWriter)
@@ -21,8 +23,7 @@ func Init(config *Config) {
 	case "stderr":
 		f = os.Stderr
 	default:
-		log.Warn().Msgf("Unknown log-output '%s', falling back to 'stdout'", logWriter)
-		f = os.Stdout
+		return errors.New(fmt.Sprintf("Unknown log-output '%s'", logOutput))
 	}
 
 	logger := zerolog.New(f)
@@ -33,8 +34,7 @@ func Init(config *Config) {
 	case "json":
 		break
 	default:
-		log.Warn().Msgf("Unknown log-writer '%s', falling back to 'console'", logWriter)
-		logger = log.Output(zerolog.ConsoleWriter{Out: f})
+		return errors.New(fmt.Sprintf("Unknown log-writer '%s'", logWriter))
 	}
 
 	log.Logger = logger.With().Timestamp().Caller().Logger()
@@ -55,7 +55,8 @@ func Init(config *Config) {
 	case "trace":
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	default:
-		log.Warn().Msgf("Unknown log-level '%s', falling back to '%s'", logLevel, zerolog.InfoLevel)
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+		return errors.New(fmt.Sprintf("Unknown log-level '%s'", logLevel))
 	}
+
+	return nil
 }
