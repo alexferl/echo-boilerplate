@@ -54,9 +54,7 @@ func (cnf *Config) BindFlags() {
 	cnf.addFlags(pflag.CommandLine)
 	err := viper.BindPFlags(pflag.CommandLine)
 	if err != nil {
-		m := fmt.Sprintf("Error binding flags: %v", err)
-		log.Panic().Msg(m)
-		panic(m)
+		log.Panic().Msgf("Error binding flags: '%v'", err)
 	}
 
 	pflag.CommandLine.SetNormalizeFunc(wordSepNormalizeFunc)
@@ -64,9 +62,7 @@ func (cnf *Config) BindFlags() {
 
 	n := viper.GetString("app-name")
 	if len(n) < 1 {
-		m := fmt.Sprint("Application name cannot be empty!")
-		log.Panic().Msg(m)
-		panic(m)
+		log.Panic().Msgf("Application name cannot be empty!")
 	}
 
 	viper.SetEnvPrefix(n)
@@ -82,9 +78,9 @@ func (cnf *Config) BindFlags() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Error().Msgf("Config file not found: %v", err)
+			log.Error().Msgf("Config file not found: '%v'", err)
 		} else {
-			log.Panic().Msgf("Couldn't load config file: %v", err)
+			log.Panic().Msgf("Couldn't load config file: '%v'", err)
 		}
 	}
 }
