@@ -1,2 +1,2 @@
-bind-address = "0.0.0.0"
+http-bind-address = "0.0.0.0"
 env-name = "prod"
