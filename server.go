@@ -2,10 +2,13 @@ package app
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/alexferl/golib/http/router"
 	"github.com/alexferl/golib/http/server"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/handlers"
 )
@@ -29,6 +32,12 @@ func Start() {
 		r,
 		middleware.BodyLimit("1M"),
 		// add your own middlewares here
+	)
+
+	log.Info().Msgf(
+		"Starting %s on %s environment",
+		viper.GetString("app-name"),
+		strings.ToUpper(viper.GetString("env-name")),
 	)
 
 	s.Start()

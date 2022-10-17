@@ -1,4 +1,4 @@
-.PHONY: dev run test cover fmt pre-commit
+.PHONY: dev run test cover fmt pre-commit docker-build docker-run
 
 .DEFAULT: help
 help:
@@ -16,6 +16,10 @@ help:
 	@echo "	run gofumpt"
 	@echo "make pre-commit"
 	@echo "	run pre-commit hooks"
+	@echo "make docker-build"
+	@echo "	build docker image"
+	@echo "make docker-run"
+	@echo "	run docker image"
 
 check-gofumpt:
 	@echo
@@ -49,3 +53,9 @@ fmt: check-gofumpt
 
 pre-commit: check-pre-commit
 	pre-commit
+
+docker-build:
+	docker build -t app .
+
+docker-run:
+	docker run -p 1323:1323 --rm app

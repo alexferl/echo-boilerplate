@@ -40,8 +40,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/alexferl/golib/config v0.0.0-20221017052918-a67e5d5c33b1 h1:M0xRl0s1hZIggeWWpAIkexEjH5zPaMX6vOgJcYQ3rDE=
 github.com/alexferl/golib/config v0.0.0-20221017052918-a67e5d5c33b1/go.mod h1:vQ7KP78AA2oync5xHmom2Z0itfeun9UcaIJXZ3k+tes=
-github.com/alexferl/golib/http v0.0.0-20221017052918-a67e5d5c33b1 h1:x2ZujOGu/JCKzNlhXJm4z8LxJt8xuhpV9DctpZml6gw=
-github.com/alexferl/golib/http v0.0.0-20221017052918-a67e5d5c33b1/go.mod h1:27mhvMH4HwyNd8l3tw+COLy8VMTuA278f7LHFeYJDEs=
 github.com/alexferl/golib/http v0.0.0-20221017190753-c84efb527b24 h1:dZqGl7clAis3eg4bHeaVbb6+OxSSfegQHH6dZuJ9dtM=
 github.com/alexferl/golib/http v0.0.0-20221017190753-c84efb527b24/go.mod h1:27mhvMH4HwyNd8l3tw+COLy8VMTuA278f7LHFeYJDEs=
 github.com/alexferl/golib/log v0.0.0-20221017052918-a67e5d5c33b1 h1:RnJyOhKUmZTg1e2X//rG5fceRDbFpYRJ184DNGsdUHg=

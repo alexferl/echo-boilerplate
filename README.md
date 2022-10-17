@@ -8,7 +8,11 @@ with [12-factor](https://12factor.net/).
 make run
 ```
 
-### Usage
+#### Usage
+```shell
+go build -o app-bin ./cmd/app && ./app-bin --help
+```
+
 ```shell
 Usage of ./app:
       --app-name string                    The name of the application. (default "app")
@@ -29,7 +33,24 @@ Usage of ./app:
       --log-writer string                  The log writer. Valid writers are: 'console' and 'json'. (default "console")
 ```
 
-### Building Docker image
+### Docker
+#### Build
 ```shell
-docker build -t app .
+make docker-build
+```
+
+#### Run
+```shell
+make docker-run
+```
+
+#### Passing args
+CLI:
+```shell
+docker run -p 1323:1323 --rm app --env-name prod
+```
+
+Environment variables:
+```shell
+docker run -p 1323:1323 -e "APP_ENV_NAME=prod" --rm app
 ```
