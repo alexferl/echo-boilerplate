@@ -13,6 +13,7 @@ type Config struct {
 	Config  *xconfig.Config
 	Http    *xhttp.Config
 	Logging *xlog.Config
+	// add your own configs here
 }
 
 // NewConfig creates a Config instance
@@ -26,7 +27,7 @@ func NewConfig() *Config {
 
 // addFlags adds all the flags from the command line
 func (c *Config) addFlags(fs *pflag.FlagSet) {
-	// add own flags
+	// add your own flags here
 }
 
 func (c *Config) BindFlags() {
