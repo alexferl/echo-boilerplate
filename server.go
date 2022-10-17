@@ -27,7 +27,7 @@ func Start() {
 
 	s := server.New(
 		r,
-		middleware.BodyLimit("10xM"),
+		middleware.BodyLimit("1M"),
 		// more middlewares...
 	)
 
