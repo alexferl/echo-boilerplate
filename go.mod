@@ -3,9 +3,9 @@ module github.com/alexferl/echo-boilerplate
 go 1.19
 
 require (
-	github.com/alexferl/golib/config v0.0.0-20220214025012-704642398edc
-	github.com/alexferl/golib/http v0.0.0-20220214025012-704642398edc
-	github.com/alexferl/golib/log v0.0.0-20220214025012-704642398edc
+	github.com/alexferl/golib/config v0.0.0-20221017052918-a67e5d5c33b1
+	github.com/alexferl/golib/http v0.0.0-20221017052918-a67e5d5c33b1
+	github.com/alexferl/golib/log v0.0.0-20221017052918-a67e5d5c33b1
 	github.com/labstack/echo/v4 v4.9.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0

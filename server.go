@@ -16,7 +16,7 @@ func Start() {
 	s := server.New()
 	h := &handlers.Handler{}
 	r := &router.Router{
-		Routes: []router.Route{
+		Routes: []*router.Route{
 			{"Root", http.MethodGet, "/", h.Root},
 			{"Healthz", http.MethodGet, "/healthz", h.Healthz},
 		},
