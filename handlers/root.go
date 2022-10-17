@@ -11,5 +11,5 @@ import (
 // Root returns the welcome message
 func (h *Handler) Root(c echo.Context) error {
 	m := fmt.Sprintf("Welcome to %s", viper.GetString("app-name"))
-	return c.JSON(http.StatusOK, map[string]string{"message": m})
+	return c.JSON(http.StatusOK, Response{m})
 }

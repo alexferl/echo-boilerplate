@@ -15,6 +15,4 @@
 .idea
 
 # binary
-httpd
-!cmd/httpd
-!internal/app/httpd
+app-bin
