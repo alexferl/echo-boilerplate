@@ -55,7 +55,7 @@ Response:
 	"token_type": "Bearer"
 }
 ```
-**Note**: The `access_token` only lasts five minutes, this is as designed. A client (like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and then retry the previous request with the new `access_token` which should then succeed.
+**Note**: The `access_token` only lasts five minutes by default, this is as designed. A client (like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and then retry the previous request with the new `access_token` which should then succeed. The duration of the `access_token` can be modified with `--jwt-access-token-expiry` and the `refresh_token` with `--jwt-refresh-token-expiry`.
 
 #### Get currently authenticated user
 Request:
