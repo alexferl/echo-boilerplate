@@ -4,7 +4,8 @@ A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labsta
 with [12-factor](https://12factor.net/).
 
 ## Features
-- [JWT](https://jwt.io/) for authentication with with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens. The access token can be sent in the `Authorization` header or as an HTTP cookie. See [echo-jwt](https://github.com/alexferl/echo-jwt).
+- [JWT](https://jwt.io/) for authentication with with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
+ The access token can be sent in the `Authorization` header or as an HTTP cookie. See [echo-jwt](https://github.com/alexferl/echo-jwt).
 - [Casbin](https://casbin.io/) for RBAC. See [echo-casbin](https://github.com/alexferl/echo-casbin).
 - [OpenAPI](https://www.openapis.org/) for request and response validation. See [echo-openapi](https://github.com/alexferl/echo-openapi).
 
@@ -55,7 +56,11 @@ Response:
 	"token_type": "Bearer"
 }
 ```
-**Note**: The `access_token` only lasts five minutes by default, this is as designed. A client (like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and then retry the previous request with the new `access_token` which should then succeed. The duration of the `access_token` can be modified with `--jwt-access-token-expiry` and the `refresh_token` with `--jwt-refresh-token-expiry`.
+**Note**: The `access_token` only lasts five minutes by default, this is as designed. A client
+(like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor
+to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and
+then retry the previous request with the new `access_token` which should then succeed. The duration of the `access_token`
+can be modified with `--jwt-access-token-expiry` and the `refresh_token` with `--jwt-refresh-token-expiry`.
 
 #### Get currently authenticated user
 Request:
