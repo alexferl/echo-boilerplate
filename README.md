@@ -34,6 +34,57 @@ make build
 ```shell
 make run
 ```
+### Using the API
+#### Login
+Request:
+```shell
+curl --request POST \
+  --url http://localhost:1323/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"email": "admin@example.com",
+	"password": "changeme"
+}'
+```
+Response:
+```shell
+{
+	"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+	"expires_in": 300,
+	"refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+	"token_type": "Bearer"
+}
+```
+
+#### Get currently authenticated user
+Request:
+
+Using the `Authorization` header:
+```shell
+curl --request GET \
+  --url http://localhost:1323/user \
+  --header 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+Using the cookie (the cookie is sent automatically with web browsers, HTTPie and some other clients):
+```shell
+curl --request GET \
+  --url http://localhost:1323/user \
+  --cookie access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Response:
+```shell
+{
+	"id": "cdhgh0dfclscplnrcuag",
+	"username": "admin",
+	"email": "admin@example.com",
+	"name": "",
+	"bio": "",
+	"created_at": "2022-11-03T00:17:05.837Z",
+	"updated_at": null
+}
+```
 
 ### OpenAPI docs
 You can see the OpenAPI docs by running the following command and going to http://localhost:8080/ in your web browser.
