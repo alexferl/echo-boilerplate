@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/alexferl/echo-casbin v0.3.0
 	github.com/alexferl/echo-jwt v0.3.1
-	github.com/alexferl/echo-openapi v0.0.0-20221102203105-894d7164119a
-	github.com/alexferl/golib/config v0.0.0-20221102205018-288f5ad8273a
-	github.com/alexferl/golib/http v0.0.0-20221102205018-288f5ad8273a
-	github.com/alexferl/golib/log v0.0.0-20221102205018-288f5ad8273a
+	github.com/alexferl/echo-openapi v0.0.0-20221102231612-fad9c451ab01
+	github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034
+	github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034
+	github.com/alexferl/golib/log v0.0.0-20221103021717-3eba14be5034
 	github.com/casbin/casbin/v2 v2.56.0
 	github.com/labstack/echo/v4 v4.9.1
 	github.com/lestrrat-go/jwx/v2 v2.0.6
@@ -18,13 +18,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.1
-	go.mongodb.org/mongo-driver v1.10.4
+	go.mongodb.org/mongo-driver v1.11.0
 	golang.org/x/crypto v0.1.0
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
 	golang.org/x/oauth2 v0.1.0
 )
-
-replace github.com/alexferl/echo-openapi => /Users/alex/dev/echo-openapi
 
 require (
 	cloud.google.com/go/compute v1.12.1 // indirect
