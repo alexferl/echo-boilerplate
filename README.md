@@ -7,7 +7,7 @@ with [12-factor](https://12factor.net/).
 - [JWT](https://jwt.io/) for authentication with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
  The access token can be sent in the [Authorization](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization) header or
  as a [cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies). See [echo-jwt](https://github.com/alexferl/echo-jwt).
-- [Casbin](https://casbin.io/) for RBAC. See [echo-casbin](https://github.com/alexferl/echo-casbin).
+- [Casbin](https://casbin.io/) for authorization using RBAC. See [echo-casbin](https://github.com/alexferl/echo-casbin).
 - [OpenAPI](https://www.openapis.org/) for request and response validation. See [echo-openapi](https://github.com/alexferl/echo-openapi).
 
 ## Requirements
