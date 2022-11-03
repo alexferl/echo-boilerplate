@@ -1,36 +1,87 @@
 # echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate)
 
-A small boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework
+A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework
 with [12-factor](https://12factor.net/).
+
+## Features
+- [JWT](https://jwt.io/) for authentication. Authorization header + HTTP cookie. See [echo-jwt](https://github.com/alexferl/echo-jwt).
+- [Casbin](https://casbin.io/) for RBAC. See [echo-casbin](https://github.com/alexferl/echo-casbin).
+- [OpenAPI](https://www.openapis.org/) for request and response validation. See [echo-openapi](https://github.com/alexferl/echo-openapi).
+
+## Requirements
+Before getting started, install the following:
+- [gofumpt](https://pkg.go.dev/mvdan.cc/gofumpt)
+- [pre-commit](https://pre-commit.com)
+- [redocly-cli](https://redocly.com/docs/cli/installation/)
+- [MongoDB](https://www.mongodb.com/docs/manual/installation/#mongodb-installation-tutorials)
+
+## Using
+Setup the dev environment first:
+```shell
+make dev
+```
+**Note**: An RSA private key will be generated in the current folder to sign and verify the JSON web tokens.
+
+### Creating admin user
+Launch the app with `--admin-create` to create an admin user. You can change the default values with the following flags:
+`--admin-email`, `--admin-username` and `--admin-password`.
+```shell
+make build
+./app-bin --admin-create
+```
 
 ### Building & Running locally
 ```shell
 make run
 ```
 
-#### Usage
+### OpenAPI docs
+You can see the OpenAPI docs by running the following command and going to http://localhost:8080/ in your web browser.
+```shell
+make openapi-docs
+```
+
+### Usage
 ```shell
 go build -o app-bin ./cmd/app && ./app-bin --help
 ```
 
 ```shell
-Usage of ./app:
-      --app-name string                    The name of the application. (default "app")
-      --env-name string                    The environment of the application. Used to load the right configs file. (default "local")
-      --http-bind-address ip               The IP address to listen at. (default 127.0.0.1)
-      --http-bind-port uint                The port to listen at. (default 1323)
-      --http-cors-allow-credentials        Tells browsers whether to expose the response to frontend JavaScript code when the request's credentials mode (Request.credentials) is 'include'.
-      --http-cors-allow-headers strings    Indicate which HTTP headers can be used during an actual request.
-      --http-cors-allow-methods strings    Indicates which HTTP methods are allowed for cross-origin requests. (default [GET,HEAD,PUT,PATCH,POST,DELETE])
-      --http-cors-allow-origins strings    Indicates whether the response can be shared with requesting code from the given origin. (default [*])
-      --http-cors-enabled                  Enable cross-origin resource sharing.
-      --http-cors-expose-headers strings   Indicates which headers can be exposed as part of the response by listing their name.
-      --http-cors-max-age int              Indicates how long the results of a preflight request can be cached.
-      --http-graceful-timeout uint         Timeout for graceful shutdown. (default 30)
-      --http-log-requests-disabled         Disable the logging of HTTP requests
-      --log-level string                   The granularity of log outputs. Valid log levels: 'panic', 'fatal', 'error', 'warn', 'info', 'debug' and 'trace'. (default "info")
-      --log-output string                  The output to write to. 'stdout' means log to stdout, 'stderr' means log to stderr. (default "stdout")
-      --log-writer string                  The log writer. Valid writers are: 'console' and 'json'. (default "console")
+Usage of ./app-bin:
+      --app-name string                                The name of the application. (default "app")
+      --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
+      --casbin-model string                            Casbin model file (default "./casbin/model.conf")
+      --casbin-policy string                           Casbin policy file (default "./casbin/policy.csv")
+      --env-name string                                The environment of the application. Used to load the right configs file. (default "local")
+      --http-bind-address ip                           The IP address to listen at. (default 127.0.0.1)
+      --http-bind-port uint                            The port to listen at. (default 1323)
+      --http-cors-allow-credentials                    Tells browsers whether to expose the response to frontend JavaScript code when the request's credentials mode (Request.credentials) is 'include'.
+      --http-cors-allow-headers strings                Indicate which HTTP headers can be used during an actual request.
+      --http-cors-allow-methods strings                Indicates which HTTP methods are allowed for cross-origin requests. (default [GET,HEAD,PUT,PATCH,POST,DELETE])
+      --http-cors-allow-origins strings                Indicates whether the response can be shared with requesting code from the given origin. (default [*])
+      --http-cors-enabled                              Enable cross-origin resource sharing.
+      --http-cors-expose-headers strings               Indicates which headers can be exposed as part of the response by listing their name.
+      --http-cors-max-age int                          Indicates how long the results of a preflight request can be cached.
+      --http-graceful-timeout duration                 Timeout for graceful shutdown. (default 30s)
+      --http-log-request-level string                  The granularity of log outputs. Valid log levels: 'OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG'. (default "INFO")
+      --http-log-requests                              Controls the logging of HTTP requests (default true)
+      --jwt-access-token-expiry duration               JWT access token expiry (default 5m0s)
+      --jwt-issuer string                              JWT issuer (default "http://localhost:1323")
+      --jwt-private-key string                         JWT private key file path (default "./private-key.pem")
+      --jwt-refresh-token-expiry duration              JWT refresh token expiry (default 720h0m0s)
+      --log-level string                               The granularity of log outputs. Valid log levels: 'PANIC', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG' and 'TRACE'. (default "INFO")
+      --log-output string                              The output to write to. 'stdout' means log to stdout, 'stderr' means log to stderr. (default "stdout")
+      --log-writer string                              The log writer. Valid writers are: 'console' and 'json'. (default "console")
+      --mongodb-connect-timeout-ms duration            MongoDB connect timeout ms (default 5s)
+      --mongodb-password string                        MongoDB password
+      --mongodb-replica-set string                     MongoDB replica set
+      --mongodb-server-selection-timeout-ms duration   MongoDB server selection timeout ms (default 5s)
+      --mongodb-socket-timeout-ms duration             MongoDB socket timeout ms (default 30s)
+      --mongodb-uri string                             MongoDB URI (default "mongodb://localhost:27017")
+      --mongodb-username string                        MongoDB username
+      --oauth2-client-id string                        OAuth2 client id
+      --oauth2-client-secret string                    OAuth2 client secret
+      --openapi-schema string                          OpenAPI schema file (default "./openapi/openapi.yaml")
 ```
 
 ### Docker

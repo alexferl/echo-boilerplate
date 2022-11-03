@@ -1,0 +1,23 @@
+get:
+  summary: Get user
+  description: Returns a single user
+  operationId: getUsername
+  tags:
+    - users
+  parameters:
+    - name: username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully returned a user
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Username.yaml'
+    '404':
+      $ref: '../components/responses/NotFound.yaml'
+    '410':
+      $ref: '../components/responses/Gone.yaml'

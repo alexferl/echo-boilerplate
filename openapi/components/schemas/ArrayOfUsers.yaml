@@ -1,0 +1,7 @@
+type: object
+properties:
+  users:
+    type: array
+    items:
+      type: object
+      $ref: './User.yaml'

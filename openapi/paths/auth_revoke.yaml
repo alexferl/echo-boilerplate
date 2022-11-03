@@ -1,0 +1,22 @@
+post:
+  summary: Revoke token
+  description: Revoke a refresh token
+  operationId: authRevoke
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - auth
+  responses:
+    '204':
+      description: Successfully revoked token
+      headers:
+        Set-Cookie:
+          schema:
+            $ref: '../components/headers/SetCookie.yaml'
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

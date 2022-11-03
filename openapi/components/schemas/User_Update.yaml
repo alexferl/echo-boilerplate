@@ -1,0 +1,16 @@
+type: object
+additionalProperties: false
+properties:
+  email:
+    type: string
+    description: The email of the user
+  name:
+    type: string
+    description: The name of the user
+    minLength: 0
+    maxLength: 100
+  bio:
+    type: string
+    description: The biography of the user
+    minLength: 0
+    maxLength: 1000

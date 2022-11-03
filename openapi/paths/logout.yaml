@@ -1,0 +1,21 @@
+post:
+  security:
+    - bearerAuth: []
+  summary: Logout
+  description: Log out a user by destroying the refresh_token
+  operationId: logout
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/RefreshToken.yaml'
+  responses:
+    '204':
+      description: Successfully logged out
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'

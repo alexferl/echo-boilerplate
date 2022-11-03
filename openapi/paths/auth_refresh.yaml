@@ -1,0 +1,26 @@
+post:
+  summary: Refresh token
+  description: Return new tokens
+  operationId: authRefresh
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - auth
+  responses:
+    '200':
+      description: Successfully returned tokens
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Token.yaml'
+      headers:
+        Set-Cookie:
+          schema:
+            $ref: '../components/headers/SetCookie.yaml'
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

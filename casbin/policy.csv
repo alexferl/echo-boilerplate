@@ -1,0 +1,18 @@
+p, any, /, GET
+p, any, /healthz, GET
+
+p, any, /login, POST
+p, any, /signup, POST
+p, any, /oauth2/login, GET
+p, any, /oauth2/callback, GET
+p, any, /auth/refresh, POST
+p, any, /auth/revoke, POST
+p, any, /users/:username, GET
+
+p, user, /user, (GET)|(PATCH)
+
+p, admin, /users, GET
+
+g, *, any
+g, user, any
+g, admin, user

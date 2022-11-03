@@ -1,0 +1,23 @@
+post:
+  summary: Sign up
+  description: Return user
+  operationId: signup
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/Signup.yaml'
+  responses:
+    '200':
+      description: Successfully created user
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+    '409':
+      $ref: '../components/responses/Conflict.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

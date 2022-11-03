@@ -16,3 +16,5 @@
 
 # binary
 app-bin
+
+private-key.pem

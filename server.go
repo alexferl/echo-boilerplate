@@ -2,43 +2,118 @@ package app
 
 import (
 	"net/http"
-	"strings"
 
+	casbinmw "github.com/alexferl/echo-casbin"
+	jwtmw "github.com/alexferl/echo-jwt"
+	openapimw "github.com/alexferl/echo-openapi"
+	"github.com/alexferl/golib/http/handler"
 	"github.com/alexferl/golib/http/router"
 	"github.com/alexferl/golib/http/server"
+	"github.com/casbin/casbin/v2"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rs/zerolog/log"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/spf13/viper"
 
-	"github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/data"
+	hs "github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func Start() {
-	c := NewConfig()
-	c.BindFlags()
-
-	h := &handlers.Handler{
-		// add stuff that the handlers should have access to
-		// like a database client.
+func DefaultHandlers() []handler.Handler {
+	client, err := data.NewClient()
+	if err != nil {
+		panic(err)
 	}
-	r := &router.Router{
-		Routes: []*router.Route{
-			{"Root", http.MethodGet, "/", h.Root},
-			{"Healthz", http.MethodGet, "/healthz", h.Healthz},
+
+	openapi := openapimw.NewHandler()
+
+	return []handler.Handler{
+		hs.NewHandler(),
+		users.NewHandler(client, openapi, nil),
+	}
+}
+
+func NewServer() *server.Server {
+	handlers := DefaultHandlers()
+	return NewServerWithOverrides(nil, handlers...)
+}
+
+func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handler) *server.Server {
+	if overrides != nil {
+		for k, v := range overrides {
+			viper.Set(k, v)
+		}
+	}
+
+	var routes []*router.Route
+	for _, h := range handlers {
+		routes = append(routes, h.GetRoutes()...)
+	}
+
+	r := &router.Router{Routes: routes}
+
+	key, err := util.LoadPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	jwtConfig := jwtmw.Config{
+		Key: key,
+		ExemptRoutes: map[string][]string{
+			"/":                {http.MethodGet},
+			"/healthz":         {http.MethodGet},
+			"/signup":          {http.MethodPost},
+			"/login":           {http.MethodPost},
+			"/oauth2/login":    {http.MethodGet},
+			"/oauth2/callback": {http.MethodGet},
+			"/auth/refresh":    {http.MethodPost},
+			"/auth/revoke":     {http.MethodPost},
+		},
+		OptionalRoutes: map[string][]string{
+			"/users/:username": {http.MethodGet},
+		},
+		AfterParseFunc: func(c echo.Context, t jwt.Token) *echo.HTTPError {
+			claims := t.PrivateClaims()
+			typ, ok := claims["type"]
+			if !ok || typ != util.AccessToken.String() {
+				return &echo.HTTPError{Code: http.StatusUnauthorized, Message: "invalid token type"}
+			}
+
+			c.Set("roles", claims["roles"])
+
+			return nil
+		},
+	}
+
+	enforcer, err := casbin.NewEnforcer(viper.GetString(config.CasbinModel), viper.GetString(config.CasbinPolicy))
+	if err != nil {
+		panic(err)
+	}
+
+	openAPIConfig := openapimw.Config{
+		Schema: viper.GetString(config.OpenAPISchema),
+		ExemptRoutes: map[string][]string{
+			"/":        {http.MethodGet},
+			"/healthz": {http.MethodGet},
 		},
 	}
 
 	s := server.New(
 		r,
-		middleware.BodyLimit("1M"),
-		// add your own middlewares here
+		middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins:     []string{"http://locahost:1323"},
+			AllowCredentials: true,
+		}),
+		jwtmw.JWTWithConfig(jwtConfig),
+		casbinmw.Casbin(enforcer),
+		openapimw.OpenAPIWithConfig(openAPIConfig),
 	)
 
-	log.Info().Msgf(
-		"Starting %s on %s environment",
-		viper.GetString("app-name"),
-		strings.ToUpper(viper.GetString("env-name")),
-	)
+	s.HideBanner = true
+	s.HidePort = true
 
-	s.Start()
+	return s
 }

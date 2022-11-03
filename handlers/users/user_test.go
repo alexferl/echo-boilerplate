@@ -1,0 +1,111 @@
+package users_test
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestHandler_UserGet_200(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	respUser := &users.UserResponse{
+		Id:        user.Id,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/user", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			respUser,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+}
+
+func TestHandler_UserPatch_200(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	user.Name = "test name"
+	user.Bio = "test bio"
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	updatedUser := user
+	updatedUser.Name = "name"
+	updatedUser.Bio = "bio"
+	updatedUser.Update(user.Id)
+
+	respUser := &users.UserResponse{
+		Id:        updatedUser.Id,
+		Username:  updatedUser.Username,
+		Email:     updatedUser.Email,
+		Name:      updatedUser.Name,
+		Bio:       updatedUser.Bio,
+		CreatedAt: updatedUser.CreatedAt,
+		UpdatedAt: updatedUser.UpdatedAt,
+	}
+
+	b, err := json.Marshal(&users.UserPatch{
+		Name: updatedUser.Name,
+		Bio:  updatedUser.Bio,
+	})
+
+	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			user,
+			nil,
+		).
+		On("UpdateById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			respUser,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+}

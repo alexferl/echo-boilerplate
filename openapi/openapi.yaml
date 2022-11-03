@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: api
+  description: API
+  version: '1.0.0'
+  contact:
+    email: dev@example.com
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/alexferl/echo-boilerplate/master/LICENSE
+servers:
+  - url: http://localhost:1323
+  - url: http://example.com # golang httptest
+  - url: https://{environment}.example.com
+    variables:
+      environment:
+        default: api    # Production server
+        enum:
+          - api         # Production server
+          - api.staging # Staging server
+          - api.test    # Test server
+tags:
+  - name: auth
+    description: Authentication operations
+  - name: user
+    description: Operations on authenticated user
+  - name: users
+    description: Operations on users
+paths:
+  /signup:
+    $ref: './paths/signup.yaml'
+  /login:
+    $ref: './paths/login.yaml'
+  /logout:
+    $ref: './paths/logout.yaml'
+  /auth/refresh:
+    $ref: './paths/auth_refresh.yaml'
+  /auth/revoke:
+    $ref: './paths/auth_revoke.yaml'
+  /user:
+    $ref: './paths/user.yaml'
+  /users/{username}:
+    $ref: './paths/users_{username}.yaml'
+  /users:
+    $ref: './paths/users.yaml'
+components:
+  securitySchemes:
+    cookieAuth:
+      $ref: './components/securitySchemes/CookieAuth.yaml'
+    bearerAuth:
+      $ref: './components/securitySchemes/BearerAuth.yaml'

@@ -1,0 +1,5 @@
+description: The target resource is no longer available
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/Error.yaml'

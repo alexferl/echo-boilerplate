@@ -1,0 +1,11 @@
+# This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
+# See https://redoc.ly/docs/cli/ for more information.
+openapi/paths/signup.yaml:
+  security-defined:
+    - '#/post'
+openapi/paths/login.yaml:
+  security-defined:
+    - '#/post'
+openapi/paths/users_{username}.yaml:
+  security-defined:
+    - '#/get'

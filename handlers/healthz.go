@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Healthz returns the welcome message
+// Healthz returns ok.
 func (h *Handler) Healthz(c echo.Context) error {
 	return c.String(http.StatusOK, "ok")
 }

@@ -1,0 +1,48 @@
+get:
+  summary: Get authenticated user
+  description: Returns a single user
+  operationId: getUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - user
+  responses:
+    '200':
+      description: Successfully returned a user
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+patch:
+  summary: Update authenticated user
+  description: This can only be done by the logged in user.
+  operationId: updateUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - user
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/User_Update.yaml'
+  responses:
+    '200':
+      description: Successfully returned user modifications
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

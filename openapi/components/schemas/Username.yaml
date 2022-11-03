@@ -1,0 +1,23 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    readOnly: true
+  username:
+    type: string
+    pattern: "^[0-9a-zA-Z._]+$"
+    description: The username of the user
+    minLength: 2
+    maxLength: 30
+  created_at:
+    type: string
+    nullable: true
+    format: date-time
+    description: User creation date time
+  updated_at:
+    type: string
+    nullable: true
+    format: date-time
+    description: User last update date time
