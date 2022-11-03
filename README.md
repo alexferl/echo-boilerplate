@@ -4,7 +4,7 @@ A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labsta
 with [12-factor](https://12factor.net/).
 
 ## Features
-- [JWT](https://jwt.io/) for authentication with with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
+- [JWT](https://jwt.io/) for authentication with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
  The access token can be sent in the `Authorization` header or as an HTTP cookie. See [echo-jwt](https://github.com/alexferl/echo-jwt).
 - [Casbin](https://casbin.io/) for RBAC. See [echo-casbin](https://github.com/alexferl/echo-casbin).
 - [OpenAPI](https://www.openapis.org/) for request and response validation. See [echo-openapi](https://github.com/alexferl/echo-openapi).
