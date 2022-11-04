@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestHandler_Login_200(t *testing.T) {
+func TestHandler_Auth_Login_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	pwd := "abcdefghijkl"
@@ -23,7 +23,7 @@ func TestHandler_Login_200(t *testing.T) {
 	b, err := json.Marshal(&users.LoginPayload{Password: pwd})
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -70,7 +70,7 @@ func TestHandler_Login_200(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "token_type")
 }
 
-func TestHandler_Login_401(t *testing.T) {
+func TestHandler_Auth_Login_401(t *testing.T) {
 	payload := &users.LoginPayload{}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
@@ -105,7 +105,7 @@ func TestHandler_Login_401(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mapper, s := getMapperAndServer(t)
 
-			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(tc.payload))
+			req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 			resp := httptest.NewRecorder()
 
@@ -129,10 +129,10 @@ func TestHandler_Login_401(t *testing.T) {
 	}
 }
 
-func TestHandler_Login_422(t *testing.T) {
+func TestHandler_Auth_Login_422(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer([]byte("")))
+	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer([]byte("")))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 

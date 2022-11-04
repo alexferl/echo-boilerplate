@@ -6,51 +6,47 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lestrrat-go/jwx/v2/jwt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type LoginPayload struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type RefreshPayload struct {
+	RefreshToken string `json:"refresh_token"`
 }
 
-func (h *Handler) Login(c echo.Context) error {
-	body := &LoginPayload{}
-	if err := c.Bind(body); err != nil {
+func (h *Handler) AuthRefresh(c echo.Context) error {
+	token := c.Get("refresh_token").(jwt.Token)
+	hashedToken, err := util.HashToken(token)
+	if err != nil {
 		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"email", body.Email}}
-	result, err := h.Mapper.FindOne(ctx, filter, &User{})
+	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
-		if err == ErrUserNotFound {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
-		}
 		return fmt.Errorf("failed getting user: %v", err)
 	}
 
 	user := result.(*User)
 
-	err = user.CheckPassword(body.Password)
-	if err != nil {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
+	if user.RefreshTokenHash != string(hashedToken) {
+		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token mismatch"})
 	}
 
-	access, refresh, err := user.Login()
+	access, refresh, err := user.Refresh()
 	if err != nil {
 		return fmt.Errorf("failed generating tokens: %v", err)
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err = h.Mapper.UpdateById(ctx, user.Id, user, nil)
+	_, err = h.Mapper.UpdateById(ctx, token.Subject(), user, nil)
 	if err != nil {
 		return fmt.Errorf("failed updating user: %v", err)
 	}

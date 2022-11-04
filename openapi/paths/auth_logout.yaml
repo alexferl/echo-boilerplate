@@ -1,7 +1,7 @@
 post:
-  summary: Revoke token
+  summary: Log out a user
   description: Revoke a refresh token
-  operationId: authRevoke
+  operationId: authLogout
   security:
     - cookieAuth: []
     - bearerAuth: []

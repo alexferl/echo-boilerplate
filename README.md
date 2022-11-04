@@ -41,7 +41,7 @@ make run
 Request:
 ```shell
 curl --request POST \
-  --url http://localhost:1323/login \
+  --url http://localhost:1323/auth/login \
   --header 'Content-Type: application/json' \
   --data '{
 	"email": "admin@example.com",

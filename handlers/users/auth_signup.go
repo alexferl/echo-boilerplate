@@ -23,7 +23,7 @@ type SignUpResponse struct {
 	Username string `json:"username"`
 }
 
-func (h *Handler) SignUp(c echo.Context) error {
+func (h *Handler) AuthSignUp(c echo.Context) error {
 	body := &SignUpPayload{}
 	if err := c.Bind(body); err != nil {
 		return fmt.Errorf("failed to bind: %v", err)

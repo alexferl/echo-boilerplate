@@ -23,20 +23,18 @@ tags:
   - name: auth
     description: Authentication operations
   - name: user
-    description: Operations on authenticated user
+    description: Operations on the authenticated user
   - name: users
     description: Operations on users
 paths:
-  /signup:
+  /auth/signup:
     $ref: './paths/signup.yaml'
-  /login:
+  /auth/login:
     $ref: './paths/login.yaml'
-  /logout:
-    $ref: './paths/logout.yaml'
   /auth/refresh:
     $ref: './paths/auth_refresh.yaml'
-  /auth/revoke:
-    $ref: './paths/auth_revoke.yaml'
+  /auth/logout:
+    $ref: './paths/auth_logout.yaml'
   /user:
     $ref: './paths/user.yaml'
   /users/{username}:

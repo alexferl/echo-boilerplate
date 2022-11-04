@@ -64,12 +64,12 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 
 func (h *Handler) GetRoutes() []*router.Route {
 	return []*router.Route{
-		{Name: "Signup", Method: http.MethodPost, Pattern: "/signup", HandlerFunc: h.SignUp},
-		{Name: "Login", Method: http.MethodPost, Pattern: "/login", HandlerFunc: h.Login},
+		{Name: "AuthSignup", Method: http.MethodPost, Pattern: "/auth/signup", HandlerFunc: h.AuthSignUp},
+		{Name: "AuthLogin", Method: http.MethodPost, Pattern: "/auth/login", HandlerFunc: h.AuthLogin},
+		{Name: "AuthRefresh", Method: http.MethodPost, Pattern: "/auth/refresh", HandlerFunc: h.AuthRefresh},
+		{Name: "AuthLogout", Method: http.MethodPost, Pattern: "/auth/logout", HandlerFunc: h.AuthLogout},
 		{Name: "OAuth2Login", Method: http.MethodGet, Pattern: "/oauth2/login", HandlerFunc: h.OAuth2Login},
 		{Name: "OAuth2Callback", Method: http.MethodGet, Pattern: "/oauth2/callback", HandlerFunc: h.OAuth2Callback},
-		{Name: "AuthRefresh", Method: http.MethodPost, Pattern: "/auth/refresh", HandlerFunc: h.AuthRefresh},
-		{Name: "AuthRevoke", Method: http.MethodPost, Pattern: "/auth/revoke", HandlerFunc: h.AuthRevoke},
 		{Name: "UserGet", Method: http.MethodGet, Pattern: "/user", HandlerFunc: h.UserGet},
 		{Name: "UserPatch", Method: http.MethodPatch, Pattern: "/user", HandlerFunc: h.UserPatch},
 		{Name: "UsernameGet", Method: http.MethodGet, Pattern: "/users/:username", HandlerFunc: h.UsernameGet},

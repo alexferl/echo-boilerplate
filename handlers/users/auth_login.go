@@ -8,58 +8,49 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type RefreshPayload struct {
-	RefreshToken string `json:"refresh_token"`
+type LoginPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
-func (h *Handler) AuthRefresh(c echo.Context) error {
-	body := &RefreshPayload{}
+func (h *Handler) AuthLogin(c echo.Context) error {
+	body := &LoginPayload{}
 	if err := c.Bind(body); err != nil {
 		return err
 	}
 
-	refreshToken := body.RefreshToken
-	if refreshToken == "" {
-		cookie, err := c.Cookie("refresh_token")
-		if err != nil {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token missing"})
-		}
-		refreshToken = cookie.Value
-	}
-
-	token, err := util.ParseToken(refreshToken)
-	if err != nil {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token invalid"})
-	}
-
-	hashedToken := util.HashToken([]byte(refreshToken))
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
+	filter := bson.D{{"email", body.Email}}
+	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
+		if err == ErrUserNotFound {
+			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
+		}
 		return fmt.Errorf("failed getting user: %v", err)
 	}
 
 	user := result.(*User)
 
-	if user.RefreshTokenHash != hashedToken {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token mismatch"})
+	err = user.CheckPassword(body.Password)
+	if err != nil {
+		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
 	}
 
-	access, refresh, err := user.Refresh()
+	access, refresh, err := user.Login()
 	if err != nil {
 		return fmt.Errorf("failed generating tokens: %v", err)
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err = h.Mapper.UpdateById(ctx, token.Subject(), user, nil)
+	_, err = h.Mapper.UpdateById(ctx, user.Id, user, nil)
 	if err != nil {
 		return fmt.Errorf("failed updating user: %v", err)
 	}

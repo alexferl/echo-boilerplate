@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,8 +17,6 @@ import (
 
 	"github.com/alexferl/echo-boilerplate/config"
 )
-
-var ErrTokenParse = errors.New("failed parsing token")
 
 type TokenType int64
 
@@ -95,30 +92,22 @@ func generateToken(typ TokenType, sub string, claims map[string]any) ([]byte, er
 	return signed, nil
 }
 
-func ParseToken(encodedToken string) (jwt.Token, error) {
+func HashToken(token jwt.Token) ([]byte, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := jwt.Parse([]byte(encodedToken), jwt.WithValidate(true), jwt.WithKey(jwa.RS256, key))
+	signed, err := jwt.Sign(token, jwt.WithKey(jwa.RS256, key))
 	if err != nil {
-		if err == jwt.ErrTokenExpired() {
-			return nil, err
-		}
-
-		if err == jwt.ErrInvalidIssuedAt() {
-			return nil, err
-		}
-
-		if err == jwt.ErrTokenNotYetValid() {
-			return nil, err
-		}
-
-		return nil, ErrTokenParse
+		return nil, fmt.Errorf("failed to sign token: %v\n", err)
 	}
 
-	return token, nil
+	h := sha256.New()
+	h.Write(signed)
+	b := h.Sum(nil)
+
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
 }
 
 func LoadPrivateKey() (*rsa.PrivateKey, error) {
@@ -143,11 +132,4 @@ func LoadPrivateKey() (*rsa.PrivateKey, error) {
 	}
 
 	return key, nil
-}
-
-func HashToken(token []byte) string {
-	h := sha256.New()
-	h.Write(token)
-	b := h.Sum(nil)
-	return base64.StdEncoding.EncodeToString(b)
 }

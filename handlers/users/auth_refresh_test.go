@@ -3,7 +3,6 @@ package users_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,16 +13,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestHandler_Refresh_200_Cookie(t *testing.T) {
+func TestHandler_Auth_Refresh_200_Cookie(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
-	access, refresh, err := user.Login()
+	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewAccessTokenCookie(string(access)))
 	req.AddCookie(util.NewRefreshTokenCookie(string(refresh)))
 	resp := httptest.NewRecorder()
 
@@ -70,7 +68,7 @@ func TestHandler_Refresh_200_Cookie(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "token_type")
 }
 
-func TestHandler_Refresh_401_Cookie_Missing(t *testing.T) {
+func TestHandler_Auth_Refresh_400_Cookie_Missing(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
@@ -78,39 +76,33 @@ func TestHandler_Refresh_401_Cookie_Missing(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token missing")
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.Contains(t, resp.Body.String(), "Request malformed")
 }
 
-func TestHandler_Refresh_401_Cookie_Invalid(t *testing.T) {
+func TestHandler_Auth_Refresh_401_Cookie_Invalid(t *testing.T) {
 	_, s := getMapperAndServer(t)
-
-	user := users.NewUser("test@example.com", "test")
-	access, _, err := user.Login()
-	assert.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewAccessTokenCookie(string(access)))
 	req.AddCookie(util.NewRefreshTokenCookie("invalid"))
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token invalid")
+	assert.Contains(t, resp.Body.String(), "Token invalid")
 }
 
-func TestHandler_Refresh_401_Cookie_Mismatch(t *testing.T) {
+func TestHandler_Auth_Refresh_401_Cookie_Mismatch(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
-	access, refresh, err := user.Login()
+	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 	user.Logout()
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewAccessTokenCookie(string(access)))
 	req.AddCookie(util.NewRefreshTokenCookie(string(refresh)))
 	resp := httptest.NewRecorder()
 
@@ -128,14 +120,14 @@ func TestHandler_Refresh_401_Cookie_Mismatch(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token mismatch")
+	assert.Contains(t, resp.Body.String(), "Token mismatch")
 }
 
-func TestHandler_Refresh_200_Token(t *testing.T) {
+func TestHandler_Auth_Refresh_200_Token(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
-	access, refresh, err := user.Login()
+	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 
 	payload := &users.RefreshPayload{
@@ -146,7 +138,6 @@ func TestHandler_Refresh_200_Token(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.
@@ -192,7 +183,7 @@ func TestHandler_Refresh_200_Token(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "token_type")
 }
 
-func TestHandler_Refresh_401_Token_Missing(t *testing.T) {
+func TestHandler_Auth_Refresh_400_Token_Missing(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer([]byte("")))
@@ -200,16 +191,12 @@ func TestHandler_Refresh_401_Token_Missing(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token missing")
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.Contains(t, resp.Body.String(), "Request malformed")
 }
 
-func TestHandler_Refresh_401_Token_Invalid(t *testing.T) {
+func TestHandler_Auth_Refresh_401_Token_Invalid(t *testing.T) {
 	_, s := getMapperAndServer(t)
-
-	user := users.NewUser("test@example.com", "test")
-	access, _, err := user.Login()
-	assert.NoError(t, err)
 
 	payload := &users.RefreshPayload{
 		RefreshToken: "invalid",
@@ -219,19 +206,18 @@ func TestHandler_Refresh_401_Token_Invalid(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token invalid")
+	assert.Contains(t, resp.Body.String(), "Token invalid")
 }
 
-func TestHandler_Refresh_401_Token_Mismatch(t *testing.T) {
+func TestHandler_Auth_Refresh_401_Token_Mismatch(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
-	access, refresh, err := user.Login()
+	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 	user.Logout()
 
@@ -243,7 +229,6 @@ func TestHandler_Refresh_401_Token_Mismatch(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.
@@ -260,5 +245,5 @@ func TestHandler_Refresh_401_Token_Mismatch(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "token mismatch")
+	assert.Contains(t, resp.Body.String(), "Token mismatch")
 }

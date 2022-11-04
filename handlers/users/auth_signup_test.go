@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestHandler_Signup_200(t *testing.T) {
+func TestHandler_Auth_Signup_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	payload := &users.SignUpPayload{
@@ -23,7 +23,7 @@ func TestHandler_Signup_200(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -52,7 +52,7 @@ func TestHandler_Signup_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestHandler_Signup_409(t *testing.T) {
+func TestHandler_Auth_Signup_409(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	payload := &users.SignUpPayload{
@@ -63,7 +63,7 @@ func TestHandler_Signup_409(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -83,10 +83,10 @@ func TestHandler_Signup_409(t *testing.T) {
 	assert.Equal(t, http.StatusConflict, resp.Code)
 }
 
-func TestHandler_Signup_422(t *testing.T) {
+func TestHandler_Auth_Signup_422(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer([]byte("")))
+	req := httptest.NewRequest(http.MethodPost, "/auth/signup", bytes.NewBuffer([]byte("")))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 

@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/alexferl/echo-casbin v0.3.0
-	github.com/alexferl/echo-jwt v0.3.1
+	github.com/alexferl/echo-jwt v0.4.0
 	github.com/alexferl/echo-openapi v0.0.0-20221102231612-fad9c451ab01
 	github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034
 	github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034

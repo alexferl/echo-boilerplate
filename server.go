@@ -61,29 +61,23 @@ func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handle
 	}
 
 	jwtConfig := jwtmw.Config{
-		Key: key,
+		Key:             key,
+		UseRefreshToken: true,
 		ExemptRoutes: map[string][]string{
 			"/":                {http.MethodGet},
 			"/healthz":         {http.MethodGet},
-			"/signup":          {http.MethodPost},
-			"/login":           {http.MethodPost},
+			"/auth/signup":     {http.MethodPost},
+			"/auth/login":      {http.MethodPost},
 			"/oauth2/login":    {http.MethodGet},
 			"/oauth2/callback": {http.MethodGet},
-			"/auth/refresh":    {http.MethodPost},
-			"/auth/revoke":     {http.MethodPost},
 		},
 		OptionalRoutes: map[string][]string{
 			"/users/:username": {http.MethodGet},
 		},
 		AfterParseFunc: func(c echo.Context, t jwt.Token) *echo.HTTPError {
+			// set roles for casbin
 			claims := t.PrivateClaims()
-			typ, ok := claims["type"]
-			if !ok || typ != util.AccessToken.String() {
-				return &echo.HTTPError{Code: http.StatusUnauthorized, Message: "invalid token type"}
-			}
-
 			c.Set("roles", claims["roles"])
-
 			return nil
 		},
 	}

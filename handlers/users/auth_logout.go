@@ -6,35 +6,22 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/util"
 	"github.com/labstack/echo/v4"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+
+	"github.com/alexferl/echo-boilerplate/util"
 )
 
 type RevokePayload struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (h *Handler) AuthRevoke(c echo.Context) error {
-	body := &RevokePayload{}
-	if err := c.Bind(body); err != nil {
+func (h *Handler) AuthLogout(c echo.Context) error {
+	token := c.Get("refresh_token").(jwt.Token)
+	hashedToken, err := util.HashToken(token)
+	if err != nil {
 		return err
 	}
-
-	refreshToken := body.RefreshToken
-	if refreshToken == "" {
-		cookie, err := c.Cookie("refresh_token")
-		if err != nil {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token missing"})
-		}
-		refreshToken = cookie.Value
-	}
-
-	token, err := util.ParseToken(refreshToken)
-	if err != nil {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token invalid"})
-	}
-
-	hashedToken := util.HashToken([]byte(refreshToken))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -45,8 +32,8 @@ func (h *Handler) AuthRevoke(c echo.Context) error {
 
 	user := result.(*User)
 
-	if user.RefreshTokenHash != hashedToken {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token mismatch"})
+	if user.RefreshTokenHash != string(hashedToken) {
+		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token mismatch"})
 	}
 
 	user.Logout()
