@@ -21,6 +21,9 @@ post:
         Set-Cookie:
           schema:
             $ref: '../components/headers/SetCookie.yaml'
+        "\0Set-Cookie":
+          schema:
+            $ref: '../components/headers/SetCookieRefresh.yaml'
     '401':
       $ref: '../components/responses/Unauthorized.yaml'
     '422':

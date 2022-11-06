@@ -1,2 +1,2 @@
 type: string
-example: access_token=eyJ0e...; expires=Tue, 15 Feb 2022 23:26:43 GMT; HttpOnly; Secure; Path=/; SameSite=Lax
+example: access_token=eyJhbGciOi...; Path=/; Secure; SameSite=Strict; Domain=localhost

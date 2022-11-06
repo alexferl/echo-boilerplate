@@ -43,11 +43,12 @@ func (h *Handler) OAuth2Login(c echo.Context) error {
 	}
 
 	url := getOAuth2Config().AuthCodeURL(state)
-	opts := util.CookieOptions{
+	opts := &util.CookieOptions{
 		Name:     "state",
 		Value:    state,
 		Path:     "/oauth2/callback",
 		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
 		MaxAge:   600,
 	}
 	c.SetCookie(util.NewCookie(opts))
@@ -120,11 +121,12 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 		}
 	}
 
-	stateOpts := util.CookieOptions{
+	stateOpts := &util.CookieOptions{
 		Name:     "state",
 		Value:    "",
 		Path:     "/oauth2/callback",
 		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
 		MaxAge:   -1,
 	}
 	c.SetCookie(util.NewCookie(stateOpts))

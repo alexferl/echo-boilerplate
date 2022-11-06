@@ -80,7 +80,7 @@ func NewConfig() *Config {
 			ClientSecret: "",
 		},
 		JWT: &JWT{
-			AccessTokenExpiry:  5 * time.Minute,
+			AccessTokenExpiry:  10 * time.Minute,
 			RefreshTokenExpiry: (30 * 24) * time.Hour,
 			PrivateKey:         "./private-key.pem",
 			Issuer:             "http://localhost:1323",

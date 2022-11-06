@@ -1,24 +1,15 @@
 openapi: 3.0.3
 info:
-  title: api
-  description: API
+  title: echo-boilerplate
+  description: echo-boilerplate API
   version: '1.0.0'
   contact:
-    email: dev@example.com
+    url: https://github.com/alexferl/echo-boilerplate
   license:
     name: MIT
     url: https://raw.githubusercontent.com/alexferl/echo-boilerplate/master/LICENSE
 servers:
   - url: http://localhost:1323
-  - url: http://example.com # golang httptest
-  - url: https://{environment}.example.com
-    variables:
-      environment:
-        default: api    # Production server
-        enum:
-          - api         # Production server
-          - api.staging # Staging server
-          - api.test    # Test server
 tags:
   - name: auth
     description: Authentication operations
@@ -28,9 +19,9 @@ tags:
     description: Operations on users
 paths:
   /auth/signup:
-    $ref: './paths/signup.yaml'
+    $ref: './paths/auth_signup.yaml'
   /auth/login:
-    $ref: './paths/login.yaml'
+    $ref: './paths/auth_login.yaml'
   /auth/refresh:
     $ref: './paths/auth_refresh.yaml'
   /auth/logout:

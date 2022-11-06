@@ -2,11 +2,14 @@ post:
   summary: Refresh token
   description: Return new tokens
   operationId: authRefresh
-  security:
-    - cookieAuth: []
-    - bearerAuth: []
   tags:
     - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/RefreshToken.yaml'
   responses:
     '200':
       description: Successfully returned tokens
@@ -18,6 +21,9 @@ post:
         Set-Cookie:
           schema:
             $ref: '../components/headers/SetCookie.yaml'
+        "\0Set-Cookie":
+          schema:
+            $ref: '../components/headers/SetCookieRefresh.yaml'
     '401':
       $ref: '../components/responses/Unauthorized.yaml'
     '403':

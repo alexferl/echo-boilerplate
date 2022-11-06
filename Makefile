@@ -1,4 +1,4 @@
-.PHONY: dev run test cover fmt openapi-lint openapi-docs pre-commit docker-build docker-run
+.PHONY: dev run test cover fmt openapi-lint pre-commit docker-build docker-run
 
 .DEFAULT: help
 help:
@@ -16,8 +16,6 @@ help:
 	@echo "	run gofumpt"
 	@echo "make openapi-lint"
 	@echo "	lint openapi spec"
-	@echo "make openapi-docs"
-	@echo "	see openapi docs"
 	@echo "make pre-commit"
 	@echo "	run pre-commit hooks"
 	@echo "make docker-build"
@@ -71,9 +69,6 @@ fmt: check-gofumpt
 
 openapi-lint: check-redocly
 	redocly lint openapi/openapi.yaml
-
-openapi-docs: check-redocly
-	redocly preview-docs openapi/openapi.yaml
 
 pre-commit: check-pre-commit
 	pre-commit

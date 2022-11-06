@@ -94,10 +94,7 @@ Response:
 ```
 
 ### OpenAPI docs
-You can see the OpenAPI docs by running the following command and going to http://localhost:8080/ in your web browser.
-```shell
-make openapi-docs
-```
+You can see the OpenAPI docs by opening [docs/index.html](docs/index.html) in your web browser.
 
 ### Usage
 ```shell
@@ -123,7 +120,7 @@ Usage of ./app-bin:
       --http-graceful-timeout duration                 Timeout for graceful shutdown. (default 30s)
       --http-log-request-level string                  The granularity of log outputs. Valid log levels: 'OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG'. (default "INFO")
       --http-log-requests                              Controls the logging of HTTP requests (default true)
-      --jwt-access-token-expiry duration               JWT access token expiry (default 5m0s)
+      --jwt-access-token-expiry duration               JWT access token expiry (default 10m0s)
       --jwt-issuer string                              JWT issuer (default "http://localhost:1323")
       --jwt-private-key string                         JWT private key file path (default "./private-key.pem")
       --jwt-refresh-token-expiry duration              JWT refresh token expiry (default 720h0m0s)

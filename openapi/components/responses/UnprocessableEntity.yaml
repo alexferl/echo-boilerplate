@@ -2,4 +2,4 @@ description: The request was well-formed but was unable to be followed due to se
 content:
   application/json:
     schema:
-      $ref: '../schemas/Error.yaml'
+      $ref: '../schemas/ValidationError.yaml'

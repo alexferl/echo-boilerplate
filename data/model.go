@@ -34,10 +34,6 @@ func (m *Model) Update(id string) {
 	m.UpdatedBy = id
 }
 
-func (m *Model) JSON() ([]byte, error) {
-	panic("not implemented")
-}
-
 func NewModel() *Model {
 	return &Model{
 		Id: xid.New().String(),
