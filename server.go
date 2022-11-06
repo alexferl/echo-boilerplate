@@ -98,7 +98,7 @@ func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handle
 	s := server.New(
 		r,
 		middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins:     []string{"http://locahost:1323"},
+			AllowOrigins:     []string{"*"},
 			AllowCredentials: true,
 		}),
 		jwtmw.JWTWithConfig(jwtConfig),

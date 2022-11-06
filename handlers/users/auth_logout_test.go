@@ -8,10 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexferl/echo-boilerplate/handlers/users"
-	"github.com/alexferl/echo-boilerplate/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/alexferl/echo-boilerplate/util"
 )
 
 func TestHandler_Auth_Logout_400_Cookie_Missing(t *testing.T) {

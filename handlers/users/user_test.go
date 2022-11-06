@@ -8,9 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
 func TestHandler_UserGet_200(t *testing.T) {

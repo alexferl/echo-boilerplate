@@ -52,12 +52,12 @@ Response:
 ```shell
 {
 	"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-	"expires_in": 300,
+	"expires_in": 600,
 	"refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
 	"token_type": "Bearer"
 }
 ```
-**Note**: The `access_token` only lasts five minutes by default, this is as designed. A client
+**Note**: The `access_token` only lasts 10 minutes by default, this is as designed. A client
 (like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor
 to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and
 then retry the previous request with the new `access_token` which should then succeed. The duration of the `access_token`

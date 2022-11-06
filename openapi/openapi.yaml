@@ -10,6 +10,15 @@ info:
     url: https://raw.githubusercontent.com/alexferl/echo-boilerplate/master/LICENSE
 servers:
   - url: http://localhost:1323
+  - url: http://example.com # golang httptest
+  - url: https://{environment}.example.com
+    variables:
+      environment:
+        default: api    # Production server
+        enum:
+          - api         # Production server
+          - api.staging # Staging server
+          - api.test    # Test server
 tags:
   - name: auth
     description: Authentication operations
