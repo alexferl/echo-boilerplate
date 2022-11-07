@@ -30,6 +30,28 @@ get:
         application/json:
           schema:
             $ref: '../components/schemas/ArrayOfUsers.yaml'
+      headers:
+        Link:
+          schema:
+            $ref: '../components/headers/Link.yaml'
+        X-Next-Page:
+          schema:
+            $ref: '../components/headers/X-Next-Page.yaml'
+        X-Page:
+          schema:
+            $ref: '../components/headers/X-Page.yaml'
+        X-Per-Page:
+          schema:
+            $ref: '../components/headers/X-Per-Page.yaml'
+        X-Prev-Page:
+          schema:
+            $ref: '../components/headers/X-Prev-Page.yaml'
+        X-Total:
+          schema:
+            $ref: '../components/headers/X-Total.yaml'
+        X-Total-Pages:
+          schema:
+            $ref: '../components/headers/X-Total-Pages.yaml'
     '401':
       $ref: '../components/responses/Unauthorized.yaml'
     '403':

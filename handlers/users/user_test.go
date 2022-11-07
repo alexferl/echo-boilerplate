@@ -50,6 +50,18 @@ func TestHandler_UserGet_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
+func TestHandler_UserGet_401(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/user", nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
+}
+
 func TestHandler_UserPatch_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
@@ -109,4 +121,35 @@ func TestHandler_UserPatch_200(t *testing.T) {
 	s.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
+}
+
+func TestHandler_UserPatch_401(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
+}
+
+func TestHandler_UserPatch_422(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	user.Name = "test name"
+	user.Bio = "test bio"
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
 }

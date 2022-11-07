@@ -63,6 +63,17 @@ func TestHandler_Users_200(t *testing.T) {
 	assert.Equal(t, 2, len(result.Users))
 }
 
+func TestHandler_Users_401(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/users", nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
+}
+
 func TestHandler_Users_403(t *testing.T) {
 	_, s := getMapperAndServer(t)
 

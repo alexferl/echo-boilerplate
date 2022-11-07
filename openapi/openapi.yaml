@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: echo-boilerplate
   description: echo-boilerplate API
-  version: '1.0.0'
+  version: 1.0.0
   contact:
     url: https://github.com/alexferl/echo-boilerplate
   license:

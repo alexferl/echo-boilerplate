@@ -48,8 +48,8 @@ github.com/alexferl/echo-casbin v0.3.0 h1:7sO7ZtM1/kFTPmCVPwCqBJeGOjXxzrlCEECiVC
 github.com/alexferl/echo-casbin v0.3.0/go.mod h1:jpimZtcnylKhqjJoRy4MGGlFY9StC7I7TJJyRDGLqbE=
 github.com/alexferl/echo-jwt v0.4.0 h1:rTsJDVBLXRRfP+5WF0uPT6xYnDdPzydmI9yv9mN9lYw=
 github.com/alexferl/echo-jwt v0.4.0/go.mod h1:dK3X0ObHk0yuqLp+ekcd73hwazPVLgR/eHFPuU4T114=
-github.com/alexferl/echo-openapi v0.0.0-20221102231612-fad9c451ab01 h1:vLgN4JipoCNp0ZQhBOdcggcinLH9R6oA0Txy5UWVMks=
-github.com/alexferl/echo-openapi v0.0.0-20221102231612-fad9c451ab01/go.mod h1:DKpywPVb7wNLs5CwcHFn+/SPQYCXf9NZE22oVkzsNQk=
+github.com/alexferl/echo-openapi v0.1.0 h1:z6hBUzfZLZxGEa2bVu84nw2WJFlZ+4H/NpAzWU2SWos=
+github.com/alexferl/echo-openapi v0.1.0/go.mod h1:h99zPWS+5bOZWPj40vy+ivtFVzTZZBO3fJNWPdtky1w=
 github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034 h1:l4kxnfDbUSDZ6qkMeUvgxthBy4qYydbr++i3vcb8b/Y=
 github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034/go.mod h1:ohI6tcAa9Lp1fBHflyWENE44RVpd5rSs6kMNQ+rX8ak=
 github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034 h1:FTkArWz0xUrc9cx1rzZ6gaDCNcHgB0sNmPZ5bN3Lr1s=

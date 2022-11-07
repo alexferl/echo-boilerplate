@@ -51,11 +51,11 @@ func (m *Mapper) FindOneById(ctx context.Context, id string, result any) (any, e
 	return m.FindOne(ctx, filter, result)
 }
 
-func (m *Mapper) Find(ctx context.Context, filter any, result any) (any, error) {
+func (m *Mapper) Find(ctx context.Context, filter any, result any, opts ...*options.FindOptions) (any, error) {
 	if filter == nil {
 		filter = bson.D{}
 	}
-	cur, err := m.collection.Find(ctx, filter)
+	cur, err := m.collection.Find(ctx, filter, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,6 +72,19 @@ func (m *Mapper) Find(ctx context.Context, filter any, result any) (any, error) 
 	}
 
 	return result, nil
+}
+
+func (m *Mapper) Count(ctx context.Context, filter any) (int64, error) {
+	if filter == nil {
+		filter = bson.D{}
+	}
+
+	count, err := m.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (m *Mapper) Update(ctx context.Context, filter any, update any, result any) (any, error) {

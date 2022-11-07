@@ -133,7 +133,7 @@ func TestHandler_Auth_Login_401(t *testing.T) {
 func TestHandler_Auth_Login_422(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer([]byte("")))
+	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 

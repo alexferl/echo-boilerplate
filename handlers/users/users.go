@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/alexferl/echo-boilerplate/util"
 )
 
 type ShortUser struct {
@@ -20,12 +24,45 @@ type UsersResponse struct {
 }
 
 func (h *Handler) Users(c echo.Context) error {
+	var page int
+	pageQuery := c.QueryParam("page")
+	if pageQuery == "" {
+		page = 1
+	} else {
+		page, _ = strconv.Atoi(pageQuery)
+	}
+
+	var perPage int
+	perPageQuery := c.QueryParam("per_page")
+	if perPageQuery == "" {
+		perPage = 10
+	} else {
+		perPage, _ = strconv.Atoi(perPageQuery)
+	}
+
+	limit := page * perPage
+	skip := 0
+	if page > 1 {
+		skip = (page * perPage) - perPage
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.Find(ctx, nil, []*ShortUser{})
+	count, err := h.Mapper.Count(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(skip))
+	result, err := h.Mapper.Find(ctx, nil, []*ShortUser{}, opts)
 	if err != nil {
 		return fmt.Errorf("failed getting users: %v", err)
 	}
+
+	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
+	util.Paginate(c.Response().Header(), int(count), page, perPage, uri)
 
 	resp := &UsersResponse{Users: result.([]*ShortUser)}
 
