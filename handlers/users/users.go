@@ -26,21 +26,13 @@ type UsersResponse struct {
 func (h *Handler) Users(c echo.Context) error {
 	var page int
 	pageQuery := c.QueryParam("page")
-	if pageQuery == "" {
-		page = 1
-	} else {
-		page, _ = strconv.Atoi(pageQuery)
-	}
+	page, _ = strconv.Atoi(pageQuery)
 
 	var perPage int
 	perPageQuery := c.QueryParam("per_page")
-	if perPageQuery == "" {
-		perPage = 10
-	} else {
-		perPage, _ = strconv.Atoi(perPageQuery)
-	}
+	perPage, _ = strconv.Atoi(perPageQuery)
 
-	limit := page * perPage
+	limit := perPage
 	skip := 0
 	if page > 1 {
 		skip = (page * perPage) - perPage
@@ -50,7 +42,7 @@ func (h *Handler) Users(c echo.Context) error {
 	defer cancel()
 	count, err := h.Mapper.Count(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed counting users: %v", err)
 	}
 
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)

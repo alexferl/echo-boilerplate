@@ -9,6 +9,7 @@ require (
 	github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034
 	github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034
 	github.com/alexferl/golib/log v0.0.0-20221103021717-3eba14be5034
+	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.56.0
 	github.com/labstack/echo/v4 v4.9.1
 	github.com/lestrrat-go/jwx/v2 v2.0.6

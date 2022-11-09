@@ -56,6 +56,8 @@ github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034 h1:FTkArWz0xUr
 github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034/go.mod h1:CXm14g3wE7P/Jlx6KBWFqze1S4/5oL+wmKvHGs6H1jI=
 github.com/alexferl/golib/log v0.0.0-20221103021717-3eba14be5034 h1:8GKi+EUO306c3U/mrJktVev+9idMZTqotxWvhx4ZAV0=
 github.com/alexferl/golib/log v0.0.0-20221103021717-3eba14be5034/go.mod h1:Bw3oXr662EnrwHpTJZ7Ovpy6ZSZN/7Vv6afelkmfzNI=
+github.com/alexferl/httplink v0.1.0 h1:2Wps+hbWSFEz1cOCddmE3BJg7YoKuFU/XPFBjHFFGYg=
+github.com/alexferl/httplink v0.1.0/go.mod h1:fNi0VlNX8Dro/6KZKTV3huWTdevbIeIuNZJykIxe1MQ=
 github.com/casbin/casbin/v2 v2.56.0 h1:4qM+hDfj+i9M6lBbguafWKE/8tJA+9vRY5+l0ZB5WTo=
 github.com/casbin/casbin/v2 v2.56.0/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
