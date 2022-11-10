@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	openapi "github.com/alexferl/echo-openapi"
+	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/handler"
 	"github.com/alexferl/golib/http/router"
 	"github.com/rs/zerolog/log"

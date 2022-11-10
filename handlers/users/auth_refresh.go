@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lestrrat-go/jwx/v2/jwt"
-
 	"github.com/labstack/echo/v4"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"

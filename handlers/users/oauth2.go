@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	libhttp "github.com/alexferl/golib/http/handler"
+	libHttp "github.com/alexferl/golib/http/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
@@ -70,7 +70,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 	if response.StatusCode != http.StatusOK {
 		c.Logger().Errorf("oauth2: response code was: %d body: %s", response.StatusCode, b)
-		return libhttp.JSONError(c, http.StatusUnauthorized, "failed to log in")
+		return libHttp.JSONError(c, http.StatusUnauthorized, "failed to log in")
 	}
 
 	googleUser := &GoogleUser{}

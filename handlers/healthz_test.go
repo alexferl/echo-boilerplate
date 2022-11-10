@@ -11,8 +11,7 @@ import (
 )
 
 func TestHandler_Healthz(t *testing.T) {
-	s := app.NewServerWithOverrides(overrides, app.DefaultHandlers()...)
-
+	s := app.NewTestServer()
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	resp := httptest.NewRecorder()
 

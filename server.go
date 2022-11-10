@@ -3,12 +3,13 @@ package app
 import (
 	"net/http"
 
-	casbinmw "github.com/alexferl/echo-casbin"
-	jwtmw "github.com/alexferl/echo-jwt"
-	openapimw "github.com/alexferl/echo-openapi"
+	casbinMw "github.com/alexferl/echo-casbin"
+	jwtMw "github.com/alexferl/echo-jwt"
+	openapiMw "github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/handler"
 	"github.com/alexferl/golib/http/router"
 	"github.com/alexferl/golib/http/server"
+	libLog "github.com/alexferl/golib/log"
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -17,7 +18,7 @@ import (
 
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
-	hs "github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -28,28 +29,33 @@ func DefaultHandlers() []handler.Handler {
 		panic(err)
 	}
 
-	openapi := openapimw.NewHandler()
+	openapi := openapiMw.NewHandler()
 
 	return []handler.Handler{
-		hs.NewHandler(),
+		handlers.NewHandler(),
 		users.NewHandler(client, openapi, nil),
 	}
 }
 
 func NewServer() *server.Server {
-	handlers := DefaultHandlers()
-	return NewServerWithOverrides(nil, handlers...)
+	return newServer(DefaultHandlers()...)
 }
 
-func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handler) *server.Server {
-	if overrides != nil {
-		for k, v := range overrides {
-			viper.Set(k, v)
-		}
+func NewTestServer(handler ...handler.Handler) *server.Server {
+	if len(handler) < 1 {
+		handler = DefaultHandlers()
 	}
 
+	viper.Set(libLog.LogLevel, libLog.Disabled)
+	c := config.New()
+	c.BindFlags()
+
+	return newServer(handler...)
+}
+
+func newServer(handler ...handler.Handler) *server.Server {
 	var routes []*router.Route
-	for _, h := range handlers {
+	for _, h := range handler {
 		routes = append(routes, h.GetRoutes()...)
 	}
 
@@ -60,7 +66,7 @@ func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handle
 		panic(err)
 	}
 
-	jwtConfig := jwtmw.Config{
+	jwtConfig := jwtMw.Config{
 		Key:             key,
 		UseRefreshToken: true,
 		ExemptRoutes: map[string][]string{
@@ -87,7 +93,7 @@ func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handle
 		panic(err)
 	}
 
-	openAPIConfig := openapimw.Config{
+	openAPIConfig := openapiMw.Config{
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
 			"/":        {http.MethodGet},
@@ -101,9 +107,9 @@ func NewServerWithOverrides(overrides map[string]any, handlers ...handler.Handle
 			AllowOrigins:     []string{"*"},
 			AllowCredentials: true,
 		}),
-		jwtmw.JWTWithConfig(jwtConfig),
-		casbinmw.Casbin(enforcer),
-		openapimw.OpenAPIWithConfig(openAPIConfig),
+		jwtMw.JWTWithConfig(jwtConfig),
+		casbinMw.Casbin(enforcer),
+		openapiMw.OpenAPIWithConfig(openAPIConfig),
 	)
 
 	s.HideBanner = true

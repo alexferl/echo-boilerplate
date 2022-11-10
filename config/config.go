@@ -1,20 +1,21 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
-	libconfig "github.com/alexferl/golib/config"
-	libhttp "github.com/alexferl/golib/http/config"
-	liblog "github.com/alexferl/golib/log"
+	libConfig "github.com/alexferl/golib/config"
+	libHttp "github.com/alexferl/golib/http/config"
+	libLog "github.com/alexferl/golib/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 // Config holds all configuration for our program
 type Config struct {
-	Config  *libconfig.Config
-	HTTP    *libhttp.Config
-	Logging *liblog.Config
+	Config  *libConfig.Config
+	HTTP    *libHttp.Config
+	Logging *libLog.Config
 	BaseUrl string
 	Admin   *Admin
 	OAuth2  *OAuth2
@@ -62,12 +63,12 @@ type MongoDB struct {
 	SocketTimeoutMs          time.Duration // query timeout
 }
 
-// NewConfig creates a Config instance
-func NewConfig() *Config {
+// New creates a Config instance
+func New() *Config {
 	return &Config{
-		Config:  libconfig.New("APP"),
-		HTTP:    libhttp.DefaultConfig,
-		Logging: liblog.DefaultConfig,
+		Config:  libConfig.New("APP"),
+		HTTP:    libHttp.DefaultConfig,
+		Logging: libLog.DefaultConfig,
 		BaseUrl: "http://localhost:1323",
 		Admin: &Admin{
 			Create:   false,
@@ -105,12 +106,12 @@ func NewConfig() *Config {
 }
 
 const (
-	AppName = libconfig.AppName
-	EnvName = libconfig.EnvName
+	AppName = libConfig.AppName
+	EnvName = libConfig.EnvName
 
-	HTTPBindAddress = libhttp.HTTPBindAddress
-	HTTPBindPort    = libhttp.HTTPBindPort
-	HTTPLogRequests = libhttp.HTTPLogRequests
+	HTTPBindAddress = libHttp.HTTPBindAddress
+	HTTPBindPort    = libHttp.HTTPBindPort
+	HTTPLogRequests = libHttp.HTTPLogRequests
 
 	BaseUrl = "base-url"
 
@@ -177,24 +178,26 @@ func (c *Config) addFlags(fs *pflag.FlagSet) {
 		"MongoDB socket timeout ms")
 }
 
-func (c *Config) BindFlags() error {
+func (c *Config) BindFlags() {
+	if pflag.Parsed() {
+		return
+	}
+
 	c.addFlags(pflag.CommandLine)
 	c.Logging.BindFlags(pflag.CommandLine)
 	c.HTTP.BindFlags(pflag.CommandLine)
 
 	err := c.Config.BindFlags()
 	if err != nil {
-		return err
+		panic(fmt.Errorf("failed binding flags: %v", err))
 	}
 
-	err = liblog.New(&liblog.Config{
-		LogLevel:  viper.GetString(liblog.LogLevel),
-		LogOutput: viper.GetString(liblog.LogOutput),
-		LogWriter: viper.GetString(liblog.LogWriter),
+	err = libLog.New(&libLog.Config{
+		LogLevel:  viper.GetString(libLog.LogLevel),
+		LogOutput: viper.GetString(libLog.LogOutput),
+		LogWriter: viper.GetString(libLog.LogWriter),
 	})
 	if err != nil {
-		return err
+		panic(fmt.Errorf("failed creating logger: %v", err))
 	}
-
-	return nil
 }

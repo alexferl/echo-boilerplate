@@ -10,6 +10,8 @@ help:
 	@echo "	run go test"
 	@echo "make cover"
 	@echo "	run go test with -cover"
+	@echo "make cover-html"
+	@echo "	run go test with -cover and show HTML"
 	@echo "make tidy"
 	@echo "	run go mod tidy"
 	@echo "make fmt"
@@ -25,17 +27,17 @@ help:
 
 check-gofumpt:
 ifeq (, $(shell which gofumpt))
-	$(error "No gofumpt in $(PATH), gofumpt (https://pkg.go.dev/mvdan.cc/gofumpt) is required")
+	$(error "gofumpt not in $(PATH), gofumpt (https://pkg.go.dev/mvdan.cc/gofumpt) is required")
 endif
 
 check-pre-commit:
 ifeq (, $(shell which pre-commit))
-	$(error "No pre-commit in $(PATH), pre-commit (https://pre-commit.com) is required")
+	$(error "pre-commit not in $(PATH), pre-commit (https://pre-commit.com) is required")
 endif
 
 check-redocly:
 ifeq (, $(shell which redocly))
-	$(error "No redocly in $(PATH), redocly (https://redocly.com/docs/cli/installation/) is required")
+	$(error "redocly not in $(PATH), redocly (https://redocly.com/docs/cli/installation/) is required")
 endif
 
 dev: check-pre-commit check-gofumpt check-redocly

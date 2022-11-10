@@ -8,20 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	app "github.com/alexferl/echo-boilerplate"
-	"github.com/alexferl/echo-boilerplate/config"
+	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
-var overrides = map[string]any{
-	config.JWTPrivateKey:   "../private-key.pem",
-	config.CasbinModel:     "../casbin/model.conf",
-	config.CasbinPolicy:    "../casbin/policy.csv",
-	config.OpenAPISchema:   "../openapi/openapi.yaml",
-	config.HTTPLogRequests: false,
-}
-
 func TestHandler_Root(t *testing.T) {
-	s := app.NewServerWithOverrides(overrides, app.DefaultHandlers()...)
-
+	s := app.NewTestServer()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 

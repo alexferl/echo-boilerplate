@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"

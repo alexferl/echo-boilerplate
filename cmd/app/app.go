@@ -12,11 +12,8 @@ import (
 )
 
 func main() {
-	c := config.NewConfig()
-	err := c.BindFlags()
-	if err != nil {
-		panic(fmt.Sprintf("failed binding flags: %v", err))
-	}
+	c := config.New()
+	c.BindFlags()
 
 	s := app.NewServer()
 

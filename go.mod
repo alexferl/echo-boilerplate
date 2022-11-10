@@ -8,7 +8,7 @@ require (
 	github.com/alexferl/echo-openapi v0.1.0
 	github.com/alexferl/golib/config v0.0.0-20221103021717-3eba14be5034
 	github.com/alexferl/golib/http v0.0.0-20221103021717-3eba14be5034
-	github.com/alexferl/golib/log v0.0.0-20221103021717-3eba14be5034
+	github.com/alexferl/golib/log v0.0.0-20221110021543-148b8654c0f4
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.56.0
 	github.com/labstack/echo/v4 v4.9.1
@@ -77,7 +77,7 @@ require (
 	github.com/ziflex/lecho/v3 v3.1.0 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
