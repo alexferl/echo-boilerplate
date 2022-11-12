@@ -52,6 +52,30 @@ func NewClient() (*mongo.Client, error) {
 
 	db := client.Database(config.AppName)
 
+	idxOpts := options.Index().
+		SetUnique(true).
+		SetCollation(&options.Collation{Locale: "en", Strength: 2})
+
+	usernameOpts := idxOpts.SetName("username")
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"username", 1}},
+		Options: usernameOpts,
+	}
+	_, err = db.Collection("users").Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		panic(err)
+	}
+
+	emailOpts := idxOpts.SetName("email")
+	indexModel = mongo.IndexModel{
+		Keys:    bson.D{{"email", 1}},
+		Options: emailOpts,
+	}
+	_, err = db.Collection("users").Indexes().CreateOne(context.TODO(), indexModel)
+	if err != nil {
+		panic(err)
+	}
+
 	t := true
 	_, err = db.Collection("users").Indexes().CreateMany(ctx, []mongo.IndexModel{
 		{
@@ -62,17 +86,15 @@ func NewClient() (*mongo.Client, error) {
 				Unique: &t,
 			},
 		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = db.Collection("tasks").Indexes().CreateMany(ctx, []mongo.IndexModel{
 		{
 			Keys: bson.D{
-				{"username", 1},
-			},
-			Options: &options.IndexOptions{
-				Unique: &t,
-			},
-		},
-		{
-			Keys: bson.D{
-				{"email", 1},
+				{"id", 1},
 			},
 			Options: &options.IndexOptions{
 				Unique: &t,

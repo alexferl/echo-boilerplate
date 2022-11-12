@@ -1,0 +1,41 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    readOnly: true
+  title:
+    type: string
+    description: The title of the task
+    minLength: 0
+    maxLength: 100
+  is_private:
+    type: boolean
+  is_completed:
+    type: boolean
+  completed_at:
+    type: string
+    nullable: true
+    format: date-time
+    description: Task completion date time
+  completed_by:
+    nullable: true
+    allOf:
+      - $ref: './User.yaml'
+  created_at:
+    type: string
+    nullable: true
+    format: date-time
+    description: Task creation date time
+  created_by:
+    $ref: './User.yaml'
+  updated_at:
+    type: string
+    nullable: true
+    format: date-time
+    description: Task update date time
+  updated_by:
+    nullable: true
+    allOf:
+      - $ref: './User.yaml'

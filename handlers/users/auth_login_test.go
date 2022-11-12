@@ -13,7 +13,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func TestHandler_Auth_Login_200(t *testing.T) {
+func TestHandler_AuthLogin_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	pwd := "abcdefghijkl"
@@ -71,7 +71,7 @@ func TestHandler_Auth_Login_200(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "token_type")
 }
 
-func TestHandler_Auth_Login_401(t *testing.T) {
+func TestHandler_AuthLogin_401(t *testing.T) {
 	payload := &users.LoginPayload{}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
@@ -130,7 +130,7 @@ func TestHandler_Auth_Login_401(t *testing.T) {
 	}
 }
 
-func TestHandler_Auth_Login_422(t *testing.T) {
+func TestHandler_AuthLogin_422(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))

@@ -15,7 +15,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func TestHandler_Auth_Logout_400_Cookie_Missing(t *testing.T) {
+func TestHandler_AuthLogout_400_Cookie_Missing(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
@@ -27,7 +27,7 @@ func TestHandler_Auth_Logout_400_Cookie_Missing(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Request malformed")
 }
 
-func TestHandler_Auth_Logout_401_Cookie_Invalid(t *testing.T) {
+func TestHandler_AuthLogout_401_Cookie_Invalid(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -44,7 +44,7 @@ func TestHandler_Auth_Logout_401_Cookie_Invalid(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Token invalid")
 }
 
-func TestHandler_Auth_Logout_401_Cookie_Mismatch(t *testing.T) {
+func TestHandler_AuthLogout_401_Cookie_Mismatch(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -74,7 +74,7 @@ func TestHandler_Auth_Logout_401_Cookie_Mismatch(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Token mismatch")
 }
 
-func TestHandler_Auth_Logout_200_Token(t *testing.T) {
+func TestHandler_AuthLogout_200_Token(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -118,7 +118,7 @@ func TestHandler_Auth_Logout_200_Token(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, resp.Code)
 }
 
-func TestHandler_Auth_Logout_400_Token_Missing(t *testing.T) {
+func TestHandler_AuthLogout_400_Token_Missing(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", bytes.NewBuffer([]byte("")))
@@ -130,7 +130,7 @@ func TestHandler_Auth_Logout_400_Token_Missing(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Request malformed")
 }
 
-func TestHandler_Auth_Logout_401_Token_Invalid(t *testing.T) {
+func TestHandler_AuthLogout_401_Token_Invalid(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -153,7 +153,7 @@ func TestHandler_Auth_Logout_401_Token_Invalid(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Token invalid")
 }
 
-func TestHandler_Auth_Logout_401_Token_Mismatch(t *testing.T) {
+func TestHandler_AuthLogout_401_Token_Mismatch(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")

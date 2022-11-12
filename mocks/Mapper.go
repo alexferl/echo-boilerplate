@@ -15,20 +15,57 @@ type Mapper struct {
 	mock.Mock
 }
 
-// Count provides a mock function with given fields: ctx, filter
-func (_m *Mapper) Count(ctx context.Context, filter interface{}) (int64, error) {
-	ret := _m.Called(ctx, filter)
+// Aggregate provides a mock function with given fields: ctx, filter, limit, skip, result, opts
+func (_m *Mapper) Aggregate(ctx context.Context, filter interface{}, limit int, skip int, result interface{}, opts ...*options.AggregateOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, filter, limit, skip, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, int, int, interface{}, ...*options.AggregateOptions) interface{}); ok {
+		r0 = rf(ctx, filter, limit, skip, result, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, int, int, interface{}, ...*options.AggregateOptions) error); ok {
+		r1 = rf(ctx, filter, limit, skip, result, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Count provides a mock function with given fields: ctx, filter, opts
+func (_m *Mapper) Count(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, filter)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, interface{}) int64); ok {
-		r0 = rf(ctx, filter)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, ...*options.CountOptions) int64); ok {
+		r0 = rf(ctx, filter, opts...)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, interface{}) error); ok {
-		r1 = rf(ctx, filter)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, ...*options.CountOptions) error); ok {
+		r1 = rf(ctx, filter, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -66,13 +103,20 @@ func (_m *Mapper) Find(ctx context.Context, filter interface{}, result interface
 	return r0, r1
 }
 
-// FindOne provides a mock function with given fields: ctx, filter, result
-func (_m *Mapper) FindOne(ctx context.Context, filter interface{}, result interface{}) (interface{}, error) {
-	ret := _m.Called(ctx, filter, result)
+// FindOne provides a mock function with given fields: ctx, filter, result, opts
+func (_m *Mapper) FindOne(ctx context.Context, filter interface{}, result interface{}, opts ...*options.FindOneOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, filter, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}) interface{}); ok {
-		r0 = rf(ctx, filter, result)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}, ...*options.FindOneOptions) interface{}); ok {
+		r0 = rf(ctx, filter, result, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(interface{})
@@ -80,8 +124,8 @@ func (_m *Mapper) FindOne(ctx context.Context, filter interface{}, result interf
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}) error); ok {
-		r1 = rf(ctx, filter, result)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}, ...*options.FindOneOptions) error); ok {
+		r1 = rf(ctx, filter, result, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -89,13 +133,20 @@ func (_m *Mapper) FindOne(ctx context.Context, filter interface{}, result interf
 	return r0, r1
 }
 
-// FindOneById provides a mock function with given fields: ctx, id, result
-func (_m *Mapper) FindOneById(ctx context.Context, id string, result interface{}) (interface{}, error) {
-	ret := _m.Called(ctx, id, result)
+// FindOneById provides a mock function with given fields: ctx, id, result, opts
+func (_m *Mapper) FindOneById(ctx context.Context, id string, result interface{}, opts ...*options.FindOneOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, id, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}) interface{}); ok {
-		r0 = rf(ctx, id, result)
+	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}, ...*options.FindOneOptions) interface{}); ok {
+		r0 = rf(ctx, id, result, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(interface{})
@@ -103,8 +154,8 @@ func (_m *Mapper) FindOneById(ctx context.Context, id string, result interface{}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, interface{}) error); ok {
-		r1 = rf(ctx, id, result)
+	if rf, ok := ret.Get(1).(func(context.Context, string, interface{}, ...*options.FindOneOptions) error); ok {
+		r1 = rf(ctx, id, result, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -112,27 +163,20 @@ func (_m *Mapper) FindOneById(ctx context.Context, id string, result interface{}
 	return r0, r1
 }
 
-// Insert provides a mock function with given fields: ctx, document
-func (_m *Mapper) Insert(ctx context.Context, document interface{}) error {
-	ret := _m.Called(ctx, document)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, interface{}) error); ok {
-		r0 = rf(ctx, document)
-	} else {
-		r0 = ret.Error(0)
+// Insert provides a mock function with given fields: ctx, document, result, opts
+func (_m *Mapper) Insert(ctx context.Context, document interface{}, result interface{}, opts ...*options.InsertOneOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
-
-	return r0
-}
-
-// Update provides a mock function with given fields: ctx, filter, update, result
-func (_m *Mapper) Update(ctx context.Context, filter interface{}, update interface{}, result interface{}) (interface{}, error) {
-	ret := _m.Called(ctx, filter, update, result)
+	var _ca []interface{}
+	_ca = append(_ca, ctx, document, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}, interface{}) interface{}); ok {
-		r0 = rf(ctx, filter, update, result)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}, ...*options.InsertOneOptions) interface{}); ok {
+		r0 = rf(ctx, document, result, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(interface{})
@@ -140,8 +184,8 @@ func (_m *Mapper) Update(ctx context.Context, filter interface{}, update interfa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}, interface{}) error); ok {
-		r1 = rf(ctx, filter, update, result)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}, ...*options.InsertOneOptions) error); ok {
+		r1 = rf(ctx, document, result, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -149,13 +193,20 @@ func (_m *Mapper) Update(ctx context.Context, filter interface{}, update interfa
 	return r0, r1
 }
 
-// UpdateById provides a mock function with given fields: ctx, id, document, result
-func (_m *Mapper) UpdateById(ctx context.Context, id string, document interface{}, result interface{}) (interface{}, error) {
-	ret := _m.Called(ctx, id, document, result)
+// Update provides a mock function with given fields: ctx, filter, update, result, opts
+func (_m *Mapper) Update(ctx context.Context, filter interface{}, update interface{}, result interface{}, opts ...*options.UpdateOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, filter, update, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}, interface{}) interface{}); ok {
-		r0 = rf(ctx, id, document, result)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}, interface{}, ...*options.UpdateOptions) interface{}); ok {
+		r0 = rf(ctx, filter, update, result, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(interface{})
@@ -163,8 +214,38 @@ func (_m *Mapper) UpdateById(ctx context.Context, id string, document interface{
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, interface{}, interface{}) error); ok {
-		r1 = rf(ctx, id, document, result)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}, interface{}, ...*options.UpdateOptions) error); ok {
+		r1 = rf(ctx, filter, update, result, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateById provides a mock function with given fields: ctx, id, document, result, opts
+func (_m *Mapper) UpdateById(ctx context.Context, id string, document interface{}, result interface{}, opts ...*options.UpdateOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, id, document, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}, interface{}, ...*options.UpdateOptions) interface{}); ok {
+		r0 = rf(ctx, id, document, result, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, interface{}, interface{}, ...*options.UpdateOptions) error); ok {
+		r1 = rf(ctx, id, document, result, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}

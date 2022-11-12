@@ -20,13 +20,12 @@ type UserResponse struct {
 	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
 }
 
-func (h *Handler) UserGet(c echo.Context) error {
+func (h *Handler) GetUser(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
-	username := token.Subject()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, username, &UserResponse{})
+	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &UserResponse{})
 	if err != nil {
 		return fmt.Errorf("failed getting user: %v", err)
 	}
@@ -40,18 +39,17 @@ type UserPatch struct {
 	Bio   string `json:"bio" bson:"bio"`
 }
 
-func (h *Handler) UserPatch(c echo.Context) error {
+func (h *Handler) UpdateUser(c echo.Context) error {
 	body := &UserPatch{}
 	if err := c.Bind(body); err != nil {
 		return err
 	}
 
 	token := c.Get("token").(jwt.Token)
-	username := token.Subject()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, username, &User{})
+	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
 		return fmt.Errorf("failed getting user: %v", err)
 	}

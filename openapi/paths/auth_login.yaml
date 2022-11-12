@@ -1,6 +1,6 @@
 post:
-  summary: Login
-  description: Return tokens
+  summary: Log in
+  description: Returns tokens
   operationId: login
   tags:
     - auth

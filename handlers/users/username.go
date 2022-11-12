@@ -18,7 +18,7 @@ type UsernameResponse struct {
 	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
 }
 
-func (h *Handler) UsernameGet(c echo.Context) error {
+func (h *Handler) GetUsername(c echo.Context) error {
 	username := c.Param("username")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -19,6 +19,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/handlers/tasks"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -33,6 +34,7 @@ func DefaultHandlers() []handler.Handler {
 
 	return []handler.Handler{
 		handlers.NewHandler(),
+		tasks.NewHandler(client, openapi, nil),
 		users.NewHandler(client, openapi, nil),
 	}
 }
@@ -72,6 +74,8 @@ func newServer(handler ...handler.Handler) *server.Server {
 		ExemptRoutes: map[string][]string{
 			"/":                {http.MethodGet},
 			"/healthz":         {http.MethodGet},
+			"/docs":            {http.MethodGet},
+			"/openapi/*":       {http.MethodGet},
 			"/auth/signup":     {http.MethodPost},
 			"/auth/login":      {http.MethodPost},
 			"/oauth2/login":    {http.MethodGet},
@@ -96,8 +100,10 @@ func newServer(handler ...handler.Handler) *server.Server {
 	openAPIConfig := openapiMw.Config{
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
-			"/":        {http.MethodGet},
-			"/healthz": {http.MethodGet},
+			"/":          {http.MethodGet},
+			"/healthz":   {http.MethodGet},
+			"/docs":      {http.MethodGet},
+			"/openapi/*": {http.MethodGet},
 		},
 	}
 
@@ -111,6 +117,9 @@ func newServer(handler ...handler.Handler) *server.Server {
 		casbinMw.Casbin(enforcer),
 		openapiMw.OpenAPIWithConfig(openAPIConfig),
 	)
+
+	s.File("/docs", "./docs/index.html")
+	s.Static("/openapi/", "./openapi")
 
 	s.HideBanner = true
 	s.HidePort = true

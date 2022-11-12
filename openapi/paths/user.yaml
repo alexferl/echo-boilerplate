@@ -1,12 +1,12 @@
 get:
   summary: Get authenticated user
-  description: Returns a single user
+  description: Returns the authenticated user
   operationId: getUser
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - user
+    - users
   responses:
     '200':
       description: Successfully returned a user
@@ -14,19 +14,17 @@ get:
         application/json:
           schema:
             $ref: '../components/schemas/User.yaml'
-    '401':
-      $ref: '../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../components/responses/Forbidden.yaml'
 patch:
   summary: Update authenticated user
-  description: This can only be done by the logged in user.
+  description: Returns the updated authenticated user
   operationId: updateUser
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - user
+    - users
   requestBody:
     required: true
     content:
@@ -40,8 +38,6 @@ patch:
         application/json:
           schema:
             $ref: '../components/schemas/User.yaml'
-    '401':
-      $ref: '../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../components/responses/Forbidden.yaml'
     '422':

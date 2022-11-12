@@ -47,6 +47,7 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 		).
 		Return(
 			nil,
+			nil,
 		)
 
 	s.ServeHTTP(resp, req)

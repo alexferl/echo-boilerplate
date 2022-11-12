@@ -27,13 +27,19 @@ func NewMapper(db *mongo.Client) data.Mapper {
 	}
 }
 
-func (m *Mapper) Insert(ctx context.Context, document any) error {
-	_, err := m.collection.InsertOne(ctx, document)
-	return err
+func (m *Mapper) Insert(ctx context.Context, document any, result any, opts ...*options.InsertOneOptions) (any, error) {
+	_, err := m.collection.InsertOne(ctx, document, opts...)
+	return nil, err
 }
 
-func (m *Mapper) FindOne(ctx context.Context, filter any, result any) (any, error) {
-	err := m.collection.FindOne(ctx, filter).Decode(result)
+func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*options.FindOneOptions) (any, error) {
+	collOpts := options.FindOne().SetCollation(&options.Collation{
+		Locale:   "en",
+		Strength: 2,
+	})
+	opts = append(opts, collOpts)
+
+	err := m.collection.FindOne(ctx, filter, opts...).Decode(result)
 	if err == mongo.ErrNoDocuments {
 		return nil, ErrUserNotFound
 	} else if err != nil {
@@ -43,18 +49,25 @@ func (m *Mapper) FindOne(ctx context.Context, filter any, result any) (any, erro
 	return result, nil
 }
 
-func (m *Mapper) FindOneById(ctx context.Context, id string, result any) (any, error) {
+func (m *Mapper) FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error) {
 	filter := bson.D{{"$or", bson.A{
 		bson.D{{"id", id}},
 		bson.D{{"username", id}},
 	}}}
-	return m.FindOne(ctx, filter, result)
+	return m.FindOne(ctx, filter, result, opts...)
 }
 
 func (m *Mapper) Find(ctx context.Context, filter any, result any, opts ...*options.FindOptions) (any, error) {
 	if filter == nil {
 		filter = bson.D{}
 	}
+
+	collOpts := options.Find().SetCollation(&options.Collation{
+		Locale:   "en",
+		Strength: 2,
+	})
+	opts = append(opts, collOpts)
+
 	cur, err := m.collection.Find(ctx, filter, opts...)
 	if err != nil {
 		return nil, err
@@ -74,12 +87,17 @@ func (m *Mapper) Find(ctx context.Context, filter any, result any, opts ...*opti
 	return result, nil
 }
 
-func (m *Mapper) Count(ctx context.Context, filter any) (int64, error) {
+func (m *Mapper) Aggregate(ctx context.Context, filter any, limit int, skip int, result any, opts ...*options.AggregateOptions) (any, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m *Mapper) Count(ctx context.Context, filter any, opts ...*options.CountOptions) (int64, error) {
 	if filter == nil {
 		filter = bson.D{}
 	}
 
-	count, err := m.collection.CountDocuments(ctx, filter)
+	count, err := m.collection.CountDocuments(ctx, filter, opts...)
 	if err != nil {
 		return 0, err
 	}
@@ -87,11 +105,8 @@ func (m *Mapper) Count(ctx context.Context, filter any) (int64, error) {
 	return count, nil
 }
 
-func (m *Mapper) Update(ctx context.Context, filter any, update any, result any) (any, error) {
-	after := options.After
-	opts := &options.FindOneAndUpdateOptions{ReturnDocument: &after}
-	res := m.collection.FindOneAndUpdate(ctx, filter, update, opts)
-
+func (m *Mapper) Update(ctx context.Context, filter any, update any, result any, opts ...*options.UpdateOptions) (any, error) {
+	res := m.collection.FindOneAndUpdate(ctx, filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
@@ -106,9 +121,9 @@ func (m *Mapper) Update(ctx context.Context, filter any, update any, result any)
 	return result, nil
 }
 
-func (m *Mapper) UpdateById(ctx context.Context, id string, document any, result any) (any, error) {
+func (m *Mapper) UpdateById(ctx context.Context, id string, document any, result any, opts ...*options.UpdateOptions) (any, error) {
 	filter := bson.D{{"id", id}}
 	update := bson.D{{"$set", document}}
 
-	return m.Update(ctx, filter, update, result)
+	return m.Update(ctx, filter, update, result, opts...)
 }

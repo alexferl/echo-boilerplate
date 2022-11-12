@@ -1,5 +1,5 @@
 get:
-  summary: Get user
+  summary: Get a user
   description: Returns a single user
   operationId: getUsername
   tags:

@@ -1,4 +1,4 @@
-package users_test
+package tasks_test
 
 import (
 	"encoding/json"
@@ -10,17 +10,26 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/handlers/tasks"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func createUsers(num int) []*users.ShortUser {
-	var result []*users.ShortUser
+func createTasks(num int, user *users.User) []*tasks.ListTasks {
+	var result []*tasks.ListTasks
 
 	for i := 1; i <= num; i++ {
-		user := users.NewUser(fmt.Sprintf("user%d@example.com", i), fmt.Sprintf("user%d", i))
-		short := &users.ShortUser{
-			Id:       user.Id,
-			Username: user.Username,
+		task := tasks.NewTask()
+		task.Create(user.Id)
+		short := &tasks.ListTasks{
+			Id:          task.Id,
+			Title:       task.Title,
+			IsPrivate:   task.IsPrivate,
+			IsCompleted: task.IsCompleted,
+			CreatedAt:   task.CreatedAt,
+			CreatedBy: &tasks.TaskUser{
+				Id:       user.Id,
+				Username: user.Username,
+			},
 		}
 		result = append(result, short)
 	}
@@ -28,15 +37,16 @@ func createUsers(num int) []*users.ShortUser {
 	return result
 }
 
-func TestHandler_ListUsers_200(t *testing.T) {
-	retUsers := createUsers(10)
+func TestHandler_ListTasks_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
-	user := users.NewAdminUser("admin@example.com", "admin")
+	user := users.NewUser("test@example.com", "test")
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodGet, "/users?per_page=1&page=2", nil)
+	retTasks := createTasks(10, user)
+
+	req := httptest.NewRequest(http.MethodGet, "/tasks?per_page=1&page=2", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -52,31 +62,32 @@ func TestHandler_ListUsers_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"Find",
+			"Aggregate",
+			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 		).
 		Return(
-			retUsers,
+			retTasks,
 			nil,
 		)
 
 	s.ServeHTTP(resp, req)
 
-	var result users.UsersResponse
+	var result tasks.ListTasksResp
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 
 	h := resp.Header()
-	link := `<http://example.com/users?per_page=1&page=3>; rel=next, ` +
-		`<http://example.com/users?per_page=1&page=10>; rel=last, ` +
-		`<http://example.com/users?per_page=1&page=1>; rel=first, ` +
-		`<http://example.com/users?per_page=1&page=1>; rel=prev`
+	link := `<http://example.com/tasks?per_page=1&page=3>; rel=next, ` +
+		`<http://example.com/tasks?per_page=1&page=10>; rel=last, ` +
+		`<http://example.com/tasks?per_page=1&page=1>; rel=first, ` +
+		`<http://example.com/tasks?per_page=1&page=1>; rel=prev`
 
 	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Equal(t, 10, len(result.Users))
+	assert.Equal(t, 10, len(result.Tasks))
 	assert.Equal(t, "2", h.Get("X-Page"))
 	assert.Equal(t, "1", h.Get("X-Per-Page"))
 	assert.Equal(t, "10", h.Get("X-Total"))
@@ -86,29 +97,13 @@ func TestHandler_ListUsers_200(t *testing.T) {
 	assert.Equal(t, link, h.Get("Link"))
 }
 
-func TestHandler_ListUsers_401(t *testing.T) {
+func TestHandler_ListTasks_401(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodGet, "/users", nil)
+	req := httptest.NewRequest(http.MethodGet, "/tasks", nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-}
-
-func TestHandler_ListUsers_403(t *testing.T) {
-	_, s := getMapperAndServer(t)
-
-	user := users.NewUser("test@example.com", "test")
-	access, _, err := user.Login()
-	assert.NoError(t, err)
-
-	req := httptest.NewRequest(http.MethodGet, "/users", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
-	resp := httptest.NewRecorder()
-
-	s.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusForbidden, resp.Code)
 }

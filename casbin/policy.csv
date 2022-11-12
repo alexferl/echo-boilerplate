@@ -1,5 +1,7 @@
 p, any, /, GET
 p, any, /healthz, GET
+p, any, /docs, GET
+p, any, /openapi/*, GET
 
 p, any, /auth/signup, POST
 p, any, /auth/login, POST
@@ -10,6 +12,8 @@ p, any, /oauth2/callback, GET
 p, any, /users/:username, GET
 
 p, user, /user, (GET)|(PATCH)
+p, user, /tasks, (GET)|(POST)
+p, user, /tasks/:id, (GET)|(PATCH)|(DELETE)
 
 p, admin, /users, GET
 

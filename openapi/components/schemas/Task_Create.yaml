@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+properties:
+  title:
+    type: string
+    description: The name of the user
+    minLength: 0
+    maxLength: 100
+  is_private:
+    type: boolean

@@ -18,5 +18,6 @@ func (h *Handler) GetRoutes() []*router.Route {
 	return []*router.Route{
 		{Name: "Root", Method: http.MethodGet, Pattern: "/", HandlerFunc: h.Root},
 		{Name: "Healthz", Method: http.MethodGet, Pattern: "/healthz", HandlerFunc: h.Healthz},
+		{Name: "Docs", Method: http.MethodGet, Pattern: "/docs", HandlerFunc: h.Docs},
 	}
 }

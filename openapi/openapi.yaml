@@ -22,8 +22,8 @@ servers:
 tags:
   - name: auth
     description: Authentication operations
-  - name: user
-    description: Operations on the authenticated user
+  - name: tasks
+    description: Operations on tasks
   - name: users
     description: Operations on users
 paths:
@@ -35,6 +35,10 @@ paths:
     $ref: './paths/auth_refresh.yaml'
   /auth/logout:
     $ref: './paths/auth_logout.yaml'
+  /tasks:
+    $ref: './paths/tasks.yaml'
+  /tasks/{id}:
+    $ref: './paths/tasks_{id}.yaml'
   /user:
     $ref: './paths/user.yaml'
   /users/{username}:

@@ -92,6 +92,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	var access, refresh []byte
 
 	if result == nil {
+		// TODO: username?
 		newUser := NewUser(googleUser.Email, googleUser.Email)
 		access, refresh, err = newUser.Login()
 		if err != nil {
@@ -102,7 +103,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		err = h.Mapper.Insert(ctx, newUser)
+		_, err = h.Mapper.Insert(ctx, newUser, nil)
 		if err != nil {
 			return fmt.Errorf("oauth2: failed to insert user: %v", err)
 		}

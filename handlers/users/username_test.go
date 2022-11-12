@@ -12,7 +12,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func TestHandler_Username_200(t *testing.T) {
+func TestHandler_GetUsername_200(t *testing.T) {
 	user := users.NewUser("test@example.com", "test")
 	access, _, err := user.Login()
 	assert.NoError(t, err)
@@ -68,7 +68,7 @@ func TestHandler_Username_200(t *testing.T) {
 	}
 }
 
-func TestHandler_Username_200_Not_Logged_In(t *testing.T) {
+func TestHandler_GetUsername_200_Not_Logged_In(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -101,7 +101,7 @@ func TestHandler_Username_200_Not_Logged_In(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestHandler_Username_404(t *testing.T) {
+func TestHandler_GetUsername_404(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -130,7 +130,7 @@ func TestHandler_Username_404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.Code)
 }
 
-func TestHandler_Username_410(t *testing.T) {
+func TestHandler_GetUsername_410(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")

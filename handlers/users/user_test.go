@@ -14,7 +14,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func TestHandler_UserGet_200(t *testing.T) {
+func TestHandler_GetUser_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -50,7 +50,7 @@ func TestHandler_UserGet_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestHandler_UserGet_401(t *testing.T) {
+func TestHandler_GetUser_401(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/user", nil)
@@ -62,7 +62,7 @@ func TestHandler_UserGet_401(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 }
 
-func TestHandler_UserPatch_200(t *testing.T) {
+func TestHandler_UpdateUser_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
@@ -123,7 +123,7 @@ func TestHandler_UserPatch_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestHandler_UserPatch_401(t *testing.T) {
+func TestHandler_UpdateUser_401(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
@@ -135,7 +135,7 @@ func TestHandler_UserPatch_401(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 }
 
-func TestHandler_UserPatch_422(t *testing.T) {
+func TestHandler_UpdateUser_422(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")

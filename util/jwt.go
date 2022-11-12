@@ -13,6 +13,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/minio/sha256-simd"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
@@ -108,6 +109,26 @@ func HashToken(token jwt.Token) ([]byte, error) {
 	b := h.Sum(nil)
 
 	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+func HasRole(token jwt.Token, role string) bool {
+	if val, ok := token.Get("roles"); !ok {
+		log.Error().Msgf("failed getting roles for token: %s", token.Subject())
+		return false
+	} else {
+		roles, ok := val.([]interface{})
+		if !ok {
+			log.Error().Msgf("failed converting roles to slice for token: %s", token.Subject())
+			return false
+		}
+		for _, r := range roles {
+			if r == role {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func LoadPrivateKey() (*rsa.PrivateKey, error) {

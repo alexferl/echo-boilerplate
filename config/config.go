@@ -111,7 +111,6 @@ const (
 
 	HTTPBindAddress = libHttp.HTTPBindAddress
 	HTTPBindPort    = libHttp.HTTPBindPort
-	HTTPLogRequests = libHttp.HTTPLogRequests
 
 	BaseUrl = "base-url"
 

@@ -1,16 +1,43 @@
-get:
-  summary: List users
-  description: Returns a list of users
-  operationId: findUsers
+post:
+  summary: Create a task
+  description: Returns newly created task
+  operationId: createTask
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - users
+    - tasks
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/Task_Create.yaml'
+  responses:
+    '200':
+      description: Successfully created task
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Task.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'
+
+get:
+  summary: List tasks
+  description: Returns a list of tasks
+  operationId: findTasks
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - tasks
   parameters:
     - name: per_page
       in: query
-      description: Number of users to return per page
+      description: Number of tasks to return per page
       schema:
         type: integer
         minimum: 1
@@ -25,11 +52,11 @@ get:
         default: 1
   responses:
     '200':
-      description: Successfully returned a list of users
+      description: Successfully returned a list of tasks
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/ArrayOfUsers.yaml'
+            $ref: '../components/schemas/ArrayOfTasks.yaml'
       headers:
         Link:
           schema:

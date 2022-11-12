@@ -1,5 +1,5 @@
 post:
-  summary: Log out a user
+  summary: Log out
   description: Revoke a refresh token
   operationId: authLogout
   tags:

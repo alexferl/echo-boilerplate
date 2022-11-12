@@ -46,7 +46,7 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 
 				ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
-				err = mapper.Insert(ctx, user)
+				_, err = mapper.Insert(ctx, user, nil)
 				if err != nil {
 					panic(fmt.Sprintf("failed creating admin user: %v", err))
 				}
@@ -70,9 +70,9 @@ func (h *Handler) GetRoutes() []*router.Route {
 		{Name: "AuthLogout", Method: http.MethodPost, Pattern: "/auth/logout", HandlerFunc: h.AuthLogout},
 		{Name: "OAuth2Login", Method: http.MethodGet, Pattern: "/oauth2/login", HandlerFunc: h.OAuth2Login},
 		{Name: "OAuth2Callback", Method: http.MethodGet, Pattern: "/oauth2/callback", HandlerFunc: h.OAuth2Callback},
-		{Name: "UserGet", Method: http.MethodGet, Pattern: "/user", HandlerFunc: h.UserGet},
-		{Name: "UserPatch", Method: http.MethodPatch, Pattern: "/user", HandlerFunc: h.UserPatch},
-		{Name: "UsernameGet", Method: http.MethodGet, Pattern: "/users/:username", HandlerFunc: h.UsernameGet},
-		{Name: "Users", Method: http.MethodGet, Pattern: "/users", HandlerFunc: h.Users},
+		{Name: "GetUser", Method: http.MethodGet, Pattern: "/user", HandlerFunc: h.GetUser},
+		{Name: "UpdateUser", Method: http.MethodPatch, Pattern: "/user", HandlerFunc: h.UpdateUser},
+		{Name: "GetUsername", Method: http.MethodGet, Pattern: "/users/:username", HandlerFunc: h.GetUsername},
+		{Name: "ListUsers", Method: http.MethodGet, Pattern: "/users", HandlerFunc: h.ListUsers},
 	}
 }

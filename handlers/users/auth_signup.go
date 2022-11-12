@@ -43,7 +43,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	}
 
 	if exist != nil {
-		return h.Validate(c, http.StatusConflict, echo.Map{"message": "email already in-use"})
+		return h.Validate(c, http.StatusConflict, echo.Map{"message": "email or username already in-use"})
 	}
 
 	user := NewUser(body.Email, body.Username)
@@ -56,7 +56,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	defer cancel()
 	user.Create(user.Id)
 
-	err = h.Mapper.Insert(ctx, user)
+	_, err = h.Mapper.Insert(ctx, user, nil)
 	if err != nil {
 		return fmt.Errorf("failed to insert user: %v", err)
 	}

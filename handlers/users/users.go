@@ -23,7 +23,7 @@ type UsersResponse struct {
 	Users []*ShortUser `json:"users"`
 }
 
-func (h *Handler) Users(c echo.Context) error {
+func (h *Handler) ListUsers(c echo.Context) error {
 	var page int
 	pageQuery := c.QueryParam("page")
 	page, _ = strconv.Atoi(pageQuery)
