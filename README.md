@@ -1,4 +1,4 @@
-# echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate)
+# echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate) [![codecov](https://codecov.io/gh/alexferl/echo-boilerplate/branch/master/graph/badge.svg)](https://codecov.io/gh/alexferl/echo-boilerplate)
 
 A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
 authentication, authorization and request/response validation.
