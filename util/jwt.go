@@ -93,6 +93,20 @@ func generateToken(typ TokenType, sub string, claims map[string]any) ([]byte, er
 	return signed, nil
 }
 
+func parseToken(encodedToken []byte) (jwt.Token, error) {
+	key, err := LoadPrivateKey()
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := jwt.Parse(encodedToken, jwt.WithValidate(true), jwt.WithKey(jwa.RS256, key))
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
 func HashToken(token jwt.Token) ([]byte, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {

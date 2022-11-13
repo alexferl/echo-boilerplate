@@ -9,12 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Response struct {
-	Message string `json:"message"`
-}
-
 // Root returns the welcome message.
 func (h *Handler) Root(c echo.Context) error {
 	m := fmt.Sprintf("Welcome to %s", viper.GetString(libConfig.AppName))
-	return c.JSON(http.StatusOK, Response{m})
+	return c.JSON(http.StatusOK, echo.Map{"message": m})
 }

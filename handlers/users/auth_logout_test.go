@@ -36,7 +36,7 @@ func TestHandler_AuthLogout_401_Cookie_Invalid(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie("invalid"))
+	req.AddCookie(util.NewRefreshTokenCookie([]byte("invalid")))
 	resp := httptest.NewRecorder()
 
 	s.ServeHTTP(resp, req)
@@ -54,7 +54,7 @@ func TestHandler_AuthLogout_401_Cookie_Mismatch(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie(string(refresh)))
+	req.AddCookie(util.NewRefreshTokenCookie(refresh))
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.

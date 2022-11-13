@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,6 +14,101 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/tasks"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
+
+func TestHandler_CreateTask_200(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	payload := &tasks.CreateTaskPayload{
+		Title: "My Title",
+	}
+	b, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	task := tasks.NewTask()
+	task.Create(user.Id)
+	short := &tasks.ListTasks{
+		Id:          task.Id,
+		Title:       task.Title,
+		IsPrivate:   task.IsPrivate,
+		IsCompleted: task.IsCompleted,
+		CreatedAt:   task.CreatedAt,
+		CreatedBy: &tasks.TaskUser{
+			Id:       user.Id,
+			Username: user.Username,
+		},
+	}
+	retTasks := []*tasks.ListTasks{short}
+
+	req := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"Insert",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			retTasks,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	var result tasks.ShortTask
+	err = json.Unmarshal(resp.Body.Bytes(), &result)
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, short.Id, result.Id)
+	assert.Equal(t, short.CreatedBy.Id, result.CreatedBy.Id)
+}
+
+func TestHandler_CreateTask_401(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/tasks", nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
+}
+
+func TestHandler_CreateTask_422(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	payload := &tasks.CreateTaskPayload{
+		Title: "",
+	}
+	b, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	var result tasks.ListTasksResp
+	err = json.Unmarshal(resp.Body.Bytes(), &result)
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
+}
 
 func createTasks(num int, user *users.User) []*tasks.ListTasks {
 	var result []*tasks.ListTasks

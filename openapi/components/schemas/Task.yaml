@@ -10,6 +10,7 @@ properties:
     description: The title of the task
     minLength: 0
     maxLength: 100
+    example: My Task
   is_private:
     type: boolean
   is_completed:

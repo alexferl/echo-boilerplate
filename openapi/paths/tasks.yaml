@@ -20,8 +20,6 @@ post:
         application/json:
           schema:
             $ref: '../components/schemas/Task.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'
     '422':
       $ref: '../components/responses/UnprocessableEntity.yaml'
 
@@ -79,5 +77,3 @@ get:
         X-Total-Pages:
           schema:
             $ref: '../components/headers/X-Total-Pages.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'

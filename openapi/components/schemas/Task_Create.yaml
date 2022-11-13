@@ -4,7 +4,8 @@ properties:
   title:
     type: string
     description: The name of the user
-    minLength: 0
+    minLength: 1
     maxLength: 100
+    example: My Task
   is_private:
     type: boolean

@@ -45,8 +45,6 @@ func (h *Handler) ListUsers(c echo.Context) error {
 		return fmt.Errorf("failed counting users: %v", err)
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(skip))
 	result, err := h.Mapper.Find(ctx, nil, []*ShortUser{}, opts)
 	if err != nil {

@@ -94,7 +94,8 @@ Response:
 ```
 
 ### OpenAPI docs
-You can see the OpenAPI docs by opening [docs/index.html](docs/index.html) in your web browser.
+You can see the OpenAPI docs by running the app and navigating to `http://localhost:1323/docs` or by
+opening [assets/index.html](assets/index.html) in your web browser.
 
 ### Usage
 ```shell

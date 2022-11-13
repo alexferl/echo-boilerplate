@@ -8,10 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	app "github.com/alexferl/echo-boilerplate"
+	"github.com/alexferl/echo-boilerplate/handlers"
 )
 
 func TestHandler_Healthz(t *testing.T) {
-	s := app.NewTestServer()
+	s := app.NewTestServer(handlers.NewHandler())
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	resp := httptest.NewRecorder()
 

@@ -22,7 +22,6 @@ type UserResponse struct {
 
 func (h *Handler) GetUser(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &UserResponse{})
@@ -68,9 +67,6 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	}
 
 	user.Update(user.Id)
-
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	update, err := h.Mapper.UpdateById(ctx, user.Id, user, &UserResponse{})
 	if err != nil {

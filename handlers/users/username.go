@@ -35,7 +35,6 @@ func (h *Handler) GetUsername(c echo.Context) error {
 	}
 
 	user := result.(*UsernameResponse)
-
 	if user.DeletedAt != nil {
 		return h.Validate(c, http.StatusGone, echo.Map{"message": "user deleted"})
 	}

@@ -23,7 +23,5 @@ post:
             example: refresh_token=; Path=/auth; HttpOnly; Secure; SameSite=Strict; Domain=localhost
     '401':
       $ref: '../components/responses/Unauthorized.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'
     '422':
       $ref: '../components/responses/UnprocessableEntity.yaml'

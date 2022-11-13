@@ -25,7 +25,5 @@ post:
             $ref: '../components/headers/SetCookieRefresh.yaml'
     '401':
       $ref: '../components/responses/Unauthorized.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'
     '422':
       $ref: '../components/responses/UnprocessableEntity.yaml'

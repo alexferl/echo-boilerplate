@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/handler"
@@ -43,9 +42,7 @@ func (h *Handler) GetRoutes() []*router.Route {
 	}
 }
 
-func (h *Handler) getAggregate(c echo.Context, filter any) (*ShortTask, func() error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) (*ShortTask, func() error) {
 	result, err := h.Mapper.Aggregate(ctx, filter, 1, 0, []*TaskWithUsers{})
 	if err != nil {
 		return nil, wrap(fmt.Errorf("failed getting task: %v", err))

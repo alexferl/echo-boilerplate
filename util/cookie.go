@@ -36,10 +36,10 @@ func NewCookie(opts *CookieOptions) *http.Cookie {
 	}
 }
 
-func NewAccessTokenCookie(access string) *http.Cookie {
+func NewAccessTokenCookie(access []byte) *http.Cookie {
 	opts := &CookieOptions{
 		Name:     "access_token",
-		Value:    access,
+		Value:    string(access),
 		Path:     "/",
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   viper.GetInt(config.JWTAccessTokenExpiry),
@@ -48,10 +48,10 @@ func NewAccessTokenCookie(access string) *http.Cookie {
 	return NewCookie(opts)
 }
 
-func NewRefreshTokenCookie(refresh string) *http.Cookie {
+func NewRefreshTokenCookie(refresh []byte) *http.Cookie {
 	opts := &CookieOptions{
 		Name:     "refresh_token",
-		Value:    refresh,
+		Value:    string(refresh),
 		Path:     "/auth",
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
@@ -61,7 +61,7 @@ func NewRefreshTokenCookie(refresh string) *http.Cookie {
 	return NewCookie(opts)
 }
 
-func SetTokenCookies(c echo.Context, access string, refresh string) {
+func SetTokenCookies(c echo.Context, access []byte, refresh []byte) {
 	c.SetCookie(NewAccessTokenCookie(access))
 	c.SetCookie(NewRefreshTokenCookie(refresh))
 }

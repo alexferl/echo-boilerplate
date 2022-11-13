@@ -47,10 +47,7 @@ func NewClient() (*mongo.Client, error) {
 		return nil, err
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	db := client.Database(config.AppName)
+	db := client.Database(viper.GetString(config.AppName))
 
 	idxOpts := options.Index().
 		SetUnique(true).
@@ -61,7 +58,7 @@ func NewClient() (*mongo.Client, error) {
 		Keys:    bson.D{{"username", 1}},
 		Options: usernameOpts,
 	}
-	_, err = db.Collection("users").Indexes().CreateOne(context.TODO(), indexModel)
+	_, err = db.Collection("users").Indexes().CreateOne(ctx, indexModel)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +68,7 @@ func NewClient() (*mongo.Client, error) {
 		Keys:    bson.D{{"email", 1}},
 		Options: emailOpts,
 	}
-	_, err = db.Collection("users").Indexes().CreateOne(context.TODO(), indexModel)
+	_, err = db.Collection("users").Indexes().CreateOne(ctx, indexModel)
 	if err != nil {
 		panic(err)
 	}

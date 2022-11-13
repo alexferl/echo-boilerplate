@@ -52,8 +52,6 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		return fmt.Errorf("failed to set password: %v", err)
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	user.Create(user.Id)
 
 	_, err = h.Mapper.Insert(ctx, user, nil)

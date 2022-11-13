@@ -14,8 +14,6 @@ get:
         application/json:
           schema:
             $ref: '../components/schemas/User.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'
 patch:
   summary: Update authenticated user
   description: Returns the updated authenticated user
@@ -38,7 +36,5 @@ patch:
         application/json:
           schema:
             $ref: '../components/schemas/User.yaml'
-    '403':
-      $ref: '../components/responses/Forbidden.yaml'
     '422':
       $ref: '../components/responses/UnprocessableEntity.yaml'

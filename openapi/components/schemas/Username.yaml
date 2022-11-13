@@ -11,6 +11,7 @@ properties:
     description: The username of the user
     minLength: 2
     maxLength: 30
+    example: test
   created_at:
     type: string
     nullable: true

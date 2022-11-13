@@ -15,8 +15,10 @@ import (
 )
 
 func (h *Handler) GetTask(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	filter := bson.D{{"id", c.Param("id")}}
-	t, errResp := h.getAggregate(c, filter)
+	t, errResp := h.getAggregate(ctx, c, filter)
 	if errResp != nil {
 		return errResp()
 	}
@@ -38,7 +40,9 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	taskId := c.Param("id")
 	token := c.Get("token").(jwt.Token)
-	task, errResp := h.getTask(c, taskId, token)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	task, errResp := h.getTask(ctx, c, taskId, token)
 	if errResp != nil {
 		return errResp()
 	}
@@ -57,15 +61,12 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	task.Update(token.Subject())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	update, err := h.Mapper.UpdateById(ctx, taskId, task, []*TaskWithUsers{})
 	if err != nil {
 		return fmt.Errorf("failed updating task: %v", err)
 	}
 
 	res := update.([]*TaskWithUsers)
-
 	if len(res) > 0 {
 		updated := res[0]
 		t := ShortTask{
@@ -86,15 +87,15 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 func (h *Handler) DeleteTask(c echo.Context) error {
 	taskId := c.Param("id")
 	token := c.Get("token").(jwt.Token)
-	task, errResp := h.getTask(c, taskId, token)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	task, errResp := h.getTask(ctx, c, taskId, token)
 	if errResp != nil {
 		return errResp()
 	}
 
 	task.Delete(token.Subject())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	_, err := h.Mapper.UpdateById(ctx, taskId, task, nil)
 	if err != nil {
 		return fmt.Errorf("failed deleting task: %v", err)
@@ -103,9 +104,7 @@ func (h *Handler) DeleteTask(c echo.Context) error {
 	return h.Validate(c, http.StatusNoContent, nil)
 }
 
-func (h *Handler) getTask(c echo.Context, taskId string, token jwt.Token) (*Task, func() error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, token jwt.Token) (*Task, func() error) {
 	result, err := h.Mapper.FindOneById(ctx, taskId, &Task{})
 	if err != nil {
 		if err == ErrTaskNotFound {
@@ -120,7 +119,7 @@ func (h *Handler) getTask(c echo.Context, taskId string, token jwt.Token) (*Task
 	}
 
 	if token != nil {
-		if token.Subject() != task.CreatedBy || !util.HasRole(token, users.AdminRole.String()) {
+		if token.Subject() != task.CreatedBy && !util.HasRole(token, users.AdminRole.String()) {
 			return nil, wrap(h.Validate(c, http.StatusForbidden, echo.Map{"message": "you don't have access"}))
 		}
 	}

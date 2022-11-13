@@ -44,10 +44,6 @@ func NewServer() *server.Server {
 }
 
 func NewTestServer(handler ...handler.Handler) *server.Server {
-	if len(handler) < 1 {
-		handler = DefaultHandlers()
-	}
-
 	viper.Set(libLog.LogLevel, libLog.Disabled)
 	c := config.New()
 	c.BindFlags()
@@ -74,6 +70,7 @@ func newServer(handler ...handler.Handler) *server.Server {
 		ExemptRoutes: map[string][]string{
 			"/":                {http.MethodGet},
 			"/healthz":         {http.MethodGet},
+			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
 			"/auth/signup":     {http.MethodPost},
@@ -100,10 +97,11 @@ func newServer(handler ...handler.Handler) *server.Server {
 	openAPIConfig := openapiMw.Config{
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
-			"/":          {http.MethodGet},
-			"/healthz":   {http.MethodGet},
-			"/docs":      {http.MethodGet},
-			"/openapi/*": {http.MethodGet},
+			"/":            {http.MethodGet},
+			"/healthz":     {http.MethodGet},
+			"/favicon.ico": {http.MethodGet},
+			"/docs":        {http.MethodGet},
+			"/openapi/*":   {http.MethodGet},
 		},
 	}
 
@@ -118,7 +116,8 @@ func newServer(handler ...handler.Handler) *server.Server {
 		openapiMw.OpenAPIWithConfig(openAPIConfig),
 	)
 
-	s.File("/docs", "./docs/index.html")
+	s.File("/favicon.ico", "./assets/images/favicon.ico")
+	s.File("/docs", "./assets/index.html")
 	s.Static("/openapi/", "./openapi")
 
 	s.HideBanner = true

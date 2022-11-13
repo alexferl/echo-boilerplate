@@ -6,3 +6,4 @@ properties:
   refresh_token:
     type: string
     description: Refresh token
+    example: eyJhbGciOi...

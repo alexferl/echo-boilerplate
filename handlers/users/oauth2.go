@@ -101,8 +101,6 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 		newUser.Create(newUser.Id)
 
-		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
 		_, err = h.Mapper.Insert(ctx, newUser, nil)
 		if err != nil {
 			return fmt.Errorf("oauth2: failed to insert user: %v", err)
@@ -114,8 +112,6 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 			return fmt.Errorf("oauth2: failed to generate tokens: %v", err)
 		}
 
-		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
 		_, err = h.Mapper.UpdateById(ctx, user.Id, user, nil)
 		if err != nil {
 			return fmt.Errorf("oauth2: failed to update user: %v", err)
@@ -131,7 +127,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 		MaxAge:   -1,
 	}
 	c.SetCookie(util.NewCookie(stateOpts))
-	util.SetTokenCookies(c, string(access), string(refresh))
+	util.SetTokenCookies(c, access, refresh)
 
 	resp := &TokenResponse{
 		AccessToken:  string(access),
