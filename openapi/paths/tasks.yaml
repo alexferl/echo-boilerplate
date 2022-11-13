@@ -1,6 +1,6 @@
 post:
   summary: Create a task
-  description: Returns newly created task
+  description: Returns newly created task.
   operationId: createTask
   security:
     - cookieAuth: []
@@ -25,7 +25,7 @@ post:
 
 get:
   summary: List tasks
-  description: Returns a list of tasks
+  description: Returns a list of tasks.
   operationId: findTasks
   security:
     - cookieAuth: []

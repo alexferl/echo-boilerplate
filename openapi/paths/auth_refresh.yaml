@@ -1,6 +1,6 @@
 post:
   summary: Refresh token
-  description: Returns new tokens
+  description: Returns new tokens.
   operationId: authRefresh
   tags:
     - auth

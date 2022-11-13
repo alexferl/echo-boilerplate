@@ -1,6 +1,6 @@
 get:
   summary: Get a user
-  description: Returns a single user
+  description: Returns a single user.
   operationId: getUsername
   tags:
     - users

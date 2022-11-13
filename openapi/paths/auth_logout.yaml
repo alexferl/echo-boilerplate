@@ -1,6 +1,6 @@
 post:
   summary: Log out
-  description: Revoke a refresh token
+  description: Revoke a refresh token.
   operationId: authLogout
   tags:
     - auth

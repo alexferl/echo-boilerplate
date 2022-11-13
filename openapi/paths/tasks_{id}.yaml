@@ -1,6 +1,6 @@
 get:
   summary: Get a task
-  description: Returns a task
+  description: Returns a task.
   operationId: getTask
   security:
     - cookieAuth: []
@@ -26,7 +26,7 @@ get:
       $ref: '../components/responses/Gone.yaml'
 patch:
   summary: Update a task
-  description: Returns the updated task
+  description: Returns the updated task.
   operationId: updateTask
   security:
     - cookieAuth: []
@@ -62,7 +62,7 @@ patch:
       $ref: '../components/responses/UnprocessableEntity.yaml'
 delete:
   summary: Delete a task
-  description: Deletes a task
+  description: Deletes a task.
   operationId: deleteTask
   security:
     - cookieAuth: []

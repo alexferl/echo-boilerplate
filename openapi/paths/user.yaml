@@ -1,6 +1,6 @@
 get:
   summary: Get authenticated user
-  description: Returns the authenticated user
+  description: Returns the authenticated user.
   operationId: getUser
   security:
     - cookieAuth: []
@@ -16,7 +16,7 @@ get:
             $ref: '../components/schemas/User.yaml'
 patch:
   summary: Update authenticated user
-  description: Returns the updated authenticated user
+  description: Returns the updated authenticated user.
   operationId: updateUser
   security:
     - cookieAuth: []

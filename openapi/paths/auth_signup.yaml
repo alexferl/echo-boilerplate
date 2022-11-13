@@ -1,6 +1,6 @@
 post:
   summary: Sign up
-  description: Returns the newly created user
+  description: Returns the newly created user.
   operationId: signup
   tags:
     - auth
