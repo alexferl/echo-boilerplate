@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.19'
+      - name: Make private key
+        run: openssl genrsa -out private-key.pem 4096
       - name: Run coverage
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       - name: Upload coverage to Codecov
