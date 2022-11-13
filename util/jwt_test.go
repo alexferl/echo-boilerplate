@@ -65,10 +65,10 @@ func TestHasRole(t *testing.T) {
 		role    string
 		hasRole bool
 	}{
-		{"", map[string]any{"roles": []string{"user"}}, "user", true},
-		{"", map[string]any{"roles": []string{"user"}}, "invalid", false},
-		{"", map[string]any{"invalid": []string{"user"}}, "invalid", false},
-		{"", map[string]any{"roles": "user"}, "user", false},
+		{"has role", map[string]any{"roles": []string{"user"}}, "user", true},
+		{"invalid role", map[string]any{"roles": []string{"user"}}, "invalid", false},
+		{"invalid roles key", map[string]any{"invalid": []string{"user"}}, "invalid", false},
+		{"roles key not slice", map[string]any{"roles": "user"}, "user", false},
 	}
 
 	for _, tc := range testCases {

@@ -7,7 +7,7 @@ require (
 	github.com/alexferl/echo-jwt v0.4.0
 	github.com/alexferl/echo-openapi v0.2.0
 	github.com/alexferl/golib/config v0.0.0-20221110021543-148b8654c0f4
-	github.com/alexferl/golib/http v0.0.0-20221112172509-2fbcccc3c8c9
+	github.com/alexferl/golib/http v0.0.0-20221113053029-e02f34f7806e
 	github.com/alexferl/golib/log v0.0.0-20221110021543-148b8654c0f4
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.57.0

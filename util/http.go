@@ -7,9 +7,28 @@ import (
 	"strconv"
 
 	"github.com/alexferl/httplink"
+	"github.com/labstack/echo/v4"
 )
 
-func Paginate(header http.Header, count int, page int, perPage int, uri string) {
+func ParsePaginationParams(c echo.Context) (int, int, int, int) {
+	var page int
+	pageQuery := c.QueryParam("page")
+	page, _ = strconv.Atoi(pageQuery)
+
+	var perPage int
+	perPageQuery := c.QueryParam("per_page")
+	perPage, _ = strconv.Atoi(perPageQuery)
+
+	limit := perPage
+	skip := 0
+	if page > 1 {
+		skip = (page * perPage) - perPage
+	}
+
+	return page, perPage, limit, skip
+}
+
+func SetPaginationHeaders(header http.Header, count int, page int, perPage int, uri string) {
 	totalPages := int(math.Ceil(float64(count / perPage)))
 	lastPage := totalPages
 	curPage := page

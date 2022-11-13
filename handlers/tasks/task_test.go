@@ -23,19 +23,9 @@ func TestHandler_GetTask_200(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
-	task.Create(user.Id)
-	short := &tasks.TaskWithUsers{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsPrivate:   task.IsPrivate,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		CreatedBy: &tasks.TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-		},
-	}
+	newTask := tasks.NewTask()
+	newTask.Create(user.Id)
+	task := newTask.WithUsers(user)
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -52,7 +42,7 @@ func TestHandler_GetTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskWithUsers{short},
+			[]*tasks.TaskWithUsers{task},
 			nil,
 		)
 
@@ -111,14 +101,10 @@ func TestHandler_GetTask_410(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
-	task.Create(user.Id)
-	task.Delete(user.Id)
-	short := &tasks.TaskWithUsers{
-		Id:        task.Id,
-		DeletedAt: task.DeletedAt,
-		DeletedBy: task.DeletedBy,
-	}
+	newTask := tasks.NewTask()
+	newTask.Create(user.Id)
+	newTask.Delete(user.Id)
+	task := newTask.WithUsers(user)
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -135,7 +121,7 @@ func TestHandler_GetTask_410(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskWithUsers{short},
+			[]*tasks.TaskWithUsers{task},
 			nil,
 		)
 
@@ -152,35 +138,21 @@ func TestHandler_PatchTask_200(t *testing.T) {
 	assert.NoError(t, err)
 
 	payload := &tasks.TaskPatch{
-		Title: "My Edited Task",
+		Title:       "My Edited Task",
+		IsCompleted: true,
+		IsPrivate:   true,
 	}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
-	task.Create(user.Id)
-	find := &tasks.Task{
-		Model: &data.Model{
-			CreatedBy: user.Id,
-			DeletedAt: nil,
-		},
-		Title:       payload.Title,
-		IsPrivate:   false,
-		IsCompleted: false,
-		CompletedAt: task.CompletedAt,
-		CompletedBy: task.CompletedBy,
-	}
-	update := &tasks.TaskWithUsers{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsPrivate:   task.IsPrivate,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		CreatedBy: &tasks.TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-		},
-	}
+	newTask := tasks.NewTask()
+	newTask.Create(user.Id)
+	newTask.CreatedBy = user.Id
+	newTask.Title = payload.Title
+	newTask.IsPrivate = payload.IsPrivate
+	newTask.Complete(user.Id)
+
+	updated := newTask.WithUsers(user)
 
 	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -195,7 +167,7 @@ func TestHandler_PatchTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			find,
+			newTask,
 			nil,
 		).
 		On(
@@ -206,7 +178,7 @@ func TestHandler_PatchTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskWithUsers{update},
+			[]*tasks.TaskWithUsers{updated},
 			nil,
 		)
 
@@ -241,18 +213,7 @@ func TestHandler_PatchTask_403(t *testing.T) {
 	assert.NoError(t, err)
 
 	task := tasks.NewTask()
-	task.Create(user.Id)
-	task.Complete(user.Id)
-	find := &tasks.Task{
-		Model: &data.Model{
-			DeletedBy: "",
-		},
-		Title:       payload.Title,
-		IsPrivate:   false,
-		IsCompleted: false,
-		CompletedAt: task.CompletedAt,
-		CompletedBy: task.CompletedBy,
-	}
+	task.Create("another_id")
 
 	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -267,7 +228,7 @@ func TestHandler_PatchTask_403(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			find,
+			task,
 			nil,
 		)
 
@@ -331,11 +292,6 @@ func TestHandler_PatchTask_410(t *testing.T) {
 		Model: &data.Model{
 			DeletedAt: task.DeletedAt,
 		},
-		Title:       payload.Title,
-		IsPrivate:   false,
-		IsCompleted: false,
-		CompletedAt: task.CompletedAt,
-		CompletedBy: task.CompletedBy,
 	}
 
 	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
@@ -376,4 +332,179 @@ func TestHandler_PatchTask_422(t *testing.T) {
 	s.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
+}
+
+func TestHandler_DeleteTask_204(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	task := tasks.NewTask()
+	task.Create(user.Id)
+	find := &tasks.Task{
+		Model: &data.Model{
+			CreatedBy: user.Id,
+			DeletedAt: nil,
+		},
+		Title:       "",
+		IsPrivate:   false,
+		IsCompleted: false,
+		CompletedAt: task.CompletedAt,
+		CompletedBy: task.CompletedBy,
+	}
+	task.Delete(user.Id)
+	update := &tasks.TaskWithUsers{
+		Id:          task.Id,
+		Title:       task.Title,
+		IsPrivate:   task.IsPrivate,
+		IsCompleted: task.IsCompleted,
+		CreatedAt:   task.CreatedAt,
+		DeletedBy:   user.Id,
+		DeletedAt:   user.DeletedAt,
+	}
+
+	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			find,
+			nil,
+		).
+		On(
+			"UpdateById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			[]*tasks.TaskWithUsers{update},
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNoContent, resp.Code)
+}
+
+func TestHandler_DeleteTask_403(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	task := tasks.NewTask()
+	task.Create("another_id")
+
+	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			task,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusForbidden, resp.Code)
+}
+
+func TestHandler_DeleteTask_404(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			tasks.ErrTaskNotFound,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNotFound, resp.Code)
+}
+
+func TestHandler_DeleteTask_410(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	newTask := tasks.NewTask()
+	newTask.Create(user.Id)
+	find := &tasks.Task{
+		Model: &data.Model{
+			CreatedBy: user.Id,
+		},
+	}
+	newTask.Delete(user.Id)
+	task := newTask.WithUsers(user)
+
+	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			find,
+			nil,
+		).
+		On(
+			"UpdateById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			[]*tasks.TaskWithUsers{task},
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNoContent, resp.Code)
 }

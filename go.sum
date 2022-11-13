@@ -50,8 +50,8 @@ github.com/alexferl/echo-openapi v0.2.0 h1:kROwdc+O5XHrFVizCCBmYwmyoyDB9eMQCywQ0
 github.com/alexferl/echo-openapi v0.2.0/go.mod h1:h99zPWS+5bOZWPj40vy+ivtFVzTZZBO3fJNWPdtky1w=
 github.com/alexferl/golib/config v0.0.0-20221110021543-148b8654c0f4 h1:NJsZq6PIxQrF6iE4M+FfczI2uht431J/vd/rRiKjdc4=
 github.com/alexferl/golib/config v0.0.0-20221110021543-148b8654c0f4/go.mod h1:ohI6tcAa9Lp1fBHflyWENE44RVpd5rSs6kMNQ+rX8ak=
-github.com/alexferl/golib/http v0.0.0-20221112172509-2fbcccc3c8c9 h1:/6EMYlunCfRqW5gHfx5GLZpQAK+3MV2Ge1LxxBHuhuM=
-github.com/alexferl/golib/http v0.0.0-20221112172509-2fbcccc3c8c9/go.mod h1:CXm14g3wE7P/Jlx6KBWFqze1S4/5oL+wmKvHGs6H1jI=
+github.com/alexferl/golib/http v0.0.0-20221113053029-e02f34f7806e h1:Vdn3I6DG7Oe75N0z/DzcLfa5CgzQWY8nJWLa+Bc0b8I=
+github.com/alexferl/golib/http v0.0.0-20221113053029-e02f34f7806e/go.mod h1:CXm14g3wE7P/Jlx6KBWFqze1S4/5oL+wmKvHGs6H1jI=
 github.com/alexferl/golib/log v0.0.0-20221110021543-148b8654c0f4 h1:zQ3zKP2EsaBpFF2iuwtY0sxy4XdidVOxJiabscSe1I8=
 github.com/alexferl/golib/log v0.0.0-20221110021543-148b8654c0f4/go.mod h1:Bw3oXr662EnrwHpTJZ7Ovpy6ZSZN/7Vv6afelkmfzNI=
 github.com/alexferl/httplink v0.1.0 h1:2Wps+hbWSFEz1cOCddmE3BJg7YoKuFU/XPFBjHFFGYg=

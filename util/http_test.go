@@ -78,7 +78,7 @@ func TestPaginate(t *testing.T) {
 			perPage, _ := strconv.Atoi(tc.xPerPage)
 
 			uri := fmt.Sprintf("http://%s%s", "example.com", "/users")
-			Paginate(resp.Header(), total, page, perPage, uri)
+			SetPaginationHeaders(resp.Header(), total, page, perPage, uri)
 
 			h := resp.Header()
 

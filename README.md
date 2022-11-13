@@ -1,7 +1,7 @@
 # echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate)
 
-A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework
-with [12-factor](https://12factor.net/).
+A Go 1.19+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
+authentication, authorization and request/response validation.
 
 ## Features
 - [JWT](https://jwt.io/) for authentication with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
@@ -104,6 +104,10 @@ go build -o app-bin ./cmd/app && ./app-bin --help
 
 ```shell
 Usage of ./app-bin:
+      --admin-create                                   Create admin
+      --admin-email string                             Admin email (default "admin@example.com")
+      --admin-password string                          Admin password (default "changeme")
+      --admin-username string                          Admin username (default "admin")
       --app-name string                                The name of the application. (default "app")
       --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
       --casbin-model string                            Casbin model file (default "./casbin/model.conf")
@@ -119,13 +123,12 @@ Usage of ./app-bin:
       --http-cors-expose-headers strings               Indicates which headers can be exposed as part of the response by listing their name.
       --http-cors-max-age int                          Indicates how long the results of a preflight request can be cached.
       --http-graceful-timeout duration                 Timeout for graceful shutdown. (default 30s)
-      --http-log-request-level string                  The granularity of log outputs. Valid log levels: 'OFF', 'ERROR', 'WARN', 'INFO', 'DEBUG'. (default "INFO")
       --http-log-requests                              Controls the logging of HTTP requests (default true)
       --jwt-access-token-expiry duration               JWT access token expiry (default 10m0s)
       --jwt-issuer string                              JWT issuer (default "http://localhost:1323")
       --jwt-private-key string                         JWT private key file path (default "./private-key.pem")
       --jwt-refresh-token-expiry duration              JWT refresh token expiry (default 720h0m0s)
-      --log-level string                               The granularity of log outputs. Valid log levels: 'PANIC', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG' and 'TRACE'. (default "INFO")
+      --log-level string                               The granularity of log outputs. Valid levels: 'PANIC', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'DISABLED' (default "INFO")
       --log-output string                              The output to write to. 'stdout' means log to stdout, 'stderr' means log to stderr. (default "stdout")
       --log-writer string                              The log writer. Valid writers are: 'console' and 'json'. (default "console")
       --mongodb-connect-timeout-ms duration            MongoDB connect timeout ms (default 5s)

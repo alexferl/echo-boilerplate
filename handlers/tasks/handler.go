@@ -9,9 +9,12 @@ import (
 	"github.com/alexferl/golib/http/handler"
 	"github.com/alexferl/golib/http/router"
 	"github.com/labstack/echo/v4"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/alexferl/echo-boilerplate/data"
+	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/alexferl/echo-boilerplate/util"
 )
 
 type Handler struct {
@@ -42,6 +45,29 @@ func (h *Handler) GetRoutes() []*router.Route {
 	}
 }
 
+func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, token jwt.Token) (*Task, func() error) {
+	result, err := h.Mapper.FindOneById(ctx, taskId, &Task{})
+	if err != nil {
+		if err == ErrTaskNotFound {
+			return nil, wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
+		}
+		return nil, wrap(fmt.Errorf("failed getting task: %v", err))
+	}
+
+	task := result.(*Task)
+	if task.DeletedAt != nil {
+		return nil, wrap(h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"}))
+	}
+
+	if token != nil {
+		if token.Subject() != task.CreatedBy && !util.HasRole(token, users.AdminRole.String()) {
+			return nil, wrap(h.Validate(c, http.StatusForbidden, echo.Map{"message": "you don't have access"}))
+		}
+	}
+
+	return task, nil
+}
+
 func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) (*ShortTask, func() error) {
 	result, err := h.Mapper.Aggregate(ctx, filter, 1, 0, []*TaskWithUsers{})
 	if err != nil {
@@ -68,4 +94,8 @@ func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) 
 	}
 
 	return t, nil
+}
+
+func wrap(err error) func() error {
+	return func() error { return err }
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -36,23 +35,20 @@ func (h *Handler) CreateTask(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
 
 	newTask := NewTask()
-	newTask.Title = body.Title
-	if body.IsPrivate {
-		newTask.SetPrivate()
-	}
-
 	newTask.Create(token.Subject())
+	newTask.Title = body.Title
+	newTask.IsPrivate = body.IsPrivate
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	result, err := h.Mapper.Insert(ctx, newTask, []*ListTasks{})
 	if err != nil {
-		return fmt.Errorf("failed to insert newTask: %v", err)
+		return fmt.Errorf("failed to insert task: %v", err)
 	}
 
 	tasks := result.([]*ListTasks)
 	if len(tasks) < 1 {
-		return fmt.Errorf("failed to insert newTask: %v", err)
+		return fmt.Errorf("failed to retrieve inserted task: %v", err)
 	}
 
 	task := tasks[0]
@@ -86,19 +82,7 @@ type ListTasksResp struct {
 }
 
 func (h *Handler) ListTasks(c echo.Context) error {
-	var page int
-	pageQuery := c.QueryParam("page")
-	page, _ = strconv.Atoi(pageQuery)
-
-	var perPage int
-	perPageQuery := c.QueryParam("per_page")
-	perPage, _ = strconv.Atoi(perPageQuery)
-
-	limit := perPage
-	skip := 0
-	if page > 1 {
-		skip = (page * perPage) - perPage
-	}
+	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -113,7 +97,7 @@ func (h *Handler) ListTasks(c echo.Context) error {
 	}
 
 	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
-	util.Paginate(c.Response().Header(), int(count), page, perPage, uri)
+	util.SetPaginationHeaders(c.Response().Header(), int(count), page, perPage, uri)
 
 	return h.Validate(c, http.StatusOK, &ListTasksResp{Tasks: result.([]*ListTasks)})
 }

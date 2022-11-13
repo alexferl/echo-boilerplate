@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -24,19 +23,7 @@ type UsersResponse struct {
 }
 
 func (h *Handler) ListUsers(c echo.Context) error {
-	var page int
-	pageQuery := c.QueryParam("page")
-	page, _ = strconv.Atoi(pageQuery)
-
-	var perPage int
-	perPageQuery := c.QueryParam("per_page")
-	perPage, _ = strconv.Atoi(perPageQuery)
-
-	limit := perPage
-	skip := 0
-	if page > 1 {
-		skip = (page * perPage) - perPage
-	}
+	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -52,7 +39,7 @@ func (h *Handler) ListUsers(c echo.Context) error {
 	}
 
 	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
-	util.Paginate(c.Response().Header(), int(count), page, perPage, uri)
+	util.SetPaginationHeaders(c.Response().Header(), int(count), page, perPage, uri)
 
 	resp := &UsersResponse{Users: result.([]*ShortUser)}
 
