@@ -42,7 +42,7 @@ ifeq (, $(shell which redocly))
 	$(error "redocly not in $(PATH), redocly (https://redocly.com/docs/cli/installation/) is required")
 endif
 
-dev: check-pre-commit check-gofumpt check-redocly
+dev: check-pre-commit
 ifeq (,$(wildcard ./private-key.pem))
 	@echo "No private key file, generating one..."
 	openssl genrsa -out private-key.pem 4096

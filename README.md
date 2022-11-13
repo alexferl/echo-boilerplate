@@ -12,10 +12,12 @@ authentication, authorization and request/response validation.
 
 ## Requirements
 Before getting started, install the following:
-- [gofumpt](https://pkg.go.dev/mvdan.cc/gofumpt)
+Required:
 - [pre-commit](https://pre-commit.com)
-- [redocly-cli](https://redocly.com/docs/cli/installation/)
 - [MongoDB](https://www.mongodb.com/docs/manual/installation/#mongodb-installation-tutorials)
+Optional:
+- [gofumpt](https://pkg.go.dev/mvdan.cc/gofumpt) (needed to run `make fmt`)
+- [redocly-cli](https://redocly.com/docs/cli/installation/) (needed to run `make openapi-lint`)
 
 ## Using
 Setup the dev environment first:
