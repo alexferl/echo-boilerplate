@@ -14,7 +14,7 @@ authentication, authorization and request/response validation.
 Before getting started, install the following:
 
 Required:
-- [pre-commit](https://pre-commit.com)
+- [pre-commit](https://pre-commit.com/#install)
 - [MongoDB](https://www.mongodb.com/docs/manual/installation/#mongodb-installation-tutorials)
 
 Optional:
