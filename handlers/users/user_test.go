@@ -90,6 +90,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 		Name: updatedUser.Name,
 		Bio:  updatedUser.Bio,
 	})
+	assert.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
