@@ -46,6 +46,8 @@ github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible h1
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/alexferl/echo-casbin v0.3.0 h1:7sO7ZtM1/kFTPmCVPwCqBJeGOjXxzrlCEECiVCNOZTM=
 github.com/alexferl/echo-casbin v0.3.0/go.mod h1:jpimZtcnylKhqjJoRy4MGGlFY9StC7I7TJJyRDGLqbE=
+github.com/alexferl/echo-jwt v0.4.0 h1:rTsJDVBLXRRfP+5WF0uPT6xYnDdPzydmI9yv9mN9lYw=
+github.com/alexferl/echo-jwt v0.4.0/go.mod h1:dK3X0ObHk0yuqLp+ekcd73hwazPVLgR/eHFPuU4T114=
 github.com/alexferl/echo-openapi v0.2.0 h1:kROwdc+O5XHrFVizCCBmYwmyoyDB9eMQCywQ0BMc4TY=
 github.com/alexferl/echo-openapi v0.2.0/go.mod h1:h99zPWS+5bOZWPj40vy+ivtFVzTZZBO3fJNWPdtky1w=
 github.com/alexferl/golib/config v0.0.0-20221110021543-148b8654c0f4 h1:NJsZq6PIxQrF6iE4M+FfczI2uht431J/vd/rRiKjdc4=
