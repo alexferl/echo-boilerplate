@@ -25,8 +25,6 @@ require (
 	golang.org/x/oauth2 v0.2.0
 )
 
-replace github.com/alexferl/echo-jwt => /Users/alex/dev/echo-jwt
-
 require (
 	cloud.google.com/go/compute v1.12.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
