@@ -97,11 +97,13 @@ func newServer(handler ...handler.Handler) *server.Server {
 	openAPIConfig := openapiMw.Config{
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
-			"/":            {http.MethodGet},
-			"/healthz":     {http.MethodGet},
-			"/favicon.ico": {http.MethodGet},
-			"/docs":        {http.MethodGet},
-			"/openapi/*":   {http.MethodGet},
+			"/":                {http.MethodGet},
+			"/healthz":         {http.MethodGet},
+			"/favicon.ico":     {http.MethodGet},
+			"/docs":            {http.MethodGet},
+			"/openapi/*":       {http.MethodGet},
+			"/oauth2/login":    {http.MethodGet},
+			"/oauth2/callback": {http.MethodGet},
 		},
 	}
 

@@ -136,7 +136,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 		TokenType:    "Bearer",
 	}
 
-	return h.Validate(c, http.StatusOK, resp)
+	return c.JSON(http.StatusOK, resp)
 }
 
 func callback(c echo.Context) (*http.Response, error) {
