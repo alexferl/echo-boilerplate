@@ -1,24 +1,24 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+
+	app "github.com/alexferl/echo-boilerplate"
+	"github.com/alexferl/echo-boilerplate/handlers"
+	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 func TestHandler_Root(t *testing.T) {
-	e := echo.New()
+	s := app.NewTestServer(handlers.NewHandler())
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	c.SetPath("/")
-	h := &Handler{}
+	resp := httptest.NewRecorder()
 
-	if assert.NoError(t, h.Root(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Contains(t, rec.Body.String(), "Welcome")
-	}
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Contains(t, resp.Body.String(), "Welcome")
 }

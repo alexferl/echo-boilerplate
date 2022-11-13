@@ -1,0 +1,5 @@
+description: The server understood the request but refuses to authorize it
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/Error.yaml'

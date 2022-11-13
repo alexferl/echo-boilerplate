@@ -1,0 +1,12 @@
+type: object
+additionalProperties: false
+required:
+  - message
+  - errors
+properties:
+  message:
+    type: string
+  errors:
+    type: array
+    items:
+      type: string

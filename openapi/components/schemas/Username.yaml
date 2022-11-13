@@ -1,0 +1,34 @@
+type: object
+description: Username response
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    example: cdmt48tfcls65a7mb590
+    readOnly: true
+  username:
+    type: string
+    pattern: '^[0-9a-zA-Z._]+$'
+    description: The username of the user
+    minLength: 2
+    maxLength: 30
+    example: test
+  name:
+    type: string
+    description: The name of the user
+    example: Test
+    minLength: 0
+    maxLength: 100
+  created_at:
+    type: string
+    format: date-time
+    description: User creation date time
+    example: '2022-11-12T09:11:42.420Z'
+    nullable: true
+  updated_at:
+    type: string
+    format: date-time
+    description: User last update date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true

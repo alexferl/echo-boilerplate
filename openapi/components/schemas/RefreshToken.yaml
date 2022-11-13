@@ -1,0 +1,10 @@
+type: object
+description: Auth refresh token request
+additionalProperties: false
+required:
+  - refresh_token
+properties:
+  refresh_token:
+    type: string
+    description: Refresh token
+    example: eyJhbGciOi...

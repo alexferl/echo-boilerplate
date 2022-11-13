@@ -1,0 +1,27 @@
+type: object
+description: Token response
+additionalProperties: false
+required:
+  - access_token
+  - expires_in
+  - refresh_token
+  - token_type
+properties:
+  access_token:
+    type: string
+    description: Access token
+    readOnly: true
+  expires_in:
+    type: number
+    description: refresh_token expiry in seconds
+    readOnly: true
+  refresh_token:
+    type: string
+    description: Refresh token
+    readOnly: true
+  token_type:
+    type: string
+    description: Type of token
+    readOnly: true
+    enum:
+      - Bearer

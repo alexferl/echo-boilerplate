@@ -1,0 +1,30 @@
+post:
+  summary: Log in
+  description: Returns tokens.
+  operationId: login
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/LogIn.yaml'
+  responses:
+    '200':
+      description: Successfully returned tokens
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Token.yaml'
+      headers:
+        Set-Cookie:
+          schema:
+            $ref: '../components/headers/SetCookie.yaml'
+        "\0Set-Cookie":
+          schema:
+            $ref: '../components/headers/SetCookieRefresh.yaml'
+    '401':
+      $ref: '../components/responses/Unauthorized.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

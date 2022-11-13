@@ -1,0 +1,43 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    example: cdmt48tfcls65a7mb590
+    readOnly: true
+  username:
+    type: string
+    pattern: '^[0-9a-zA-Z._]+$'
+    description: The username of the user
+    example: test
+    minLength: 2
+    maxLength: 30
+  email:
+    type: string
+    description: The email of the user
+    example: test@example.com
+  name:
+    type: string
+    description: The name of the user
+    example: Test
+    minLength: 0
+    maxLength: 100
+  bio:
+    type: string
+    description: The biography of the user
+    example: This is my bio.
+    minLength: 0
+    maxLength: 1000
+  created_at:
+    type: string
+    format: date-time
+    description: User creation date time
+    example: '2022-11-12T09:11:42.420Z'
+    nullable: true
+  updated_at:
+    type: string
+    format: date-time
+    description: User last update date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true

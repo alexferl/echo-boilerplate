@@ -1,1 +1,2 @@
 env-name = "local"
+log-level = "DEBUG"

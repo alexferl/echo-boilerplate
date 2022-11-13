@@ -1,0 +1,12 @@
+type: object
+description: Task create request
+additionalProperties: false
+required:
+  - title
+properties:
+  title:
+    type: string
+    description: The name of the user
+    minLength: 1
+    maxLength: 100
+    example: My Task

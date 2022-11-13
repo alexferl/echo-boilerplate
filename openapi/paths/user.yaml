@@ -1,0 +1,40 @@
+get:
+  summary: Get authenticated user
+  description: Returns the authenticated user.
+  operationId: getUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  responses:
+    '200':
+      description: Successfully returned a user
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+patch:
+  summary: Update authenticated user
+  description: Returns the updated authenticated user.
+  operationId: updateUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/User_Update.yaml'
+  responses:
+    '200':
+      description: Successfully returned user modifications
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'

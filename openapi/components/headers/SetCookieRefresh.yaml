@@ -1,0 +1,2 @@
+type: string
+example: refresh_token=eyJhbGciOi...; Path=/auth; HttpOnly; Secure; SameSite=Strict; Domain=localhost

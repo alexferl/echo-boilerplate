@@ -1,0 +1,86 @@
+get:
+  summary: Get a task
+  description: Returns a task.
+  operationId: getTask
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - tasks
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully returned a task
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Task.yaml'
+    '404':
+      $ref: '../components/responses/NotFound.yaml'
+    '410':
+      $ref: '../components/responses/Gone.yaml'
+patch:
+  summary: Update a task
+  description: Returns the updated task.
+  operationId: updateTask
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - tasks
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/Task_Update.yaml'
+  responses:
+    '200':
+      description: Successfully updated a task
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Task.yaml'
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '404':
+      $ref: '../components/responses/NotFound.yaml'
+    '410':
+      $ref: '../components/responses/Gone.yaml'
+    '422':
+      $ref: '../components/responses/UnprocessableEntity.yaml'
+delete:
+  summary: Delete a task
+  description: Deletes a task.
+  operationId: deleteTask
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - tasks
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully deleted a task
+    '403':
+      $ref: '../components/responses/Forbidden.yaml'
+    '404':
+      $ref: '../components/responses/NotFound.yaml'
+    '410':
+      $ref: '../components/responses/Gone.yaml'
