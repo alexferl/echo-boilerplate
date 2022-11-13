@@ -10,16 +10,9 @@ import (
 type Task struct {
 	*data.Model `bson:",inline"`
 	Title       string     `json:"title" bson:"title"`
-	IsPrivate   bool       `json:"is_private" bson:"is_private"`
 	IsCompleted bool       `json:"is_completed" bson:"is_completed"`
 	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
 	CompletedBy string     `json:"completed_by" bson:"completed_by"`
-}
-
-type TaskUser struct {
-	Id       string `json:"id" bson:"id"`
-	Username string `json:"username" bson:"username"`
-	Name     string `json:"name" bson:"name"`
 }
 
 func NewTask() *Task {
@@ -41,46 +34,52 @@ func (t *Task) Incomplete() {
 	t.CompletedBy = ""
 }
 
-type TaskWithUsers struct {
-	Id          string     `json:"id" bson:"id"`
-	CreatedAt   *time.Time `json:"created_at" bson:"created_at"`
-	CreatedBy   *TaskUser  `json:"created_by" bson:"created_by"`
-	DeletedAt   *time.Time `json:"deleted_at" bson:"deleted_at"`
-	DeletedBy   string     `json:"deleted_by" bson:"deleted_by"`
-	UpdatedAt   *time.Time `json:"updated_at" bson:"updated_at"`
-	UpdatedBy   *TaskUser  `json:"updated_by" bson:"updated_by"`
-	Title       string     `json:"title" bson:"title"`
-	IsPrivate   bool       `json:"is_private" bson:"is_private"`
-	IsCompleted bool       `json:"is_completed" bson:"is_completed"`
-	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
-	CompletedBy *TaskUser  `json:"completed_by" bson:"completed_by"`
+type TaskResponse struct {
+	Id          string            `json:"id" bson:"id"`
+	CreatedAt   *time.Time        `json:"created_at" bson:"created_at"`
+	CreatedBy   *users.PublicUser `json:"created_by" bson:"created_by"`
+	DeletedAt   *time.Time        `json:"-" bson:"deleted_at"`
+	DeletedBy   string            `json:"-" bson:"deleted_by"`
+	UpdatedAt   *time.Time        `json:"updated_at" bson:"updated_at"`
+	UpdatedBy   *users.PublicUser `json:"updated_by" bson:"updated_by"`
+	Title       string            `json:"title" bson:"title"`
+	IsCompleted bool              `json:"is_completed" bson:"is_completed"`
+	CompletedAt *time.Time        `json:"completed_at" bson:"completed_at"`
+	CompletedBy *users.PublicUser `json:"completed_by" bson:"completed_by"`
 }
 
-func (t *Task) WithUsers(user *users.User) *TaskWithUsers {
-	return &TaskWithUsers{
+func (t *Task) MakeResponse(createdBy *users.User, updatedBy *users.User, completedBy *users.User) *TaskResponse {
+	resp := &TaskResponse{
 		Id:        t.Id,
 		CreatedAt: t.CreatedAt,
-		CreatedBy: &TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-			Name:     user.Name,
+		CreatedBy: &users.PublicUser{
+			Id:       createdBy.Id,
+			Username: createdBy.Username,
+			Name:     createdBy.Name,
 		},
-		DeletedAt: t.DeletedAt,
-		DeletedBy: t.DeletedBy,
-		UpdatedAt: t.UpdatedAt,
-		UpdatedBy: &TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-			Name:     user.Name,
-		},
+		DeletedAt:   t.DeletedAt,
+		DeletedBy:   t.DeletedBy,
+		UpdatedAt:   t.UpdatedAt,
 		Title:       t.Title,
-		IsPrivate:   t.IsPrivate,
 		IsCompleted: t.IsCompleted,
 		CompletedAt: t.CompletedAt,
-		CompletedBy: &TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-			Name:     user.Name,
-		},
 	}
+
+	if updatedBy != nil {
+		resp.UpdatedBy = &users.PublicUser{
+			Id:       updatedBy.Id,
+			Username: updatedBy.Username,
+			Name:     updatedBy.Name,
+		}
+	}
+
+	if completedBy != nil {
+		resp.CompletedBy = &users.PublicUser{
+			Id:       completedBy.Id,
+			Username: completedBy.Username,
+			Name:     completedBy.Name,
+		}
+	}
+
+	return resp
 }

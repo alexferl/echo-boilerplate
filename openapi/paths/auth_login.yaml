@@ -9,7 +9,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../components/schemas/Login.yaml'
+          $ref: '../components/schemas/LogIn.yaml'
   responses:
     '200':
       description: Successfully returned tokens

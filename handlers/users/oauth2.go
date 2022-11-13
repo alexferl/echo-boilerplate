@@ -36,7 +36,7 @@ func getOAuth2Config() *oauth2.Config {
 	}
 }
 
-func (h *Handler) OAuth2Login(c echo.Context) error {
+func (h *Handler) OAuth2LogIn(c echo.Context) error {
 	state, err := util.GenerateRandomString(80)
 	if err != nil {
 		return fmt.Errorf("oauth2: failed to generate state: %v", err)

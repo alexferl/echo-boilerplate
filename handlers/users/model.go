@@ -38,6 +38,12 @@ type User struct {
 	LastRefreshAt    *time.Time `json:"-" bson:"last_refresh_at"`
 }
 
+type PublicUser struct {
+	Id       string `json:"id" bson:"id"`
+	Username string `json:"username" bson:"username"`
+	Name     string `json:"name" bson:"name"`
+}
+
 func NewUser(email string, username string) *User {
 	return &User{
 		Model:    data.NewModel(),
@@ -120,9 +126,10 @@ func (u *User) Refresh() ([]byte, []byte, error) {
 	return access, refresh, nil
 }
 
-type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int64  `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
-	TokenType    string `json:"token_type"`
+func (u *User) Public() *PublicUser {
+	return &PublicUser{
+		Id:       u.Id,
+		Username: u.Username,
+		Name:     u.Name,
+	}
 }

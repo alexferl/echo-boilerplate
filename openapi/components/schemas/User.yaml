@@ -4,14 +4,15 @@ properties:
   id:
     type: string
     description: Unique identifier for this object
+    example: cdmt48tfcls65a7mb590
     readOnly: true
   username:
     type: string
-    pattern: "^[0-9a-zA-Z._]+$"
+    pattern: '^[0-9a-zA-Z._]+$'
     description: The username of the user
+    example: test
     minLength: 2
     maxLength: 30
-    example: test
   email:
     type: string
     description: The email of the user
@@ -19,22 +20,24 @@ properties:
   name:
     type: string
     description: The name of the user
+    example: Test
     minLength: 0
     maxLength: 100
-    example: Test
   bio:
     type: string
     description: The biography of the user
+    example: This is my bio.
     minLength: 0
     maxLength: 1000
-    example: This is my example bio.
   created_at:
     type: string
-    nullable: true
     format: date-time
     description: User creation date time
+    example: '2022-11-12T09:11:42.420Z'
+    nullable: true
   updated_at:
     type: string
-    nullable: true
     format: date-time
     description: User last update date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true

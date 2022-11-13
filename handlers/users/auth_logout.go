@@ -12,11 +12,11 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type RevokePayload struct {
+type AuthLogOutRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (h *Handler) AuthLogout(c echo.Context) error {
+func (h *Handler) AuthLogOut(c echo.Context) error {
 	token := c.Get("refresh_token").(jwt.Token)
 	hashedToken, err := util.HashToken(token)
 	if err != nil {

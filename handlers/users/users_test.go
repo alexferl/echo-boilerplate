@@ -13,12 +13,12 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func createUsers(num int) []*users.ShortUser {
-	var result []*users.ShortUser
+func createUsers(num int) []*users.PublicUser {
+	var result []*users.PublicUser
 
 	for i := 1; i <= num; i++ {
 		user := users.NewUser(fmt.Sprintf("user%d@example.com", i), fmt.Sprintf("user%d", i))
-		short := &users.ShortUser{
+		short := &users.PublicUser{
 			Id:       user.Id,
 			Username: user.Username,
 		}
@@ -65,7 +65,7 @@ func TestHandler_ListUsers_200(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 
-	var result users.UsersResponse
+	var result users.ListUsersResponse
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 

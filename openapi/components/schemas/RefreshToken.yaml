@@ -1,4 +1,5 @@
 type: object
+description: Auth refresh token request
 additionalProperties: false
 required:
   - refresh_token

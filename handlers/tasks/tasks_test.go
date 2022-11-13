@@ -22,26 +22,15 @@ func TestHandler_CreateTask_200(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	payload := &tasks.CreateTaskPayload{
+	payload := &tasks.CreateTaskRequest{
 		Title: "My Title",
 	}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
-	task.Create(user.Id)
-	short := &tasks.ListTasks{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsPrivate:   task.IsPrivate,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		CreatedBy: &tasks.TaskUser{
-			Id:       user.Id,
-			Username: user.Username,
-		},
-	}
-	retTasks := []*tasks.ListTasks{short}
+	newTask := tasks.NewTask()
+	newTask.Create(user.Id)
+	task := newTask.MakeResponse(user, nil, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -56,19 +45,19 @@ func TestHandler_CreateTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			retTasks,
+			[]*tasks.TaskResponse{task},
 			nil,
 		)
 
 	s.ServeHTTP(resp, req)
 
-	var result tasks.ShortTask
+	var result tasks.TaskResponse
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Equal(t, short.Id, result.Id)
-	assert.Equal(t, short.CreatedBy.Id, result.CreatedBy.Id)
+	assert.Equal(t, task.Id, result.Id)
+	assert.Equal(t, task.CreatedBy.Id, result.CreatedBy.Id)
 }
 
 func TestHandler_CreateTask_401(t *testing.T) {
@@ -90,7 +79,7 @@ func TestHandler_CreateTask_422(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	payload := &tasks.CreateTaskPayload{
+	payload := &tasks.CreateTaskRequest{
 		Title: "",
 	}
 	b, err := json.Marshal(payload)
@@ -103,31 +92,21 @@ func TestHandler_CreateTask_422(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 
-	var result tasks.ListTasksResp
+	var result tasks.ListTasksResponse
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
 }
 
-func createTasks(num int, user *users.User) []*tasks.ListTasks {
-	var result []*tasks.ListTasks
+func createTasks(num int, user *users.User) []*tasks.TaskResponse {
+	var result []*tasks.TaskResponse
 
 	for i := 1; i <= num; i++ {
-		task := tasks.NewTask()
-		task.Create(user.Id)
-		short := &tasks.ListTasks{
-			Id:          task.Id,
-			Title:       task.Title,
-			IsPrivate:   task.IsPrivate,
-			IsCompleted: task.IsCompleted,
-			CreatedAt:   task.CreatedAt,
-			CreatedBy: &tasks.TaskUser{
-				Id:       user.Id,
-				Username: user.Username,
-			},
-		}
-		result = append(result, short)
+		newTask := tasks.NewTask()
+		newTask.Create(user.Id)
+		task := newTask.MakeResponse(user, nil, nil)
+		result = append(result, task)
 	}
 
 	return result
@@ -172,7 +151,7 @@ func TestHandler_ListTasks_200(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 
-	var result tasks.ListTasksResp
+	var result tasks.ListTasksResponse
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 

@@ -12,22 +12,12 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type ShortTask struct {
-	Id          string     `json:"id" bson:"id"`
-	Title       string     `json:"title" bson:"title"`
-	IsPrivate   bool       `json:"is_private" bson:"is_private"`
-	IsCompleted bool       `json:"is_completed" bson:"is_completed"`
-	CreatedAt   *time.Time `json:"created_at" bson:"created_at"`
-	CreatedBy   *TaskUser  `json:"created_by" bson:"created_by"`
-}
-
-type CreateTaskPayload struct {
-	Title     string `json:"title"`
-	IsPrivate bool   `json:"is_private"`
+type CreateTaskRequest struct {
+	Title string `json:"title"`
 }
 
 func (h *Handler) CreateTask(c echo.Context) error {
-	body := &CreateTaskPayload{}
+	body := &CreateTaskRequest{}
 	if err := c.Bind(body); err != nil {
 		return fmt.Errorf("failed to bind: %v", err)
 	}
@@ -37,48 +27,24 @@ func (h *Handler) CreateTask(c echo.Context) error {
 	newTask := NewTask()
 	newTask.Create(token.Subject())
 	newTask.Title = body.Title
-	newTask.IsPrivate = body.IsPrivate
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.Insert(ctx, newTask, []*ListTasks{})
+	result, err := h.Mapper.Insert(ctx, newTask, []*TaskResponse{})
 	if err != nil {
 		return fmt.Errorf("failed to insert task: %v", err)
 	}
 
-	tasks := result.([]*ListTasks)
+	tasks := result.([]*TaskResponse)
 	if len(tasks) < 1 {
 		return fmt.Errorf("failed to retrieve inserted task: %v", err)
 	}
 
-	task := tasks[0]
-	resp := ShortTask{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsPrivate:   task.IsPrivate,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		CreatedBy:   task.CreatedBy,
-	}
-
-	return h.Validate(c, http.StatusOK, resp)
+	return h.Validate(c, http.StatusOK, tasks[0])
 }
 
-type ListTasks struct {
-	Id          string     `json:"id" bson:"id"`
-	Title       string     `json:"title" bson:"title"`
-	IsPrivate   bool       `json:"is_private" bson:"is_private"`
-	IsCompleted bool       `json:"is_completed" bson:"is_completed"`
-	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
-	CompletedBy *TaskUser  `json:"completed_by" bson:"completed_by"`
-	CreatedAt   *time.Time `json:"created_at" bson:"created_at"`
-	CreatedBy   *TaskUser  `json:"created_by" bson:"created_by"`
-	UpdatedAt   *time.Time `json:"updated_at" bson:"updated_at"`
-	UpdatedBy   *TaskUser  `json:"updated_by" bson:"updated_by"`
-}
-
-type ListTasksResp struct {
-	Tasks []*ListTasks `json:"tasks"`
+type ListTasksResponse struct {
+	Tasks []*TaskResponse `json:"tasks"`
 }
 
 func (h *Handler) ListTasks(c echo.Context) error {
@@ -91,7 +57,7 @@ func (h *Handler) ListTasks(c echo.Context) error {
 		return fmt.Errorf("failed counting tasks: %v", err)
 	}
 
-	result, err := h.Mapper.Aggregate(ctx, nil, limit, skip, []*ListTasks{})
+	result, err := h.Mapper.Aggregate(ctx, nil, limit, skip, []*TaskResponse{})
 	if err != nil {
 		return fmt.Errorf("failed getting tasks: %v", err)
 	}
@@ -99,5 +65,5 @@ func (h *Handler) ListTasks(c echo.Context) error {
 	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
 	util.SetPaginationHeaders(c.Response().Header(), int(count), page, perPage, uri)
 
-	return h.Validate(c, http.StatusOK, &ListTasksResp{Tasks: result.([]*ListTasks)})
+	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.([]*TaskResponse)})
 }

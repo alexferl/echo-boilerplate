@@ -1,5 +1,11 @@
 type: object
+description: Token response
 additionalProperties: false
+required:
+  - access_token
+  - expires_in
+  - refresh_token
+  - token_type
 properties:
   access_token:
     type: string

@@ -21,7 +21,7 @@ func TestHandler_AuthLogin_200(t *testing.T) {
 	err := user.SetPassword(pwd)
 	assert.NoError(t, err)
 
-	b, err := json.Marshal(&users.LoginPayload{Password: pwd})
+	b, err := json.Marshal(&users.AuthLogInRequest{Password: pwd})
 	assert.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(b))
@@ -72,7 +72,7 @@ func TestHandler_AuthLogin_200(t *testing.T) {
 }
 
 func TestHandler_AuthLogin_401(t *testing.T) {
-	payload := &users.LoginPayload{}
+	payload := &users.AuthLogInRequest{}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 

@@ -17,7 +17,7 @@ func TestHandler_GetUsername_200(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	result := &users.UsernameResponse{
+	result := &users.GetUsernameResponse{
 		Id:        user.Id,
 		Username:  user.Username,
 		CreatedAt: user.CreatedAt,
@@ -28,7 +28,7 @@ func TestHandler_GetUsername_200(t *testing.T) {
 		name       string
 		username   string
 		statusCode int
-		retUser    *users.UsernameResponse
+		retUser    *users.GetUsernameResponse
 		retErr     error
 	}{
 		{
@@ -73,7 +73,7 @@ func TestHandler_GetUsername_200_Not_Logged_In(t *testing.T) {
 
 	user := users.NewUser("test@example.com", "test")
 
-	result := &users.UsernameResponse{
+	result := &users.GetUsernameResponse{
 		Id:        user.Id,
 		Username:  user.Username,
 		CreatedAt: user.CreatedAt,
@@ -138,7 +138,7 @@ func TestHandler_GetUsername_410(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	result := &users.UsernameResponse{
+	result := &users.GetUsernameResponse{
 		Id:        user.Id,
 		Username:  user.Username,
 		CreatedAt: user.CreatedAt,

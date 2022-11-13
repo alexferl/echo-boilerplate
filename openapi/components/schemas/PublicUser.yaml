@@ -1,5 +1,4 @@
 type: object
-description: Username response
 additionalProperties: false
 properties:
   id:
@@ -11,16 +10,12 @@ properties:
     type: string
     pattern: '^[0-9a-zA-Z._]+$'
     description: The username of the user
+    example: test
     minLength: 2
     maxLength: 30
-    example: test
-  created_at:
+  name:
     type: string
-    nullable: true
-    format: date-time
-    description: User creation date time
-  updated_at:
-    type: string
-    nullable: true
-    format: date-time
-    description: User last update date time
+    description: The name of the user
+    example: Test
+    minLength: 0
+    maxLength: 100

@@ -4,6 +4,7 @@ properties:
   id:
     type: string
     description: Unique identifier for this object
+    example: cdndmc5fcls6kndagdgg
     readOnly: true
   title:
     type: string
@@ -11,32 +12,34 @@ properties:
     minLength: 0
     maxLength: 100
     example: My Task
-  is_private:
-    type: boolean
   is_completed:
     type: boolean
+    example: true
   completed_at:
     type: string
-    nullable: true
     format: date-time
     description: Task completion date time
+    example: '2022-11-13T07:12:33.017Z'
+    nullable: true
   completed_by:
     nullable: true
     allOf:
-      - $ref: './User.yaml'
+      - $ref: './PublicUser.yaml'
   created_at:
     type: string
-    nullable: true
     format: date-time
     description: Task creation date time
+    example: '2022-11-12T14:54:18.103Z'
+    nullable: true
   created_by:
-    $ref: './User.yaml'
+    $ref: './PublicUser.yaml'
   updated_at:
     type: string
-    nullable: true
     format: date-time
     description: Task update date time
+    example: '2022-11-12T14:58:33.409Z'
+    nullable: true
   updated_by:
     nullable: true
     allOf:
-      - $ref: './User.yaml'
+      - $ref: './PublicUser.yaml'

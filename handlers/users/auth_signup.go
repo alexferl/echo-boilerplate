@@ -11,20 +11,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type SignUpPayload struct {
+type AuthSignUpRequest struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type SignUpResponse struct {
+type AuthSignUpResponse struct {
 	Id       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }
 
 func (h *Handler) AuthSignUp(c echo.Context) error {
-	body := &SignUpPayload{}
+	body := &AuthSignUpRequest{}
 	if err := c.Bind(body); err != nil {
 		return fmt.Errorf("failed to bind: %v", err)
 	}
@@ -35,7 +35,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		bson.D{{"username", body.Username}},
 		bson.D{{"email", body.Email}},
 	}}}
-	exist, err := h.Mapper.FindOne(ctx, filter, &SignUpResponse{})
+	exist, err := h.Mapper.FindOne(ctx, filter, &AuthSignUpResponse{})
 	if err != nil {
 		if err != ErrUserNotFound {
 			return fmt.Errorf("failed to get user: %v", err)
@@ -59,7 +59,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		return fmt.Errorf("failed to insert user: %v", err)
 	}
 
-	u := SignUpResponse{
+	u := &AuthSignUpResponse{
 		Id:       user.Id,
 		Email:    user.Email,
 		Username: user.Username,

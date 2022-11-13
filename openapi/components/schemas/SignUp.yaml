@@ -1,4 +1,5 @@
 type: object
+description: Sign Up request
 additionalProperties: false
 required:
   - email
@@ -12,7 +13,7 @@ properties:
     example: test@example.com
   username:
     type: string
-    pattern: "^[0-9a-zA-Z._]+$"
+    pattern: '^[0-9a-zA-Z._]+$'
     description: The username of the user
     minLength: 2
     maxLength: 30
@@ -21,5 +22,6 @@ properties:
     type: string
     format: password
     description: The password of the user
+    example: correct-horse-staple-battery
     minLength: 12
     maxLength: 100

@@ -1,5 +1,8 @@
 type: object
+description: Task create request
 additionalProperties: false
+required:
+  - title
 properties:
   title:
     type: string
@@ -7,5 +10,3 @@ properties:
     minLength: 1
     maxLength: 100
     example: My Task
-  is_private:
-    type: boolean

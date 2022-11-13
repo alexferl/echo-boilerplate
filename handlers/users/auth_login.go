@@ -14,13 +14,20 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type LoginPayload struct {
+type AuthLogInRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (h *Handler) AuthLogin(c echo.Context) error {
-	body := &LoginPayload{}
+type TokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int64  `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+}
+
+func (h *Handler) AuthLogIn(c echo.Context) error {
+	body := &AuthLogInRequest{}
 	if err := c.Bind(body); err != nil {
 		return err
 	}

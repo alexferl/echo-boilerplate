@@ -14,7 +14,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type RefreshPayload struct {
+type AuthRefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 

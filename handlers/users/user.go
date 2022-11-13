@@ -32,14 +32,14 @@ func (h *Handler) GetUser(c echo.Context) error {
 	return h.Validate(c, http.StatusOK, result)
 }
 
-type UserPatch struct {
+type UpdateUserRequest struct {
 	Email string `json:"email" bson:"email"`
 	Name  string `json:"name" bson:"name"`
 	Bio   string `json:"bio" bson:"bio"`
 }
 
 func (h *Handler) UpdateUser(c echo.Context) error {
-	body := &UserPatch{}
+	body := &UpdateUserRequest{}
 	if err := c.Bind(body); err != nil {
 		return err
 	}

@@ -86,7 +86,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 		UpdatedAt: updatedUser.UpdatedAt,
 	}
 
-	b, err := json.Marshal(&users.UserPatch{
+	b, err := json.Marshal(&users.UpdateUserRequest{
 		Name: updatedUser.Name,
 		Bio:  updatedUser.Bio,
 	})

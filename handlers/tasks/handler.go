@@ -68,13 +68,13 @@ func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, to
 	return task, nil
 }
 
-func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) (*ShortTask, func() error) {
-	result, err := h.Mapper.Aggregate(ctx, filter, 1, 0, []*TaskWithUsers{})
+func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) (*TaskResponse, func() error) {
+	result, err := h.Mapper.Aggregate(ctx, filter, 1, 0, []*TaskResponse{})
 	if err != nil {
 		return nil, wrap(fmt.Errorf("failed getting task: %v", err))
 	}
 
-	tasks := result.([]*TaskWithUsers)
+	tasks := result.([]*TaskResponse)
 	if len(tasks) < 1 {
 		return nil, wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
 	}
@@ -84,16 +84,7 @@ func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) 
 		return nil, wrap(h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"}))
 	}
 
-	t := &ShortTask{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsPrivate:   task.IsPrivate,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		CreatedBy:   task.CreatedBy,
-	}
-
-	return t, nil
+	return task, nil
 }
 
 func wrap(err error) func() error {

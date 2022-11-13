@@ -131,7 +131,7 @@ func TestHandler_AuthRefresh_200_Token(t *testing.T) {
 	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 
-	payload := &users.RefreshPayload{
+	payload := &users.AuthRefreshRequest{
 		RefreshToken: string(refresh),
 	}
 	b, err := json.Marshal(payload)
@@ -199,7 +199,7 @@ func TestHandler_AuthRefresh_400_Token_Missing(t *testing.T) {
 func TestHandler_AuthRefresh_401_Token_Invalid(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	payload := &users.RefreshPayload{
+	payload := &users.AuthRefreshRequest{
 		RefreshToken: "invalid",
 	}
 	b, err := json.Marshal(payload)
@@ -222,7 +222,7 @@ func TestHandler_AuthRefresh_401_Token_Mismatch(t *testing.T) {
 	assert.NoError(t, err)
 	user.Logout()
 
-	payload := &users.RefreshPayload{
+	payload := &users.AuthRefreshRequest{
 		RefreshToken: string(refresh),
 	}
 	b, err := json.Marshal(payload)

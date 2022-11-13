@@ -12,14 +12,8 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-type ShortUser struct {
-	Id       string `json:"id" bson:"id"`
-	Username string `json:"username" bson:"username"`
-	Email    string `json:"email" bson:"email"`
-}
-
-type UsersResponse struct {
-	Users []*ShortUser `json:"users"`
+type ListUsersResponse struct {
+	Users []*PublicUser `json:"users"`
 }
 
 func (h *Handler) ListUsers(c echo.Context) error {
@@ -33,7 +27,7 @@ func (h *Handler) ListUsers(c echo.Context) error {
 	}
 
 	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(skip))
-	result, err := h.Mapper.Find(ctx, nil, []*ShortUser{}, opts)
+	result, err := h.Mapper.Find(ctx, nil, []*PublicUser{}, opts)
 	if err != nil {
 		return fmt.Errorf("failed getting users: %v", err)
 	}
@@ -41,7 +35,7 @@ func (h *Handler) ListUsers(c echo.Context) error {
 	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
 	util.SetPaginationHeaders(c.Response().Header(), int(count), page, perPage, uri)
 
-	resp := &UsersResponse{Users: result.([]*ShortUser)}
+	resp := &ListUsersResponse{Users: result.([]*PublicUser)}
 
 	return h.Validate(c, http.StatusOK, resp)
 }

@@ -1,4 +1,8 @@
 type: object
+additionalProperties: false
+required:
+  - message
+  - errors
 properties:
   message:
     type: string
@@ -6,7 +10,3 @@ properties:
     type: array
     items:
       type: string
-required:
-  - message
-  - errors
-additionalProperties: false

@@ -15,22 +15,21 @@ func (h *Handler) GetTask(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"id", c.Param("id")}}
-	t, errResp := h.getAggregate(ctx, c, filter)
+	task, errResp := h.getAggregate(ctx, c, filter)
 	if errResp != nil {
 		return errResp()
 	}
 
-	return h.Validate(c, http.StatusOK, t)
+	return h.Validate(c, http.StatusOK, task)
 }
 
-type TaskPatch struct {
+type UpdateTaskRequest struct {
 	Title       string `json:"title" bson:"title"`
-	IsPrivate   bool   `json:"is_private" bson:"is_private"`
 	IsCompleted bool   `json:"is_completed" bson:"is_completed"`
 }
 
 func (h *Handler) UpdateTask(c echo.Context) error {
-	body := &TaskPatch{}
+	body := &UpdateTaskRequest{}
 	if err := c.Bind(body); err != nil {
 		return err
 	}
@@ -48,36 +47,27 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 		task.Title = body.Title
 	}
 
-	task.IsPrivate = body.IsPrivate
-
-	if task.IsCompleted {
-		task.Complete(token.Subject())
-	} else {
-		task.Incomplete()
+	if body.IsCompleted != task.IsCompleted {
+		if body.IsCompleted {
+			task.Complete(token.Subject())
+		} else {
+			task.Incomplete()
+		}
 	}
 
 	task.Update(token.Subject())
 
-	update, err := h.Mapper.UpdateById(ctx, taskId, task, []*TaskWithUsers{})
+	update, err := h.Mapper.UpdateById(ctx, taskId, task, []*TaskResponse{})
 	if err != nil {
 		return fmt.Errorf("failed updating task: %v", err)
 	}
 
-	res := update.([]*TaskWithUsers)
+	res := update.([]*TaskResponse)
 	if len(res) < 1 {
 		return fmt.Errorf("failed to retrieve updated task: %v", err)
 	}
 
-	updated := res[0]
-	t := ShortTask{
-		Id:          updated.Id,
-		Title:       updated.Title,
-		IsPrivate:   updated.IsPrivate,
-		IsCompleted: updated.IsCompleted,
-		CreatedAt:   updated.CreatedAt,
-		CreatedBy:   updated.CreatedBy,
-	}
-	return h.Validate(c, http.StatusOK, t)
+	return h.Validate(c, http.StatusOK, res[0])
 }
 
 func (h *Handler) DeleteTask(c echo.Context) error {

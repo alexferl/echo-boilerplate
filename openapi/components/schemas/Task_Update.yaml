@@ -1,4 +1,5 @@
 type: object
+description: Task update request
 additionalProperties: false
 properties:
   title:
@@ -7,7 +8,5 @@ properties:
     minLength: 0
     maxLength: 100
     example: My Updated Task
-  is_private:
-    type: boolean
   is_completed:
     type: boolean

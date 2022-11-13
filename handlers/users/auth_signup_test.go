@@ -16,7 +16,7 @@ import (
 func TestHandler_Auth_Signup_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
-	payload := &users.SignUpPayload{
+	payload := &users.AuthSignUpRequest{
 		Email:    "test@example.com",
 		Username: "test",
 		Password: "abcdefghijkl",
@@ -57,7 +57,7 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 func TestHandler_Auth_Signup_409(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
-	payload := &users.SignUpPayload{
+	payload := &users.AuthSignUpRequest{
 		Email:    "test@example.com",
 		Username: "test",
 		Password: "abcdefghijkl",

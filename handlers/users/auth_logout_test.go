@@ -81,7 +81,7 @@ func TestHandler_AuthLogout_200_Token(t *testing.T) {
 	_, refresh, err := user.Login()
 	assert.NoError(t, err)
 
-	payload := &users.RevokePayload{
+	payload := &users.AuthLogOutRequest{
 		RefreshToken: string(refresh),
 	}
 	b, err := json.Marshal(payload)
@@ -137,7 +137,7 @@ func TestHandler_AuthLogout_401_Token_Invalid(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	payload := &users.RevokePayload{
+	payload := &users.AuthLogOutRequest{
 		RefreshToken: "invalid",
 	}
 	b, err := json.Marshal(payload)
@@ -161,7 +161,7 @@ func TestHandler_AuthLogout_401_Token_Mismatch(t *testing.T) {
 	assert.NoError(t, err)
 	user.Logout()
 
-	payload := &users.RevokePayload{
+	payload := &users.AuthLogOutRequest{
 		RefreshToken: string(refresh),
 	}
 	b, err := json.Marshal(payload)
