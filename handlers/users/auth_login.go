@@ -37,7 +37,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 	filter := bson.D{{"email", body.Email}}
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
-		if err == ErrUserNotFound {
+		if err == ErrNoDocuments {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
 		}
 		return fmt.Errorf("failed getting user: %v", err)

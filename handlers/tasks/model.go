@@ -10,7 +10,7 @@ import (
 type Task struct {
 	*data.Model `bson:",inline"`
 	Title       string     `json:"title" bson:"title"`
-	IsCompleted bool       `json:"is_completed" bson:"is_completed"`
+	Completed   bool       `json:"completed" bson:"completed"`
 	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
 	CompletedBy string     `json:"completed_by" bson:"completed_by"`
 }
@@ -22,14 +22,14 @@ func NewTask() *Task {
 }
 
 func (t *Task) Complete(id string) {
-	t.IsCompleted = true
+	t.Completed = true
 	now := time.Now()
 	t.CompletedAt = &now
 	t.CompletedBy = id
 }
 
 func (t *Task) Incomplete() {
-	t.IsCompleted = false
+	t.Completed = false
 	t.CompletedAt = nil
 	t.CompletedBy = ""
 }
@@ -43,7 +43,7 @@ type TaskResponse struct {
 	UpdatedAt   *time.Time        `json:"updated_at" bson:"updated_at"`
 	UpdatedBy   *users.PublicUser `json:"updated_by" bson:"updated_by"`
 	Title       string            `json:"title" bson:"title"`
-	IsCompleted bool              `json:"is_completed" bson:"is_completed"`
+	Completed   bool              `json:"completed" bson:"completed"`
 	CompletedAt *time.Time        `json:"completed_at" bson:"completed_at"`
 	CompletedBy *users.PublicUser `json:"completed_by" bson:"completed_by"`
 }
@@ -61,7 +61,7 @@ func (t *Task) MakeResponse(createdBy *users.User, updatedBy *users.User, comple
 		DeletedBy:   t.DeletedBy,
 		UpdatedAt:   t.UpdatedAt,
 		Title:       t.Title,
-		IsCompleted: t.IsCompleted,
+		Completed:   t.Completed,
 		CompletedAt: t.CompletedAt,
 	}
 

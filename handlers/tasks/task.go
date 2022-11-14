@@ -8,14 +8,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (h *Handler) GetTask(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"id", c.Param("id")}}
-	task, errResp := h.getAggregate(ctx, c, filter)
+	task, errResp := h.getAggregate(ctx, c)
 	if errResp != nil {
 		return errResp()
 	}
@@ -24,8 +22,8 @@ func (h *Handler) GetTask(c echo.Context) error {
 }
 
 type UpdateTaskRequest struct {
-	Title       string `json:"title" bson:"title"`
-	IsCompleted bool   `json:"is_completed" bson:"is_completed"`
+	Title     string `json:"title" bson:"title"`
+	Completed bool   `json:"completed" bson:"completed"`
 }
 
 func (h *Handler) UpdateTask(c echo.Context) error {
@@ -47,8 +45,8 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 		task.Title = body.Title
 	}
 
-	if body.IsCompleted != task.IsCompleted {
-		if body.IsCompleted {
+	if body.Completed != task.Completed {
+		if body.Completed {
 			task.Complete(token.Subject())
 		} else {
 			task.Incomplete()

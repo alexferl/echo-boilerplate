@@ -29,6 +29,11 @@ func NewMapper(db *mongo.Client) data.Mapper {
 	}
 }
 
+func (m *Mapper) Collection(name string) data.Mapper {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (m *Mapper) Insert(ctx context.Context, document any, result any, opts ...*options.InsertOneOptions) (any, error) {
 	session, txnOpts, err := getSession(m.client)
 	if err != nil {
@@ -199,6 +204,11 @@ func (m *Mapper) UpdateById(ctx context.Context, id string, document any, result
 	update := bson.D{{"$set", document}}
 
 	return m.Update(ctx, filter, update, result, opts...)
+}
+
+func (m *Mapper) Upsert(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
+	// TODO implement me
+	panic("implement me")
 }
 
 func getSession(client *mongo.Client) (mongo.Session, *options.TransactionOptions, error) {

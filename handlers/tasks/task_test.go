@@ -138,8 +138,8 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 	assert.NoError(t, err)
 
 	payload := &tasks.UpdateTaskRequest{
-		Title:       "My Edited Task",
-		IsCompleted: true,
+		Title:     "My Edited Task",
+		Completed: true,
 	}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
@@ -347,18 +347,18 @@ func TestHandler_DeleteTask_204(t *testing.T) {
 			DeletedAt: nil,
 		},
 		Title:       "",
-		IsCompleted: false,
+		Completed:   false,
 		CompletedAt: task.CompletedAt,
 		CompletedBy: task.CompletedBy,
 	}
 	task.Delete(user.Id)
 	update := &tasks.TaskResponse{
-		Id:          task.Id,
-		Title:       task.Title,
-		IsCompleted: task.IsCompleted,
-		CreatedAt:   task.CreatedAt,
-		DeletedBy:   user.Id,
-		DeletedAt:   user.DeletedAt,
+		Id:        task.Id,
+		Title:     task.Title,
+		Completed: task.Completed,
+		CreatedAt: task.CreatedAt,
+		DeletedBy: user.Id,
+		DeletedAt: user.DeletedAt,
 	}
 
 	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)

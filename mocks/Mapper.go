@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	data "github.com/alexferl/echo-boilerplate/data"
 	mock "github.com/stretchr/testify/mock"
 
 	options "go.mongodb.org/mongo-driver/mongo/options"
@@ -43,6 +44,22 @@ func (_m *Mapper) Aggregate(ctx context.Context, filter interface{}, limit int, 
 	}
 
 	return r0, r1
+}
+
+// Collection provides a mock function with given fields: name
+func (_m *Mapper) Collection(name string) data.Mapper {
+	ret := _m.Called(name)
+
+	var r0 data.Mapper
+	if rf, ok := ret.Get(0).(func(string) data.Mapper); ok {
+		r0 = rf(name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(data.Mapper)
+		}
+	}
+
+	return r0
 }
 
 // Count provides a mock function with given fields: ctx, filter, opts
@@ -246,6 +263,36 @@ func (_m *Mapper) UpdateById(ctx context.Context, id string, document interface{
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string, interface{}, interface{}, ...*options.UpdateOptions) error); ok {
 		r1 = rf(ctx, id, document, result, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Upsert provides a mock function with given fields: ctx, filter, update, result, opts
+func (_m *Mapper) Upsert(ctx context.Context, filter interface{}, update interface{}, result interface{}, opts ...*options.FindOneAndUpdateOptions) (interface{}, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, filter, update, result)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}, interface{}, interface{}, ...*options.FindOneAndUpdateOptions) interface{}); ok {
+		r0 = rf(ctx, filter, update, result, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}, interface{}, interface{}, ...*options.FindOneAndUpdateOptions) error); ok {
+		r1 = rf(ctx, filter, update, result, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}

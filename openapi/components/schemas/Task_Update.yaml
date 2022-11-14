@@ -8,5 +8,6 @@ properties:
     minLength: 0
     maxLength: 100
     example: My Updated Task
-  is_completed:
+  completed:
     type: boolean
+    example: true

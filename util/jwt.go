@@ -24,10 +24,11 @@ type TokenType int64
 const (
 	AccessToken TokenType = iota + 1
 	RefreshToken
+	PersonalToken
 )
 
 func (t TokenType) String() string {
-	return [...]string{"access", "refresh"}[t-1]
+	return [...]string{"access", "refresh", "personal"}[t-1]
 }
 
 func GenerateTokens(sub string, claims map[string]any) ([]byte, []byte, error) {
@@ -45,27 +46,23 @@ func GenerateTokens(sub string, claims map[string]any) ([]byte, []byte, error) {
 }
 
 func GenerateAccessToken(sub string, claims map[string]any) ([]byte, error) {
-	return generateToken(AccessToken, sub, claims)
+	expiry := viper.GetDuration(config.JWTAccessTokenExpiry)
+	return generateToken(AccessToken, expiry, sub, claims)
 }
 
 func GenerateRefreshToken(sub string) ([]byte, error) {
-	return generateToken(RefreshToken, sub, map[string]any{})
+	expiry := viper.GetDuration(config.JWTRefreshTokenExpiry)
+	return generateToken(RefreshToken, expiry, sub, map[string]any{})
 }
 
-func generateToken(typ TokenType, sub string, claims map[string]any) ([]byte, error) {
+func GeneratePersonalToken(sub string, expiry time.Duration, claims map[string]any) ([]byte, error) {
+	return generateToken(PersonalToken, expiry, sub, claims)
+}
+
+func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[string]any) ([]byte, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
 		return nil, err
-	}
-
-	var expiry time.Duration
-	switch typ {
-	case AccessToken:
-		expiry = viper.GetDuration(config.JWTAccessTokenExpiry)
-	case RefreshToken:
-		expiry = viper.GetDuration(config.JWTRefreshTokenExpiry)
-	default:
-		return nil, fmt.Errorf("invalid token type")
 	}
 
 	builder := jwt.NewBuilder().
@@ -93,7 +90,7 @@ func generateToken(typ TokenType, sub string, claims map[string]any) ([]byte, er
 	return signed, nil
 }
 
-func parseToken(encodedToken []byte) (jwt.Token, error) {
+func ParseToken(encodedToken []byte) (jwt.Token, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
 		return nil, err
@@ -123,6 +120,18 @@ func HashToken(token jwt.Token) ([]byte, error) {
 	b := h.Sum(nil)
 
 	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+func GetRoles(token jwt.Token) []string {
+	val, _ := token.Get("roles")
+	roles := val.([]interface{})
+
+	var res []string
+	for _, role := range roles {
+		res = append(res, role.(string))
+	}
+
+	return res
 }
 
 func HasRole(token jwt.Token, role string) bool {

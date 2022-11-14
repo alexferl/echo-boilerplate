@@ -85,7 +85,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	filter := bson.D{{"email", googleUser.Email}}
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
-		if err != ErrUserNotFound {
+		if err != ErrNoDocuments {
 			return fmt.Errorf("oauth2: failed to get user: %v", err)
 		}
 	}

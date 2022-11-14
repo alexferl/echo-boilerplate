@@ -10,6 +10,7 @@ import (
 	"github.com/alexferl/golib/http/router"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/alexferl/echo-boilerplate/data"
@@ -68,7 +69,8 @@ func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, to
 	return task, nil
 }
 
-func (h *Handler) getAggregate(ctx context.Context, c echo.Context, filter any) (*TaskResponse, func() error) {
+func (h *Handler) getAggregate(ctx context.Context, c echo.Context) (*TaskResponse, func() error) {
+	filter := bson.D{{"id", c.Param("id")}}
 	result, err := h.Mapper.Aggregate(ctx, filter, 1, 0, []*TaskResponse{})
 	if err != nil {
 		return nil, wrap(fmt.Errorf("failed getting task: %v", err))

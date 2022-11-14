@@ -27,14 +27,14 @@ func TestParseToken(t *testing.T) {
 	access, refresh, err := GenerateTokens(sub, map[string]any{"claim": claim})
 	assert.NoError(t, err)
 
-	accessToken, err := parseToken(access)
+	accessToken, err := ParseToken(access)
 	assert.NoError(t, err)
 	assert.Equal(t, sub, accessToken.Subject())
 	accessClaim, ok := accessToken.Get("claim")
 	assert.True(t, ok)
 	assert.Equal(t, claim, accessClaim)
 
-	refreshToken, err := parseToken(refresh)
+	refreshToken, err := ParseToken(refresh)
 	assert.NoError(t, err)
 	assert.Equal(t, sub, refreshToken.Subject())
 	_, ok = refreshToken.Get("claim")
@@ -48,7 +48,7 @@ func TestHashToken(t *testing.T) {
 	access, _, err := GenerateTokens("123", nil)
 	assert.NoError(t, err)
 
-	token, err := parseToken(access)
+	token, err := ParseToken(access)
 	assert.NoError(t, err)
 
 	_, err = HashToken(token)
@@ -76,7 +76,7 @@ func TestHasRole(t *testing.T) {
 			access, _, err := GenerateTokens("123", tc.claims)
 			assert.NoError(t, err)
 
-			token, err := parseToken(access)
+			token, err := ParseToken(access)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.hasRole, HasRole(token, tc.role))

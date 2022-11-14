@@ -41,6 +41,10 @@ paths:
     $ref: './paths/tasks_{id}.yaml'
   /user:
     $ref: './paths/user.yaml'
+  /user/personal_access_tokens:
+    $ref: './paths/user_personal_access_tokens.yaml'
+  /user/personal_access_tokens/{id}:
+    $ref: './paths/user_personal_access_tokens_{id}.yaml'
   /users/{username}:
     $ref: './paths/users_{username}.yaml'
   /users:
