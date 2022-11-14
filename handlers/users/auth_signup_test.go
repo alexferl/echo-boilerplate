@@ -19,6 +19,7 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 	payload := &users.AuthSignUpRequest{
 		Email:    "test@example.com",
 		Username: "test",
+		Name:     "Test",
 		Password: "abcdefghijkl",
 	}
 	b, err := json.Marshal(payload)
@@ -40,7 +41,9 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"Insert",
+			"Upsert",
+			mock.Anything,
+			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -60,6 +63,7 @@ func TestHandler_Auth_Signup_409(t *testing.T) {
 	payload := &users.AuthSignUpRequest{
 		Email:    "test@example.com",
 		Username: "test",
+		Name:     "Test",
 		Password: "abcdefghijkl",
 	}
 	b, err := json.Marshal(payload)

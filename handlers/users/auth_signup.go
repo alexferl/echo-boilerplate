@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,13 +15,9 @@ import (
 type AuthSignUpRequest struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
+	Name     string `json:"name"`
+	Bio      string `json:"bio"`
 	Password string `json:"password"`
-}
-
-type AuthSignUpResponse struct {
-	Id       string `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
 }
 
 func (h *Handler) AuthSignUp(c echo.Context) error {
@@ -35,10 +32,10 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		bson.D{{"username", body.Username}},
 		bson.D{{"email", body.Email}},
 	}}}
-	exist, err := h.Mapper.FindOne(ctx, filter, &AuthSignUpResponse{})
+	exist, err := h.Mapper.FindOne(ctx, filter, &UserResponse{})
 	if err != nil {
 		if err != ErrNoDocuments {
-			return fmt.Errorf("failed to get user: %v", err)
+			return fmt.Errorf("failed to get newUser: %v", err)
 		}
 	}
 
@@ -46,24 +43,21 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		return h.Validate(c, http.StatusConflict, echo.Map{"message": "email or username already in-use"})
 	}
 
-	user := NewUser(body.Email, body.Username)
-	err = user.SetPassword(body.Password)
+	newUser := NewUser(body.Email, body.Username)
+	newUser.Name = body.Name
+	newUser.Bio = body.Bio
+	err = newUser.SetPassword(body.Password)
 	if err != nil {
 		return fmt.Errorf("failed to set password: %v", err)
 	}
 
-	user.Create(user.Id)
+	newUser.Create(newUser.Id)
 
-	_, err = h.Mapper.Insert(ctx, user, nil)
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+	user, err := h.Mapper.Upsert(ctx, filter, newUser, &UserResponse{}, opts)
 	if err != nil {
-		return fmt.Errorf("failed to insert user: %v", err)
+		return fmt.Errorf("failed to insert newUser: %v", err)
 	}
 
-	u := &AuthSignUpResponse{
-		Id:       user.Id,
-		Email:    user.Email,
-		Username: user.Username,
-	}
-
-	return h.Validate(c, http.StatusOK, u)
+	return h.Validate(c, http.StatusOK, user)
 }

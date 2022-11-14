@@ -4,6 +4,7 @@ additionalProperties: false
 required:
   - email
   - username
+  - name
   - password
 properties:
   email:
@@ -18,6 +19,18 @@ properties:
     minLength: 2
     maxLength: 30
     example: test
+  name:
+    type: string
+    description: The name of the user
+    example: Test
+    minLength: 1
+    maxLength: 100
+  bio:
+    type: string
+    description: The biography of the user
+    example: This is my bio.
+    minLength: 0
+    maxLength: 1000
   password:
     type: string
     format: password
