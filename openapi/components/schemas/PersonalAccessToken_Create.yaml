@@ -1,0 +1,14 @@
+type: object
+additionalProperties: false
+properties:
+  name:
+    type: string
+    description: Name of the token
+    minLength: 1
+    maxLength: 100
+    example: my_token
+  expires_at:
+    type: string
+    format: date
+    description: Token expiration date time
+    example: '2038-01-19'

@@ -88,7 +88,7 @@ func TestHandler_AuthLogin_401(t *testing.T) {
 			"user not found",
 			b,
 			nil,
-			users.ErrUserNotFound,
+			users.ErrNoDocuments,
 			http.StatusUnauthorized,
 			"invalid email or password",
 		},

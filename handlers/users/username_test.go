@@ -32,7 +32,7 @@ func TestHandler_GetUsername_200(t *testing.T) {
 		retErr     error
 	}{
 		{
-			"not found", "notfound", http.StatusNotFound, nil, users.ErrUserNotFound,
+			"not found", "notfound", http.StatusNotFound, nil, users.ErrNoDocuments,
 		},
 		{
 			"self username", "test", http.StatusOK, result, nil,
@@ -122,7 +122,7 @@ func TestHandler_GetUsername_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			users.ErrUserNotFound,
+			users.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)

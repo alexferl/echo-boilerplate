@@ -37,7 +37,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	}}}
 	exist, err := h.Mapper.FindOne(ctx, filter, &AuthSignUpResponse{})
 	if err != nil {
-		if err != ErrUserNotFound {
+		if err != ErrNoDocuments {
 			return fmt.Errorf("failed to get user: %v", err)
 		}
 	}

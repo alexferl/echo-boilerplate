@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,19 +13,23 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 )
 
-var ErrUserNotFound = errors.New("user not found")
+var ErrNoDocuments = errors.New("no documents in result")
 
 type Mapper struct {
 	db         *mongo.Client
 	collection *mongo.Collection
 }
 
-func NewMapper(db *mongo.Client) data.Mapper {
-	collection := db.Database(config.AppName).Collection("users")
+func NewMapper(client *mongo.Client, collectionName string) data.Mapper {
+	collection := client.Database(viper.GetString(config.AppName)).Collection(collectionName)
 	return &Mapper{
-		db,
+		client,
 		collection,
 	}
+}
+
+func (m *Mapper) Collection(name string) data.Mapper {
+	return NewMapper(m.db, name)
 }
 
 func (m *Mapper) Insert(ctx context.Context, document any, result any, opts ...*options.InsertOneOptions) (any, error) {
@@ -41,7 +46,7 @@ func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*o
 
 	err := m.collection.FindOne(ctx, filter, opts...).Decode(result)
 	if err == mongo.ErrNoDocuments {
-		return nil, ErrUserNotFound
+		return nil, ErrNoDocuments
 	} else if err != nil {
 		return nil, err
 	}
@@ -106,7 +111,24 @@ func (m *Mapper) Count(ctx context.Context, filter any, opts ...*options.CountOp
 }
 
 func (m *Mapper) Update(ctx context.Context, filter any, update any, result any, opts ...*options.UpdateOptions) (any, error) {
-	res := m.collection.FindOneAndUpdate(ctx, filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After))
+	res, err := m.collection.UpdateOne(ctx, filter, update, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (m *Mapper) UpdateById(ctx context.Context, id string, document any, result any, opts ...*options.UpdateOptions) (any, error) {
+	filter := bson.D{{"id", id}}
+	update := bson.D{{"$set", document}}
+
+	return m.Update(ctx, filter, update, result, opts...)
+}
+
+func (m *Mapper) Upsert(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
+	opts = append(opts, options.FindOneAndUpdate().SetReturnDocument(options.After))
+	res := m.collection.FindOneAndUpdate(ctx, filter, bson.D{{"$set", update}}, opts...)
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
@@ -119,11 +141,4 @@ func (m *Mapper) Update(ctx context.Context, filter any, update any, result any,
 	}
 
 	return result, nil
-}
-
-func (m *Mapper) UpdateById(ctx context.Context, id string, document any, result any, opts ...*options.UpdateOptions) (any, error) {
-	filter := bson.D{{"id", id}}
-	update := bson.D{{"$set", document}}
-
-	return m.Update(ctx, filter, update, result, opts...)
 }

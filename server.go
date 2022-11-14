@@ -1,7 +1,9 @@
 package app
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	casbinMw "github.com/alexferl/echo-casbin"
 	jwtMw "github.com/alexferl/echo-jwt"
@@ -9,12 +11,12 @@ import (
 	"github.com/alexferl/golib/http/handler"
 	"github.com/alexferl/golib/http/router"
 	"github.com/alexferl/golib/http/server"
-	libLog "github.com/alexferl/golib/log"
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
@@ -29,6 +31,7 @@ func DefaultHandlers() []handler.Handler {
 	if err != nil {
 		panic(err)
 	}
+	data.CreateIndexes(client)
 
 	openapi := openapiMw.NewHandler()
 
@@ -44,10 +47,8 @@ func NewServer() *server.Server {
 }
 
 func NewTestServer(handler ...handler.Handler) *server.Server {
-	viper.Set(libLog.LogLevel, libLog.Disabled)
 	c := config.New()
 	c.BindFlags()
-
 	return newServer(handler...)
 }
 
@@ -63,6 +64,12 @@ func newServer(handler ...handler.Handler) *server.Server {
 	if err != nil {
 		panic(err)
 	}
+
+	client, err := data.NewClient()
+	if err != nil {
+		panic(err)
+	}
+	mapper := users.NewMapper(client, users.PATCollection)
 
 	jwtConfig := jwtMw.Config{
 		Key:             key,
@@ -85,6 +92,23 @@ func newServer(handler ...handler.Handler) *server.Server {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
+
+			typ := claims["type"]
+			if typ == util.PersonalToken.String() {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				filter := bson.D{{"user_id", t.Subject()}}
+				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
+				if err != nil {
+					return echo.NewHTTPError(500, "Internal Server Error")
+				}
+
+				pat := result.(*users.PersonalAccessToken)
+				if pat.Revoked {
+					return echo.NewHTTPError(401, "Token is revoked")
+				}
+			}
+
 			return nil
 		},
 	}

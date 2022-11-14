@@ -47,7 +47,14 @@ func NewClient() (*mongo.Client, error) {
 		return nil, err
 	}
 
+	return client, nil
+}
+
+func CreateIndexes(client *mongo.Client) {
 	db := client.Database(viper.GetString(config.AppName))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	idxOpts := options.Index().
 		SetUnique(true).
@@ -58,7 +65,7 @@ func NewClient() (*mongo.Client, error) {
 		Keys:    bson.D{{"username", 1}},
 		Options: usernameOpts,
 	}
-	_, err = db.Collection("users").Indexes().CreateOne(ctx, indexModel)
+	_, err := db.Collection("users").Indexes().CreateOne(ctx, indexModel)
 	if err != nil {
 		panic(err)
 	}
@@ -102,5 +109,31 @@ func NewClient() (*mongo.Client, error) {
 		panic(err)
 	}
 
-	return client, nil
+	_, err = db.Collection("personal_access_tokens").Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{"id", 1},
+			},
+			Options: &options.IndexOptions{
+				Unique: &t,
+			},
+		},
+		{
+			Keys: bson.D{
+				{"user_id", 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{"user_id", 1},
+				{"name", 1},
+			},
+			Options: &options.IndexOptions{
+				Unique: &t,
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
 }

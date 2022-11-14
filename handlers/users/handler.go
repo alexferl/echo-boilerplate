@@ -25,7 +25,7 @@ type Handler struct {
 
 func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) handler.Handler {
 	if mapper == nil {
-		mapper = NewMapper(db)
+		mapper = NewMapper(db, "users")
 	}
 
 	if viper.GetBool(config.AdminCreate) {
@@ -34,7 +34,7 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 		filter := bson.D{{"username", viper.GetString(config.AdminUsername)}}
 		_, err := mapper.FindOne(ctx, filter, &User{})
 		if err != nil {
-			if err == ErrUserNotFound {
+			if err == ErrNoDocuments {
 				log.Info().Msg("Creating admin user")
 
 				user := NewAdminUser(viper.GetString(config.AdminEmail), viper.GetString(config.AdminUsername))
@@ -72,6 +72,10 @@ func (h *Handler) GetRoutes() []*router.Route {
 		{Name: "OAuth2Callback", Method: http.MethodGet, Pattern: "/oauth2/callback", HandlerFunc: h.OAuth2Callback},
 		{Name: "GetUser", Method: http.MethodGet, Pattern: "/user", HandlerFunc: h.GetUser},
 		{Name: "UpdateUser", Method: http.MethodPatch, Pattern: "/user", HandlerFunc: h.UpdateUser},
+		{Name: "CreatePersonalAccessToken", Method: http.MethodPost, Pattern: "/user/personal_access_tokens", HandlerFunc: h.CreatePersonalAccessToken},
+		{Name: "ListPersonalAccessTokens", Method: http.MethodGet, Pattern: "/user/personal_access_tokens", HandlerFunc: h.ListPersonalAccessTokens},
+		{Name: "GetPersonalAccessToken", Method: http.MethodGet, Pattern: "/user/personal_access_tokens/:id", HandlerFunc: h.GetPersonalAccessToken},
+		{Name: "RevokePersonalAccessToken", Method: http.MethodDelete, Pattern: "/user/personal_access_tokens/:id", HandlerFunc: h.RevokePersonalAccessToken},
 		{Name: "GetUsername", Method: http.MethodGet, Pattern: "/users/:username", HandlerFunc: h.GetUsername},
 		{Name: "ListUsers", Method: http.MethodGet, Pattern: "/users", HandlerFunc: h.ListUsers},
 	}
