@@ -336,3 +336,97 @@ func TestHandler_GetPersonalAccessToken_404(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, resp.Code)
 }
+
+func TestHandler_RevokePersonalAccessToken_204(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	token, err := util.ParseToken(access)
+	assert.NoError(t, err)
+
+	newPAT, err := users.NewPersonalAccessToken(
+		token,
+		fmt.Sprintf("my_token"),
+		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
+	)
+	assert.NoError(t, err)
+	pat := newPAT.MakeResponse()
+
+	req := httptest.NewRequest(http.MethodDelete, "/user/personal_access_tokens/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"Collection",
+			mock.Anything,
+		).
+		Return(
+			mapper,
+		).
+		On(
+			"FindOne",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			pat,
+			nil,
+		).
+		On(
+			"UpdateById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNoContent, resp.Code)
+}
+
+func TestHandler_RevokePersonalAccessToken_404(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodDelete, "/user/personal_access_tokens/id", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"Collection",
+			mock.Anything,
+		).
+		Return(
+			mapper,
+		).
+		On(
+			"FindOne",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			users.ErrNoDocuments,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNotFound, resp.Code)
+}

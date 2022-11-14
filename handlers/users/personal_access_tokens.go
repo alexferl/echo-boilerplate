@@ -137,9 +137,7 @@ func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
 	filter := bson.D{{"user_id", token.Subject()}}
 	result, err := h.Mapper.Collection(PATCollection).Find(ctx, filter, []*PATWithoutToken{})
 	if err != nil {
-		if err != ErrNoDocuments {
-			return fmt.Errorf("failed getting personal access token: %v", err)
-		}
+		return fmt.Errorf("failed getting personal access token: %v", err)
 	}
 
 	return h.Validate(c, http.StatusOK, ListPATResponse{Tokens: result.([]*PATWithoutToken)})
