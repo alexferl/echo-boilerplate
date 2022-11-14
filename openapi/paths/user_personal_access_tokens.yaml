@@ -1,6 +1,6 @@
 post:
   summary: Create a personal access token
-  description: Returns newly personal access token.
+  description: Returns newly personal access token for the authenticated user.
   operationId: createPersonalAccessToken
   security:
     - cookieAuth: []
@@ -24,7 +24,7 @@ post:
       $ref: '../components/responses/UnprocessableEntity.yaml'
 get:
   summary: List personal access tokens
-  description: Returns a list of personal access tokens.
+  description: Returns a list of personal access tokens for the authenticated user.
   operationId: findPersonalAccessTokens
   security:
     - cookieAuth: []

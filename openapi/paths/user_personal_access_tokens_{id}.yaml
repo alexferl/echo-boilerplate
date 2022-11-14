@@ -1,6 +1,6 @@
 get:
   summary: Get a personal access token
-  description: Returns a personal access token.
+  description: Returns a personal access token for the authenticated user.
   operationId: getPersonalAccessToken
   security:
     - cookieAuth: []
@@ -24,7 +24,7 @@ get:
       $ref: '../components/responses/NotFound.yaml'
 delete:
   summary: Revoke a personal access token
-  description: Revokes a personal access token.
+  description: Revokes a personal access token for the authenticated user.
   operationId: revokePersonalAccessToken
   security:
     - cookieAuth: []
