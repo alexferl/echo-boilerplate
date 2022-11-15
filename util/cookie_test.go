@@ -70,10 +70,10 @@ func TestSetTokenCookies(t *testing.T) {
 	refreshCookie := resp.Result().Cookies()[1]
 
 	assert.Equal(t, string(access), accessCookie.Value)
-	assert.Equal(t, viper.GetInt(config.JWTAccessTokenExpiry), accessCookie.MaxAge)
+	assert.Equal(t, int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()), accessCookie.MaxAge)
 
 	assert.Equal(t, string(refresh), refreshCookie.Value)
-	assert.Equal(t, viper.GetInt(config.JWTRefreshTokenExpiry), refreshCookie.MaxAge)
+	assert.Equal(t, int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()), refreshCookie.MaxAge)
 }
 
 func TestSetExpiredTokenCookies(t *testing.T) {
