@@ -42,7 +42,7 @@ func NewAccessTokenCookie(access []byte) *http.Cookie {
 		Value:    string(access),
 		Path:     "/",
 		SameSite: http.SameSiteStrictMode,
-		MaxAge:   viper.GetInt(config.JWTAccessTokenExpiry),
+		MaxAge:   int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()),
 	}
 
 	return NewCookie(opts)
@@ -55,7 +55,7 @@ func NewRefreshTokenCookie(refresh []byte) *http.Cookie {
 		Path:     "/auth",
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
-		MaxAge:   viper.GetInt(config.JWTRefreshTokenExpiry),
+		MaxAge:   int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()),
 	}
 
 	return NewCookie(opts)
