@@ -44,7 +44,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 	}
 
 	user := result.(*User)
-	err = user.CheckPassword(body.Password)
+	err = user.ValidatePassword(body.Password)
 	if err != nil {
 		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
 	}

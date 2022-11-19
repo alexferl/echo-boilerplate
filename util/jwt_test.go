@@ -41,20 +41,6 @@ func TestParseToken(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func TestHashToken(t *testing.T) {
-	c := config.New()
-	c.BindFlags()
-
-	access, _, err := GenerateTokens("123", nil)
-	assert.NoError(t, err)
-
-	token, err := ParseToken(access)
-	assert.NoError(t, err)
-
-	_, err = HashToken(token)
-	assert.NoError(t, err)
-}
-
 func TestHasRole(t *testing.T) {
 	c := config.New()
 	c.BindFlags()

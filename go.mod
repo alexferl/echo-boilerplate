@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/alexferl/echo-casbin v0.3.0
-	github.com/alexferl/echo-jwt v0.4.0
+	github.com/alexferl/echo-jwt v0.5.0
 	github.com/alexferl/echo-openapi v0.2.0
 	github.com/alexferl/golib/config v0.0.0-20221113053029-e02f34f7806e
 	github.com/alexferl/golib/http v0.0.0-20221113053029-e02f34f7806e
@@ -12,15 +12,14 @@ require (
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.57.0
 	github.com/labstack/echo/v4 v4.9.1
-	github.com/lestrrat-go/jwx/v2 v2.0.6
-	github.com/minio/sha256-simd v1.0.0
+	github.com/lestrrat-go/jwx/v2 v2.0.7
 	github.com/rs/xid v1.4.0
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	go.mongodb.org/mongo-driver v1.11.0
-	golang.org/x/crypto v0.2.0
+	golang.org/x/crypto v0.3.0
 	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab
 	golang.org/x/oauth2 v0.2.0
 )
@@ -44,7 +43,6 @@ require (
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.0 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect

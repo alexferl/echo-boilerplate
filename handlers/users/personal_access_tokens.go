@@ -12,6 +12,7 @@ import (
 	"github.com/rs/xid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -26,6 +27,21 @@ type PersonalAccessToken struct {
 	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
 	ExpiresAt *time.Time `json:"expires_at" bson:"expires_at"`
 	Token     string     `json:"token" bson:"token"`
+}
+
+func (pat *PersonalAccessToken) Encrypt() error {
+	b, err := bcrypt.GenerateFromPassword([]byte(pat.Token), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	pat.Token = string(b)
+
+	return nil
+}
+
+func (pat *PersonalAccessToken) Validate(s string) error {
+	return bcrypt.CompareHashAndPassword([]byte(pat.Token), []byte(s))
 }
 
 type PATWithoutToken struct {
@@ -116,11 +132,19 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 		return fmt.Errorf("failed generating personal access token: %v", err)
 	}
 
+	decodedToken := newPAT.Token
+	if err = newPAT.Encrypt(); err != nil {
+		return fmt.Errorf("failed encrypting personal access token: %v", err)
+	}
+
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	pat, err := h.Mapper.Collection(PATCollection).Upsert(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
+	upsert, err := h.Mapper.Collection(PATCollection).Upsert(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
 	if err != nil {
 		return fmt.Errorf("failed inserting personal access token: %v", err)
 	}
+
+	pat := upsert.(*PersonalAccessToken)
+	pat.Token = decodedToken
 
 	return h.Validate(c, http.StatusOK, pat)
 }

@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/minio/sha256-simd"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
@@ -102,24 +100,6 @@ func ParseToken(encodedToken []byte) (jwt.Token, error) {
 	}
 
 	return token, nil
-}
-
-func HashToken(token jwt.Token) ([]byte, error) {
-	key, err := LoadPrivateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	signed, err := jwt.Sign(token, jwt.WithKey(jwa.RS256, key))
-	if err != nil {
-		return nil, fmt.Errorf("failed to sign token: %v\n", err)
-	}
-
-	h := sha256.New()
-	h.Write(signed)
-	b := h.Sum(nil)
-
-	return []byte(base64.StdEncoding.EncodeToString(b)), nil
 }
 
 func GetRoles(token jwt.Token) []string {

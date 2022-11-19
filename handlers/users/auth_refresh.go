@@ -20,10 +20,7 @@ type AuthRefreshRequest struct {
 
 func (h *Handler) AuthRefresh(c echo.Context) error {
 	token := c.Get("refresh_token").(jwt.Token)
-	hashedToken, err := util.HashToken(token)
-	if err != nil {
-		return err
-	}
+	encodedToken := c.Get("refresh_token_encoded").(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -33,7 +30,7 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 	}
 
 	user := result.(*User)
-	if user.RefreshTokenHash != string(hashedToken) {
+	if err = user.ValidateRefreshToken(encodedToken); err != nil {
 		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token mismatch"})
 	}
 

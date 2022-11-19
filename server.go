@@ -88,7 +88,7 @@ func newServer(handler ...handler.Handler) *server.Server {
 		OptionalRoutes: map[string][]string{
 			"/users/:username": {http.MethodGet},
 		},
-		AfterParseFunc: func(c echo.Context, t jwt.Token) *echo.HTTPError {
+		AfterParseFunc: func(c echo.Context, t jwt.Token, s string) *echo.HTTPError {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
@@ -100,10 +100,17 @@ func newServer(handler ...handler.Handler) *server.Server {
 				filter := bson.D{{"user_id", t.Subject()}}
 				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
+					if err == users.ErrNoDocuments {
+						return echo.NewHTTPError(401, "Token invalid")
+					}
 					return echo.NewHTTPError(500, "Internal Server Error")
 				}
 
 				pat := result.(*users.PersonalAccessToken)
+				if err = pat.Validate(s); err != nil {
+					return echo.NewHTTPError(401, "Token mismatch")
+				}
+
 				if pat.Revoked {
 					return echo.NewHTTPError(401, "Token is revoked")
 				}
