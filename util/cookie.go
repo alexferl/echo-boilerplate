@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
@@ -79,10 +78,6 @@ func SetTokenCookies(c echo.Context, access []byte, refresh []byte) {
 	c.SetCookie(NewRefreshTokenCookie(refresh))
 
 	if viper.GetBool(config.CSRFEnabled) {
-		if viper.GetString(config.CSRFSecretKey) == "" {
-			log.Panic().Msg("CSRF secret key is unset!")
-		}
-
 		s := NewHMAC(access, []byte(viper.GetString(config.CSRFSecretKey)))
 
 		c.SetCookie(NewCSRFCookie([]byte(s)))

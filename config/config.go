@@ -7,6 +7,7 @@ import (
 	libConfig "github.com/alexferl/golib/config"
 	libHttp "github.com/alexferl/golib/http/config"
 	libLog "github.com/alexferl/golib/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -254,5 +255,26 @@ func (c *Config) BindFlags() {
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed creating logger: %v", err))
+	}
+
+	if viper.GetBool(CSRFEnabled) && viper.GetString(CSRFSecretKey) == "" {
+		log.Panic().Msg("CSRF: secret key is unset!")
+	}
+
+	if viper.GetBool(AdminCreate) && viper.GetString(AdminPassword) == "" {
+		log.Panic().Msg("Admin create: password is unset!")
+	}
+
+	if viper.GetBool(libHttp.HTTPCORSEnabled) {
+		for _, origin := range viper.GetStringSlice(libHttp.HTTPCORSAllowOrigins) {
+			if origin == "*" {
+				log.Warn().Msg("CORS: using '*' in Access-Control-Allow-Origin is potentially unsafe!")
+			}
+
+			if origin == "null" {
+				log.Warn().Msg("CORS: using 'null' in Access-Control-Allow-Origin is unsafe and should not be used!")
+			}
+
+		}
 	}
 }
