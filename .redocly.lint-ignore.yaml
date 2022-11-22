@@ -1,5 +1,8 @@
 # This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
 # See https://redoc.ly/docs/cli/ for more information.
+openapi/paths/user_personal_access_tokens.yaml:
+  operation-4xx-response:
+    - '#/get/responses'
 openapi/paths/tasks.yaml:
   operation-4xx-response:
     - '#/get/responses'

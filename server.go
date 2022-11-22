@@ -103,9 +103,9 @@ func newServer(handler ...handler.Handler) *server.Server {
 					switch c.Request().Method {
 					case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
 					default: // Validate token only for requests which are not defined as 'safe' by RFC7231
-						cookie, err := c.Cookie(viper.GetString(config.CSRFCookieName))
+						cookie, err := c.Cookie(viper.GetString(config.JWTAccessTokenCookieName))
 						if err != nil {
-							return echo.NewHTTPError(http.StatusBadRequest, "Missing CSRF token cookie")
+							return echo.NewHTTPError(http.StatusBadRequest, "Missing access token cookie")
 						}
 
 						h := c.Request().Header.Get(viper.GetString(config.CSRFHeaderName))
@@ -113,7 +113,7 @@ func newServer(handler ...handler.Handler) *server.Server {
 							return echo.NewHTTPError(http.StatusBadRequest, "Missing CSRF token header")
 						}
 
-						if cookie.Value != h {
+						if !util.ValidMAC([]byte(cookie.Value), []byte(h), []byte(viper.GetString(config.CSRFSecretKey))) {
 							return echo.NewHTTPError(http.StatusForbidden, "Invalid CSRF token")
 						}
 					}

@@ -17,12 +17,12 @@ type Config struct {
 	HTTP    *libHttp.Config
 	Logging *libLog.Config
 
-	BaseURL        string
-	CookiesEnabled bool
+	BaseURL string
 
 	Admin   *Admin
 	OAuth2  *OAuth2
 	JWT     *JWT
+	Cookies *Cookies
 	CSRF    *CSRF
 	Casbin  *Casbin
 	OpenAPI *OpenAPI
@@ -50,10 +50,17 @@ type JWT struct {
 	Issuer                 string
 }
 
+type Cookies struct {
+	Enabled bool
+	Domain  string
+}
+
 type CSRF struct {
-	Enabled    bool
-	CookieName string
-	HeaderName string
+	Enabled      bool
+	SecretKey    string
+	CookieName   string
+	CookieDomain string
+	HeaderName   string
 }
 
 type Casbin struct {
@@ -78,16 +85,15 @@ type MongoDB struct {
 // New creates a Config instance
 func New() *Config {
 	return &Config{
-		Config:         libConfig.New("APP"),
-		HTTP:           libHttp.DefaultConfig,
-		Logging:        libLog.DefaultConfig,
-		BaseURL:        "http://localhost:1323",
-		CookiesEnabled: false,
+		Config:  libConfig.New("APP"),
+		HTTP:    libHttp.DefaultConfig,
+		Logging: libLog.DefaultConfig,
+		BaseURL: "http://localhost:1323",
 		Admin: &Admin{
 			Create:   false,
 			Email:    "admin@example.com",
 			Username: "admin",
-			Password: "changeme",
+			Password: "",
 		},
 		OAuth2: &OAuth2{
 			ClientId:     "",
@@ -101,10 +107,16 @@ func New() *Config {
 			PrivateKey:             "./private-key.pem",
 			Issuer:                 "http://localhost:1323",
 		},
+		Cookies: &Cookies{
+			Enabled: false,
+			Domain:  "",
+		},
 		CSRF: &CSRF{
-			Enabled:    false,
-			CookieName: "csrf_token",
-			HeaderName: "X-CSRF-Token",
+			Enabled:      false,
+			SecretKey:    "",
+			CookieName:   "csrf_token",
+			CookieDomain: "",
+			HeaderName:   "X-CSRF-Token",
 		},
 		Casbin: &Casbin{
 			Model:  "./casbin/model.conf",
@@ -132,8 +144,7 @@ const (
 	HTTPBindAddress = libHttp.HTTPBindAddress
 	HTTPBindPort    = libHttp.HTTPBindPort
 
-	BaseURL        = "base-url"
-	CookiesEnabled = "cookies-enabled"
+	BaseURL = "base-url"
 
 	AdminCreate   = "admin-create"
 	AdminEmail    = "admin-email"
@@ -150,9 +161,14 @@ const (
 	JWTPrivateKey             = "jwt-private-key"
 	JWTIssuer                 = "jwt-issuer"
 
-	CSRFEnabled    = "csrf-enabled"
-	CSRFCookieName = "csrf-cookie-name"
-	CSRFHeaderName = "csrf-header-name"
+	CookiesEnabled = "cookies-enabled"
+	CookiesDomain  = "cookies-domain"
+
+	CSRFEnabled      = "csrf-enabled"
+	CSRFSecretKey    = "csrf-secret-key"
+	CSRFCookieName   = "csrf-cookie-name"
+	CSRFCookieDomain = "csrf-cookie-domain"
+	CSRFHeaderName   = "csrf-header-name"
 
 	CasbinModel  = "casbin-model"
 	CasbinPolicy = "casbin-policy"
@@ -171,7 +187,6 @@ const (
 // addFlags adds all the flags from the command line
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
-	fs.BoolVar(&c.CookiesEnabled, CookiesEnabled, c.CookiesEnabled, "Send cookies with authentication requests")
 
 	fs.BoolVar(&c.Admin.Create, AdminCreate, c.Admin.Create, "Create admin")
 	fs.StringVar(&c.Admin.Email, AdminEmail, c.Admin.Email, "Admin email")
@@ -192,8 +207,13 @@ func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.JWT.PrivateKey, JWTPrivateKey, c.JWT.PrivateKey, "JWT private key file path")
 	fs.StringVar(&c.JWT.Issuer, JWTIssuer, c.JWT.Issuer, "JWT issuer")
 
+	fs.BoolVar(&c.Cookies.Enabled, CookiesEnabled, c.Cookies.Enabled, "Send cookies with authentication requests")
+	fs.StringVar(&c.Cookies.Domain, CookiesDomain, c.Cookies.Domain, "Cookies domain")
+
 	fs.BoolVar(&c.CSRF.Enabled, CSRFEnabled, c.CSRF.Enabled, "CSRF enabled")
+	fs.StringVar(&c.CSRF.SecretKey, CSRFSecretKey, c.CSRF.SecretKey, "CSRF secret used to hash the token")
 	fs.StringVar(&c.CSRF.CookieName, CSRFCookieName, c.CSRF.CookieName, "CSRF cookie name")
+	fs.StringVar(&c.CSRF.CookieDomain, CSRFCookieDomain, c.CSRF.CookieDomain, "CSRF cookie domain")
 	fs.StringVar(&c.CSRF.HeaderName, CSRFHeaderName, c.CSRF.HeaderName, "CSRF header name")
 
 	fs.StringVar(&c.Casbin.Model, CasbinModel, c.Casbin.Model, "Casbin model file")

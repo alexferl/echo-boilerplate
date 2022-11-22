@@ -108,19 +108,22 @@ go build -o app-bin ./cmd/app && ./app-bin --help
 ```
 
 ```shell
-Usage of ./app-bin:
+Usage of ./echo-boilerplate:
       --admin-create                                   Create admin
       --admin-email string                             Admin email (default "admin@example.com")
-      --admin-password string                          Admin password (default "changeme")
+      --admin-password string                          Admin password
       --admin-username string                          Admin username (default "admin")
       --app-name string                                The name of the application. (default "app")
       --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
       --casbin-model string                            Casbin model file (default "./casbin/model.conf")
       --casbin-policy string                           Casbin policy file (default "./casbin/policy.csv")
+      --cookies-domain string                          Cookies domain
       --cookies-enabled                                Send cookies with authentication requests
+      --csrf-cookie-domain string                      CSRF cookie domain
       --csrf-cookie-name string                        CSRF cookie name (default "csrf_token")
       --csrf-enabled                                   CSRF enabled
       --csrf-header-name string                        CSRF header name (default "X-CSRF-Token")
+      --csrf-secret-key string                         CSRF secret used to hash the token
       --env-name string                                The environment of the application. Used to load the right configs file. (default "local")
       --http-bind-address ip                           The IP address to listen at. (default 127.0.0.1)
       --http-bind-port uint                            The port to listen at. (default 1323)

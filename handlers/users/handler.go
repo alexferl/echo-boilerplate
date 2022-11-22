@@ -37,8 +37,13 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 			if err == ErrNoDocuments {
 				log.Info().Msg("Creating admin user")
 
+				password := viper.GetString(config.AdminPassword)
+				if password == "" {
+					log.Panic().Msg("Admin password is unset!")
+				}
+
 				user := NewAdminUser(viper.GetString(config.AdminEmail), viper.GetString(config.AdminUsername))
-				err = user.SetPassword(viper.GetString(config.AdminPassword))
+				err = user.SetPassword(password)
 				user.Create(user.Id)
 				if err != nil {
 					panic(fmt.Sprintf("failed setting admin password: %v", err))
