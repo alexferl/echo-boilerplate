@@ -59,7 +59,9 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 		return fmt.Errorf("failed updating user: %v", err)
 	}
 
-	util.SetTokenCookies(c, access, refresh)
+	if viper.GetBool(config.CookiesEnabled) {
+		util.SetTokenCookies(c, access, refresh)
+	}
 
 	resp := &TokenResponse{
 		AccessToken:  string(access),

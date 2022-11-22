@@ -13,7 +13,6 @@ import (
 	"github.com/alexferl/golib/http/server"
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
@@ -49,6 +48,11 @@ func NewServer() *server.Server {
 func NewTestServer(handler ...handler.Handler) *server.Server {
 	c := config.New()
 	c.BindFlags()
+
+	viper.Set(config.CookiesEnabled, true)
+	// TODO: add tests with CSRF enabled
+	viper.Set(config.CSRFEnabled, false)
+
 	return newServer(handler...)
 }
 
@@ -88,11 +92,35 @@ func newServer(handler ...handler.Handler) *server.Server {
 		OptionalRoutes: map[string][]string{
 			"/users/:username": {http.MethodGet},
 		},
-		AfterParseFunc: func(c echo.Context, t jwt.Token, s string) *echo.HTTPError {
+		AfterParseFunc: func(c echo.Context, t jwt.Token, encodedToken string, src jwtMw.TokenSource) *echo.HTTPError {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
 
+			// CSRF
+			if viper.GetBool(config.CookiesEnabled) && viper.GetBool(config.CSRFEnabled) {
+				if src == jwtMw.Cookie {
+					switch c.Request().Method {
+					case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
+					default: // Validate token only for requests which are not defined as 'safe' by RFC7231
+						cookie, err := c.Cookie(viper.GetString(config.CSRFCookieName))
+						if err != nil {
+							return echo.NewHTTPError(http.StatusBadRequest, "Missing CSRF token cookie")
+						}
+
+						h := c.Request().Header.Get(viper.GetString(config.CSRFHeaderName))
+						if h == "" {
+							return echo.NewHTTPError(http.StatusBadRequest, "Missing CSRF token header")
+						}
+
+						if cookie.Value != h {
+							return echo.NewHTTPError(http.StatusForbidden, "Invalid CSRF token")
+						}
+					}
+				}
+			}
+
+			// Personal Access Tokens
 			typ := claims["type"]
 			if typ == util.PersonalToken.String() {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -101,18 +129,18 @@ func newServer(handler ...handler.Handler) *server.Server {
 				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
 					if err == users.ErrNoDocuments {
-						return echo.NewHTTPError(401, "Token invalid")
+						return echo.NewHTTPError(http.StatusUnauthorized, "Token invalid")
 					}
-					return echo.NewHTTPError(500, "Internal Server Error")
+					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 				}
 
 				pat := result.(*users.PersonalAccessToken)
-				if err = pat.Validate(s); err != nil {
-					return echo.NewHTTPError(401, "Token mismatch")
+				if err = pat.Validate(encodedToken); err != nil {
+					return echo.NewHTTPError(http.StatusUnauthorized, "Token mismatch")
 				}
 
 				if pat.Revoked {
-					return echo.NewHTTPError(401, "Token is revoked")
+					return echo.NewHTTPError(http.StatusUnauthorized, "Token is revoked")
 				}
 			}
 
@@ -140,10 +168,6 @@ func newServer(handler ...handler.Handler) *server.Server {
 
 	s := server.New(
 		r,
-		middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins:     []string{"*"},
-			AllowCredentials: true,
-		}),
 		jwtMw.JWTWithConfig(jwtConfig),
 		casbinMw.Casbin(enforcer),
 		openapiMw.OpenAPIWithConfig(openAPIConfig),

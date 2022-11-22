@@ -7,9 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -54,10 +56,10 @@ func TestHandler_AuthRefresh_200_Cookie(t *testing.T) {
 	if assert.Equal(t, 2, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
-			if c.Name == "access_token" {
+			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
 				cookies++
 			}
-			if c.Name == "refresh_token" {
+			if c.Name == viper.GetString(config.JWTRefreshTokenCookieName) {
 				cookies++
 			}
 		}
@@ -169,10 +171,10 @@ func TestHandler_AuthRefresh_200_Token(t *testing.T) {
 	if assert.Equal(t, 2, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
-			if c.Name == "access_token" {
+			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
 				cookies++
 			}
-			if c.Name == "refresh_token" {
+			if c.Name == viper.GetString(config.JWTRefreshTokenCookieName) {
 				cookies++
 			}
 		}

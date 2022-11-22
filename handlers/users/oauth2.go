@@ -28,7 +28,7 @@ type GoogleUser struct {
 
 func getOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  fmt.Sprintf("%s/oauth2/callback", viper.GetString(config.BaseUrl)),
+		RedirectURL:  fmt.Sprintf("%s/oauth2/callback", viper.GetString(config.BaseURL)),
 		ClientID:     viper.GetString(config.OAuth2ClientId),
 		ClientSecret: viper.GetString(config.OAuth2ClientSecret),
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
@@ -47,7 +47,7 @@ func (h *Handler) OAuth2LogIn(c echo.Context) error {
 		Name:     "state",
 		Value:    state,
 		Path:     "/oauth2/callback",
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteLaxMode, // needs to be Lax since it's across domains
 		HttpOnly: true,
 		MaxAge:   600,
 	}
@@ -122,7 +122,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 		Name:     "state",
 		Value:    "",
 		Path:     "/oauth2/callback",
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteLaxMode, // needs to be Lax since it's across domains
 		HttpOnly: true,
 		MaxAge:   -1,
 	}

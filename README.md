@@ -117,6 +117,10 @@ Usage of ./app-bin:
       --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
       --casbin-model string                            Casbin model file (default "./casbin/model.conf")
       --casbin-policy string                           Casbin policy file (default "./casbin/policy.csv")
+      --cookies-enabled                                Send cookies with authentication requests
+      --csrf-cookie-name string                        CSRF cookie name (default "csrf_token")
+      --csrf-enabled                                   CSRF enabled
+      --csrf-header-name string                        CSRF header name (default "X-CSRF-Token")
       --env-name string                                The environment of the application. Used to load the right configs file. (default "local")
       --http-bind-address ip                           The IP address to listen at. (default 127.0.0.1)
       --http-bind-port uint                            The port to listen at. (default 1323)
@@ -129,9 +133,11 @@ Usage of ./app-bin:
       --http-cors-max-age int                          Indicates how long the results of a preflight request can be cached.
       --http-graceful-timeout duration                 Timeout for graceful shutdown. (default 30s)
       --http-log-requests                              Controls the logging of HTTP requests (default true)
+      --jwt-access-token-cookie-name string            JWT access token cookie name (default "access_token")
       --jwt-access-token-expiry duration               JWT access token expiry (default 10m0s)
       --jwt-issuer string                              JWT issuer (default "http://localhost:1323")
       --jwt-private-key string                         JWT private key file path (default "./private-key.pem")
+      --jwt-refresh-token-cookie-name string           JWT refresh token cookie name (default "refresh_token")
       --jwt-refresh-token-expiry duration              JWT refresh token expiry (default 720h0m0s)
       --log-level string                               The granularity of log outputs. Valid levels: 'PANIC', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'DISABLED' (default "INFO")
       --log-output string                              The output to write to. 'stdout' means log to stdout, 'stderr' means log to stderr. (default "stdout")

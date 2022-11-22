@@ -16,10 +16,14 @@ type Config struct {
 	Config  *libConfig.Config
 	HTTP    *libHttp.Config
 	Logging *libLog.Config
-	BaseUrl string
+
+	BaseURL        string
+	CookiesEnabled bool
+
 	Admin   *Admin
 	OAuth2  *OAuth2
 	JWT     *JWT
+	CSRF    *CSRF
 	Casbin  *Casbin
 	OpenAPI *OpenAPI
 	MongoDB *MongoDB
@@ -38,10 +42,18 @@ type OAuth2 struct {
 }
 
 type JWT struct {
-	AccessTokenExpiry  time.Duration
-	RefreshTokenExpiry time.Duration
-	PrivateKey         string
-	Issuer             string
+	AccessTokenExpiry      time.Duration
+	AccessTokenCookieName  string
+	RefreshTokenExpiry     time.Duration
+	RefreshTokenCookieName string
+	PrivateKey             string
+	Issuer                 string
+}
+
+type CSRF struct {
+	Enabled    bool
+	CookieName string
+	HeaderName string
 }
 
 type Casbin struct {
@@ -66,10 +78,11 @@ type MongoDB struct {
 // New creates a Config instance
 func New() *Config {
 	return &Config{
-		Config:  libConfig.New("APP"),
-		HTTP:    libHttp.DefaultConfig,
-		Logging: libLog.DefaultConfig,
-		BaseUrl: "http://localhost:1323",
+		Config:         libConfig.New("APP"),
+		HTTP:           libHttp.DefaultConfig,
+		Logging:        libLog.DefaultConfig,
+		BaseURL:        "http://localhost:1323",
+		CookiesEnabled: false,
 		Admin: &Admin{
 			Create:   false,
 			Email:    "admin@example.com",
@@ -81,10 +94,17 @@ func New() *Config {
 			ClientSecret: "",
 		},
 		JWT: &JWT{
-			AccessTokenExpiry:  10 * time.Minute,
-			RefreshTokenExpiry: (30 * 24) * time.Hour,
-			PrivateKey:         "./private-key.pem",
-			Issuer:             "http://localhost:1323",
+			AccessTokenExpiry:      10 * time.Minute,
+			AccessTokenCookieName:  "access_token",
+			RefreshTokenExpiry:     (30 * 24) * time.Hour,
+			RefreshTokenCookieName: "refresh_token",
+			PrivateKey:             "./private-key.pem",
+			Issuer:                 "http://localhost:1323",
+		},
+		CSRF: &CSRF{
+			Enabled:    false,
+			CookieName: "csrf_token",
+			HeaderName: "X-CSRF-Token",
 		},
 		Casbin: &Casbin{
 			Model:  "./casbin/model.conf",
@@ -112,7 +132,8 @@ const (
 	HTTPBindAddress = libHttp.HTTPBindAddress
 	HTTPBindPort    = libHttp.HTTPBindPort
 
-	BaseUrl = "base-url"
+	BaseURL        = "base-url"
+	CookiesEnabled = "cookies-enabled"
 
 	AdminCreate   = "admin-create"
 	AdminEmail    = "admin-email"
@@ -122,10 +143,16 @@ const (
 	OAuth2ClientId     = "oauth2-client-id"
 	OAuth2ClientSecret = "oauth2-client-secret"
 
-	JWTAccessTokenExpiry  = "jwt-access-token-expiry"
-	JWTRefreshTokenExpiry = "jwt-refresh-token-expiry"
-	JWTPrivateKey         = "jwt-private-key"
-	JWTIssuer             = "jwt-issuer"
+	JWTAccessTokenExpiry      = "jwt-access-token-expiry"
+	JWTAccessTokenCookieName  = "jwt-access-token-cookie-name"
+	JWTRefreshTokenExpiry     = "jwt-refresh-token-expiry"
+	JWTRefreshTokenCookieName = "jwt-refresh-token-cookie-name"
+	JWTPrivateKey             = "jwt-private-key"
+	JWTIssuer                 = "jwt-issuer"
+
+	CSRFEnabled    = "csrf-enabled"
+	CSRFCookieName = "csrf-cookie-name"
+	CSRFHeaderName = "csrf-header-name"
 
 	CasbinModel  = "casbin-model"
 	CasbinPolicy = "casbin-policy"
@@ -143,7 +170,8 @@ const (
 
 // addFlags adds all the flags from the command line
 func (c *Config) addFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&c.BaseUrl, BaseUrl, c.BaseUrl, "Base URL where the app will be served")
+	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
+	fs.BoolVar(&c.CookiesEnabled, CookiesEnabled, c.CookiesEnabled, "Send cookies with authentication requests")
 
 	fs.BoolVar(&c.Admin.Create, AdminCreate, c.Admin.Create, "Create admin")
 	fs.StringVar(&c.Admin.Email, AdminEmail, c.Admin.Email, "Admin email")
@@ -155,10 +183,18 @@ func (c *Config) addFlags(fs *pflag.FlagSet) {
 
 	fs.DurationVar(&c.JWT.AccessTokenExpiry, JWTAccessTokenExpiry, c.JWT.AccessTokenExpiry,
 		"JWT access token expiry")
+	fs.StringVar(&c.JWT.AccessTokenCookieName, JWTAccessTokenCookieName, c.JWT.AccessTokenCookieName,
+		"JWT access token cookie name")
 	fs.DurationVar(&c.JWT.RefreshTokenExpiry, JWTRefreshTokenExpiry, c.JWT.RefreshTokenExpiry,
 		"JWT refresh token expiry")
+	fs.StringVar(&c.JWT.RefreshTokenCookieName, JWTRefreshTokenCookieName, c.JWT.RefreshTokenCookieName,
+		"JWT refresh token cookie name")
 	fs.StringVar(&c.JWT.PrivateKey, JWTPrivateKey, c.JWT.PrivateKey, "JWT private key file path")
 	fs.StringVar(&c.JWT.Issuer, JWTIssuer, c.JWT.Issuer, "JWT issuer")
+
+	fs.BoolVar(&c.CSRF.Enabled, CSRFEnabled, c.CSRF.Enabled, "CSRF enabled")
+	fs.StringVar(&c.CSRF.CookieName, CSRFCookieName, c.CSRF.CookieName, "CSRF cookie name")
+	fs.StringVar(&c.CSRF.HeaderName, CSRFHeaderName, c.CSRF.HeaderName, "CSRF header name")
 
 	fs.StringVar(&c.Casbin.Model, CasbinModel, c.Casbin.Model, "Casbin model file")
 	fs.StringVar(&c.Casbin.Policy, CasbinPolicy, c.Casbin.Policy, "Casbin policy file")

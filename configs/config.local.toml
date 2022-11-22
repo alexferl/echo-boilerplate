@@ -1,2 +1,9 @@
 env-name = "local"
 log-level = "DEBUG"
+
+cookies-enabled = true
+csrf-enabled = true
+
+http-cors-enabled = true
+http-cors-allow-credentials = true
+http-cors-allow-origins = ["*"] # change

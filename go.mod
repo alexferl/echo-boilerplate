@@ -4,10 +4,10 @@ go 1.19
 
 require (
 	github.com/alexferl/echo-casbin v0.3.0
-	github.com/alexferl/echo-jwt v0.5.0
+	github.com/alexferl/echo-jwt v0.6.0
 	github.com/alexferl/echo-openapi v0.2.0
 	github.com/alexferl/golib/config v0.0.0-20221113053029-e02f34f7806e
-	github.com/alexferl/golib/http v0.0.0-20221113053029-e02f34f7806e
+	github.com/alexferl/golib/http v0.0.0-20221121203058-dd1292e95d4a
 	github.com/alexferl/golib/log v0.0.0-20221113053029-e02f34f7806e
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.57.0
@@ -71,7 +71,6 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
-	github.com/ziflex/lecho/v3 v3.1.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect

@@ -4,7 +4,6 @@ additionalProperties: false
 required:
   - email
   - username
-  - name
   - password
 properties:
   email:
@@ -14,7 +13,7 @@ properties:
     example: test@example.com
   username:
     type: string
-    pattern: '^[0-9a-zA-Z._]+$'
+    pattern: '^[a-zA-Z0-9]+(?:[-._][a-zA-Z0-9]+)*$'
     description: The username of the user
     minLength: 2
     maxLength: 30

@@ -35,7 +35,7 @@ func TestNewAccessTokenCookie(t *testing.T) {
 	value := "access"
 	c := NewAccessTokenCookie([]byte(value))
 
-	assert.Equal(t, "access_token", c.Name)
+	assert.Equal(t, viper.GetString(config.JWTAccessTokenCookieName), c.Name)
 	assert.Equal(t, value, c.Value)
 	assert.Equal(t, "/", c.Path)
 	assert.Equal(t, http.SameSiteStrictMode, c.SameSite)
@@ -46,7 +46,7 @@ func TestNewRefreshTokenCookie(t *testing.T) {
 	value := "refresh"
 	c := NewRefreshTokenCookie([]byte(value))
 
-	assert.Equal(t, "refresh_token", c.Name)
+	assert.Equal(t, viper.GetString(config.JWTRefreshTokenCookieName), c.Name)
 	assert.Equal(t, value, c.Value)
 	assert.Equal(t, "/auth", c.Path)
 	assert.Equal(t, http.SameSiteStrictMode, c.SameSite)
