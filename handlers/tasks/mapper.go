@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,7 +23,7 @@ type Mapper struct {
 }
 
 func NewMapper(db *mongo.Client) data.Mapper {
-	collection := db.Database(config.AppName).Collection("tasks")
+	collection := db.Database(viper.GetString(config.AppName)).Collection("tasks")
 	return &Mapper{
 		db,
 		collection,
