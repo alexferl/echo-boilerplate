@@ -150,9 +150,20 @@ func LoadPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to parse PEM block: %v", err)
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
+	var key *rsa.PrivateKey
+	switch block.Type {
+	case "RSA PRIVATE KEY": // PKCS#1
+		key, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+	case "PRIVATE KEY": // PKCS#8
+		privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		key = privateKey.(*rsa.PrivateKey)
 	}
 
 	return key, nil
