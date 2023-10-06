@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexferl/golib/database/mongodb"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,76 +13,30 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 )
 
-func NewClient() (*mongo.Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func CreateIndexes(client *mongo.Client) error {
+	indexes := map[string][]mongo.IndexModel{}
 
-	uri := viper.GetString(config.MongoDBURI)
-	if uri == "" {
-		uri = "mongodb://localhost:27017"
-	}
-
-	opts := options.Client()
-	opts.ApplyURI(uri)
-	opts.SetAppName(viper.GetString(config.AppName))
-	opts.SetServerSelectionTimeout(viper.GetDuration(config.MongoDBServerSelectionTimeoutMs))
-	opts.SetConnectTimeout(viper.GetDuration(config.MongoDBConnectTimeoutMs))
-	opts.SetSocketTimeout(viper.GetDuration(config.MongoDBSocketTimeoutMs))
-
-	username := viper.GetString(config.MongoDBUsername)
-	password := viper.GetString(config.MongoDBPassword)
-	if username != "" {
-		opts.SetAuth(options.Credential{
-			Username: username,
-			Password: password,
-		})
-	}
-
-	replSet := viper.GetString(config.MongoDBReplicaSet)
-	if replSet != "" {
-		opts.SetReplicaSet(replSet)
-	}
-
-	client, err := mongo.Connect(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
-func CreateIndexes(client *mongo.Client) {
-	db := client.Database(viper.GetString(config.AppName))
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	idxOpts := options.Index().
-		SetUnique(true).
-		SetCollation(&options.Collation{Locale: "en", Strength: 2})
-
-	usernameOpts := idxOpts.SetName("username")
-	indexModel := mongo.IndexModel{
-		Keys:    bson.D{{"username", 1}},
-		Options: usernameOpts,
-	}
-	_, err := db.Collection("users").Indexes().CreateOne(ctx, indexModel)
-	if err != nil {
-		panic(err)
-	}
-
-	emailOpts := idxOpts.SetName("email")
-	indexModel = mongo.IndexModel{
-		Keys:    bson.D{{"email", 1}},
-		Options: emailOpts,
-	}
-	_, err = db.Collection("users").Indexes().CreateOne(ctx, indexModel)
-	if err != nil {
-		panic(err)
-	}
-
+	username := "username"
+	email := "email"
 	t := true
-	_, err = db.Collection("users").Indexes().CreateMany(ctx, []mongo.IndexModel{
+
+	indexes["users"] = []mongo.IndexModel{
+		{
+			Keys: bson.D{{"username", 1}},
+			Options: &options.IndexOptions{
+				Name:      &username,
+				Unique:    &t,
+				Collation: &options.Collation{Locale: "en", Strength: 2},
+			},
+		},
+		{
+			Keys: bson.D{{"email", 1}},
+			Options: &options.IndexOptions{
+				Name:      &email,
+				Unique:    &t,
+				Collation: &options.Collation{Locale: "en", Strength: 2},
+			},
+		},
 		{
 			Keys: bson.D{
 				{"id", 1},
@@ -90,12 +45,9 @@ func CreateIndexes(client *mongo.Client) {
 				Unique: &t,
 			},
 		},
-	})
-	if err != nil {
-		panic(err)
 	}
 
-	_, err = db.Collection("tasks").Indexes().CreateMany(ctx, []mongo.IndexModel{
+	indexes["tasks"] = []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{"id", 1},
@@ -104,12 +56,9 @@ func CreateIndexes(client *mongo.Client) {
 				Unique: &t,
 			},
 		},
-	})
-	if err != nil {
-		panic(err)
 	}
 
-	_, err = db.Collection("personal_access_tokens").Indexes().CreateMany(ctx, []mongo.IndexModel{
+	indexes["personal_access_tokens"] = []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{"id", 1},
@@ -132,8 +81,12 @@ func CreateIndexes(client *mongo.Client) {
 				Unique: &t,
 			},
 		},
-	})
-	if err != nil {
-		panic(err)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	db := client.Database(viper.GetString(config.AppName))
+
+	return mongodb.CreateIndexes(ctx, db, indexes)
 }

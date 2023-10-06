@@ -3,7 +3,6 @@ package users
 import (
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/exp/slices"
 
 	"github.com/alexferl/echo-boilerplate/data"
@@ -58,17 +57,17 @@ func NewAdminUser(email string, username string) *User {
 }
 
 func (u *User) SetPassword(s string) error {
-	b, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.DefaultCost)
+	b, err := util.HashPassword(s)
 	if err != nil {
 		return err
 	}
-	u.Password = string(b)
+	u.Password = b
 
 	return nil
 }
 
 func (u *User) ValidatePassword(s string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(s))
+	return util.VerifyPassword(u.Password, s)
 }
 
 func (u *User) AddRole(role Role) {
@@ -119,7 +118,7 @@ func (u *User) Refresh() ([]byte, []byte, error) {
 }
 
 func (u *User) ValidateRefreshToken(s string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.RefreshToken), []byte(s))
+	return util.VerifyPassword(u.RefreshToken, s)
 }
 
 func (u *User) Public() *PublicUser {
@@ -131,12 +130,12 @@ func (u *User) Public() *PublicUser {
 }
 
 func (u *User) encryptRefreshToken(token []byte) error {
-	b, err := bcrypt.GenerateFromPassword(token, bcrypt.DefaultCost)
+	b, err := util.HashPassword(string(token))
 	if err != nil {
 		return err
 	}
 
-	u.RefreshToken = string(b)
+	u.RefreshToken = b
 
 	return nil
 }

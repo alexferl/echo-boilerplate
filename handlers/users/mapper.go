@@ -45,7 +45,7 @@ func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*o
 	opts = append(opts, collOpts)
 
 	err := m.collection.FindOne(ctx, filter, opts...).Decode(result)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoDocuments
 	} else if err != nil {
 		return nil, err

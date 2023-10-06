@@ -2,18 +2,19 @@ package tasks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/alexferl/echo-openapi"
-	"github.com/alexferl/golib/http/handler"
-	"github.com/alexferl/golib/http/router"
+	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/alexferl/echo-boilerplate/data"
+	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -24,7 +25,7 @@ type Handler struct {
 	Db     *mongo.Client
 }
 
-func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) handler.Handler {
+func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) handlers.BaseHandler {
 	if mapper == nil {
 		mapper = NewMapper(db)
 	}
@@ -36,20 +37,18 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 	}
 }
 
-func (h *Handler) GetRoutes() []*router.Route {
-	return []*router.Route{
-		{Name: "CreateTask", Method: http.MethodPost, Pattern: "/tasks", HandlerFunc: h.CreateTask},
-		{Name: "ListTasks", Method: http.MethodGet, Pattern: "/tasks", HandlerFunc: h.ListTasks},
-		{Name: "GetTask", Method: http.MethodGet, Pattern: "/tasks/:id", HandlerFunc: h.GetTask},
-		{Name: "UpdateTask", Method: http.MethodPatch, Pattern: "/tasks/:id", HandlerFunc: h.UpdateTask},
-		{Name: "DeleteTask", Method: http.MethodDelete, Pattern: "/tasks/:id", HandlerFunc: h.DeleteTask},
-	}
+func (h *Handler) AddRoutes(s *server.Server) {
+	s.Add(http.MethodPost, "/tasks", h.CreateTask)
+	s.Add(http.MethodGet, "/tasks", h.ListTasks)
+	s.Add(http.MethodGet, "/tasks/:id", h.GetTask)
+	s.Add(http.MethodPatch, "/tasks/:id", h.UpdateTask)
+	s.Add(http.MethodDelete, "/tasks/:id", h.DeleteTask)
 }
 
 func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, token jwt.Token) (*Task, func() error) {
 	result, err := h.Mapper.FindOneById(ctx, taskId, &Task{})
 	if err != nil {
-		if err == ErrTaskNotFound {
+		if errors.Is(err, ErrTaskNotFound) {
 			return nil, wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
 		}
 		return nil, wrap(fmt.Errorf("failed getting task: %v", err))

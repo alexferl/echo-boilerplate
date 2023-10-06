@@ -2,15 +2,15 @@ package app
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
 	casbinMw "github.com/alexferl/echo-casbin"
 	jwtMw "github.com/alexferl/echo-jwt"
 	openapiMw "github.com/alexferl/echo-openapi"
-	"github.com/alexferl/golib/http/handler"
-	"github.com/alexferl/golib/http/router"
-	"github.com/alexferl/golib/http/server"
+	"github.com/alexferl/golib/database/mongodb"
+	"github.com/alexferl/golib/http/api/server"
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
@@ -25,16 +25,19 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func DefaultHandlers() []handler.Handler {
-	client, err := data.NewClient()
+func Handlers() []handlers.BaseHandler {
+	client, err := mongodb.New()
 	if err != nil {
 		panic(err)
 	}
-	data.CreateIndexes(client)
+	err = data.CreateIndexes(client)
+	if err != nil {
+		panic(err)
+	}
 
 	openapi := openapiMw.NewHandler()
 
-	return []handler.Handler{
+	return []handlers.BaseHandler{
 		handlers.NewHandler(),
 		tasks.NewHandler(client, openapi, nil),
 		users.NewHandler(client, openapi, nil),
@@ -42,10 +45,10 @@ func DefaultHandlers() []handler.Handler {
 }
 
 func NewServer() *server.Server {
-	return newServer(DefaultHandlers()...)
+	return newServer(Handlers()...)
 }
 
-func NewTestServer(handler ...handler.Handler) *server.Server {
+func NewTestServer(handler ...handlers.BaseHandler) *server.Server {
 	c := config.New()
 	c.BindFlags()
 
@@ -56,20 +59,14 @@ func NewTestServer(handler ...handler.Handler) *server.Server {
 	return newServer(handler...)
 }
 
-func newServer(handler ...handler.Handler) *server.Server {
-	var routes []*router.Route
-	for _, h := range handler {
-		routes = append(routes, h.GetRoutes()...)
-	}
-
-	r := &router.Router{Routes: routes}
-
+func newServer(handler ...handlers.BaseHandler) *server.Server {
 	key, err := util.LoadPrivateKey()
 	if err != nil {
 		panic(err)
 	}
 
-	client, err := data.NewClient()
+	// TODO: already called in Handlers, use it?
+	client, err := mongodb.New()
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +77,8 @@ func newServer(handler ...handler.Handler) *server.Server {
 		UseRefreshToken: true,
 		ExemptRoutes: map[string][]string{
 			"/":                {http.MethodGet},
-			"/healthz":         {http.MethodGet},
+			"/readyz":          {http.MethodGet},
+			"/livez":           {http.MethodGet},
 			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
@@ -128,7 +126,7 @@ func newServer(handler ...handler.Handler) *server.Server {
 				filter := bson.D{{"user_id", t.Subject()}}
 				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
-					if err == users.ErrNoDocuments {
+					if errors.Is(err, users.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "Token invalid")
 					}
 					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
@@ -157,7 +155,8 @@ func newServer(handler ...handler.Handler) *server.Server {
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
 			"/":                {http.MethodGet},
-			"/healthz":         {http.MethodGet},
+			"/readyz":          {http.MethodGet},
+			"/livez":           {http.MethodGet},
 			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
@@ -166,19 +165,21 @@ func newServer(handler ...handler.Handler) *server.Server {
 		},
 	}
 
-	s := server.New(
-		r,
+	s := server.New()
+
+	s.Use(
 		jwtMw.JWTWithConfig(jwtConfig),
 		casbinMw.Casbin(enforcer),
 		openapiMw.OpenAPIWithConfig(openAPIConfig),
 	)
 
+	for _, h := range handler {
+		h.AddRoutes(s)
+	}
+
 	s.File("/favicon.ico", "./assets/images/favicon.ico")
 	s.File("/docs", "./assets/index.html")
 	s.Static("/openapi/", "./openapi")
-
-	s.HideBanner = true
-	s.HidePort = true
 
 	return s
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexferl/echo-openapi"
-	"github.com/alexferl/golib/http/server"
+	"github.com/alexferl/golib/http/api/server"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	app "github.com/alexferl/echo-boilerplate"

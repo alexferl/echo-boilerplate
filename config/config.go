@@ -5,7 +5,8 @@ import (
 	"time"
 
 	libConfig "github.com/alexferl/golib/config"
-	libHttp "github.com/alexferl/golib/http/config"
+	libMongo "github.com/alexferl/golib/database/mongodb"
+	libHttp "github.com/alexferl/golib/http/api/config"
 	libLog "github.com/alexferl/golib/log"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
@@ -17,6 +18,7 @@ type Config struct {
 	Config  *libConfig.Config
 	HTTP    *libHttp.Config
 	Logging *libLog.Config
+	MongoDB *libMongo.Config
 
 	BaseURL string
 
@@ -27,7 +29,6 @@ type Config struct {
 	CSRF    *CSRF
 	Casbin  *Casbin
 	OpenAPI *OpenAPI
-	MongoDB *MongoDB
 }
 
 type Admin struct {
@@ -73,22 +74,13 @@ type OpenAPI struct {
 	Schema string
 }
 
-type MongoDB struct {
-	URI                      string
-	Username                 string
-	Password                 string
-	ReplicaSet               string
-	ServerSelectionTimeoutMs time.Duration
-	ConnectTimeoutMs         time.Duration
-	SocketTimeoutMs          time.Duration // query timeout
-}
-
 // New creates a Config instance
 func New() *Config {
 	return &Config{
 		Config:  libConfig.New("APP"),
 		HTTP:    libHttp.DefaultConfig,
 		Logging: libLog.DefaultConfig,
+		MongoDB: libMongo.DefaultConfig,
 		BaseURL: "http://localhost:1323",
 		Admin: &Admin{
 			Create:   false,
@@ -125,15 +117,6 @@ func New() *Config {
 		},
 		OpenAPI: &OpenAPI{
 			Schema: "./openapi/openapi.yaml",
-		},
-		MongoDB: &MongoDB{
-			URI:                      "mongodb://localhost:27017",
-			Username:                 "",
-			Password:                 "",
-			ReplicaSet:               "",
-			ServerSelectionTimeoutMs: time.Millisecond * 5000,
-			ConnectTimeoutMs:         time.Millisecond * 5000,
-			SocketTimeoutMs:          time.Millisecond * 30000,
 		},
 	}
 }
@@ -175,14 +158,6 @@ const (
 	CasbinPolicy = "casbin-policy"
 
 	OpenAPISchema = "openapi-schema"
-
-	MongoDBURI                      = "mongodb-uri"
-	MongoDBUsername                 = "mongodb-username"
-	MongoDBPassword                 = "mongodb-password"
-	MongoDBReplicaSet               = "mongodb-replica-set"
-	MongoDBServerSelectionTimeoutMs = "mongodb-server-selection-timeout-ms"
-	MongoDBConnectTimeoutMs         = "mongodb-connect-timeout-ms"
-	MongoDBSocketTimeoutMs          = "mongodb-socket-timeout-ms"
 )
 
 // addFlags adds all the flags from the command line
@@ -221,17 +196,6 @@ func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.Casbin.Policy, CasbinPolicy, c.Casbin.Policy, "Casbin policy file")
 
 	fs.StringVar(&c.OpenAPI.Schema, OpenAPISchema, c.OpenAPI.Schema, "OpenAPI schema file")
-
-	fs.StringVar(&c.MongoDB.URI, MongoDBURI, c.MongoDB.URI, "MongoDB URI")
-	fs.StringVar(&c.MongoDB.Username, MongoDBUsername, c.MongoDB.Username, "MongoDB username")
-	fs.StringVar(&c.MongoDB.Password, MongoDBPassword, c.MongoDB.Password, "MongoDB password")
-	fs.StringVar(&c.MongoDB.ReplicaSet, MongoDBReplicaSet, c.MongoDB.ReplicaSet, "MongoDB replica set")
-	fs.DurationVar(&c.MongoDB.ServerSelectionTimeoutMs, MongoDBServerSelectionTimeoutMs,
-		c.MongoDB.ServerSelectionTimeoutMs, "MongoDB server selection timeout ms")
-	fs.DurationVar(&c.MongoDB.ConnectTimeoutMs, MongoDBConnectTimeoutMs, c.MongoDB.ConnectTimeoutMs,
-		"MongoDB connect timeout ms")
-	fs.DurationVar(&c.MongoDB.SocketTimeoutMs, MongoDBSocketTimeoutMs, c.MongoDB.SocketTimeoutMs,
-		"MongoDB socket timeout ms")
 }
 
 func (c *Config) BindFlags() {
@@ -242,6 +206,7 @@ func (c *Config) BindFlags() {
 	c.addFlags(pflag.CommandLine)
 	c.Logging.BindFlags(pflag.CommandLine)
 	c.HTTP.BindFlags(pflag.CommandLine)
+	c.MongoDB.BindFlags(pflag.CommandLine)
 
 	err := c.Config.BindFlags()
 	if err != nil {

@@ -62,7 +62,7 @@ func (m *Mapper) Insert(ctx context.Context, document any, result any, opts ...*
 
 func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*options.FindOneOptions) (any, error) {
 	err := m.collection.FindOne(ctx, filter, opts...).Decode(result)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrTaskNotFound
 	} else if err != nil {
 		return nil, err

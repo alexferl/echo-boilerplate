@@ -3,12 +3,12 @@ package users
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
-	libHttp "github.com/alexferl/golib/http/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
@@ -70,7 +70,10 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 	if response.StatusCode != http.StatusOK {
 		c.Logger().Errorf("oauth2: response code was: %d body: %s", response.StatusCode, b)
-		return libHttp.JSONError(c, http.StatusUnauthorized, "failed to log in")
+		return c.JSON(http.StatusUnauthorized, echo.HTTPError{
+			Code:    http.StatusUnauthorized,
+			Message: "failed to log in",
+		})
 	}
 
 	googleUser := &GoogleUser{}
@@ -85,7 +88,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	filter := bson.D{{"email", googleUser.Email}}
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
-		if err != ErrNoDocuments {
+		if !errors.Is(err, ErrNoDocuments) {
 			return fmt.Errorf("oauth2: failed to get user: %v", err)
 		}
 	}

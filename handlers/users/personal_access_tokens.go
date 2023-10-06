@@ -12,7 +12,6 @@ import (
 	"github.com/rs/xid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -30,18 +29,18 @@ type PersonalAccessToken struct {
 }
 
 func (pat *PersonalAccessToken) Encrypt() error {
-	b, err := bcrypt.GenerateFromPassword([]byte(pat.Token), bcrypt.DefaultCost)
+	b, err := util.HashPassword(pat.Token)
 	if err != nil {
 		return err
 	}
 
-	pat.Token = string(b)
+	pat.Token = b
 
 	return nil
 }
 
 func (pat *PersonalAccessToken) Validate(s string) error {
-	return bcrypt.CompareHashAndPassword([]byte(pat.Token), []byte(s))
+	return util.VerifyPassword(pat.Token, s)
 }
 
 type PATWithoutToken struct {
@@ -111,7 +110,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	filter := bson.D{{"user_id", token.Subject()}, {"name", body.Name}}
 	result, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
-		if err != ErrNoDocuments {
+		if !errors.Is(err, ErrNoDocuments) {
 			return fmt.Errorf("failed getting personal access token: %v", err)
 		}
 	}
@@ -122,7 +121,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 
 	newPAT, err := NewPersonalAccessToken(token, body.Name, body.ExpiresAt)
 	if err != nil {
-		if err == ErrExpiresAtPast {
+		if errors.Is(err, ErrExpiresAtPast) {
 			m := echo.Map{
 				"message": "Validation error",
 				"errors":  []string{ErrExpiresAtPast.Error()},
@@ -202,7 +201,7 @@ func (h *Handler) getToken(ctx context.Context, c echo.Context) (*PATWithoutToke
 	filter := bson.D{{"id", taskId}}
 	result, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PATWithoutToken{})
 	if err != nil {
-		if err == ErrNoDocuments {
+		if errors.Is(err, ErrNoDocuments) {
 			return nil, wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"}))
 		}
 		return nil, wrap(fmt.Errorf("failed getting personal access token: %v", err))

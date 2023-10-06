@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -34,7 +35,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	}}}
 	exist, err := h.Mapper.FindOne(ctx, filter, &UserResponse{})
 	if err != nil {
-		if err != ErrNoDocuments {
+		if !errors.Is(err, ErrNoDocuments) {
 			return fmt.Errorf("failed to get newUser: %v", err)
 		}
 	}

@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -28,7 +29,7 @@ func (h *Handler) GetUsername(c echo.Context) error {
 		bson.D{{"username", username}},
 	}}}
 	result, err := h.Mapper.FindOne(ctx, filter, &GetUsernameResponse{})
-	if err == ErrNoDocuments {
+	if errors.Is(err, ErrNoDocuments) {
 		return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
 	} else if err != nil {
 		return fmt.Errorf("failed getting username: %v", err)

@@ -3,20 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/alexferl/golib/http/handler"
-	"github.com/alexferl/golib/http/router"
+	"github.com/alexferl/golib/http/api/server"
 )
 
-// Handler represents the structure of our resource
+type BaseHandler interface {
+	AddRoutes(s *server.Server)
+}
+
 type Handler struct{}
 
-func NewHandler() handler.Handler {
+func NewHandler() BaseHandler {
 	return &Handler{}
 }
 
-func (h *Handler) GetRoutes() []*router.Route {
-	return []*router.Route{
-		{Name: "Root", Method: http.MethodGet, Pattern: "/", HandlerFunc: h.Root},
-		{Name: "Healthz", Method: http.MethodGet, Pattern: "/healthz", HandlerFunc: h.Healthz},
-	}
+func (h *Handler) AddRoutes(s *server.Server) {
+	s.Add(http.MethodGet, "/", h.Root)
 }
