@@ -71,7 +71,7 @@ func (h *Handler) AddRoutes(s *server.Server) {
 	s.Add(http.MethodGet, "/oauth2/login", h.OAuth2LogIn)
 	s.Add(http.MethodGet, "/oauth2/callback", h.OAuth2Callback)
 	s.Add(http.MethodGet, "/user", h.GetUser)
-	s.Add(http.MethodPatch, "/user", h.UpdateUser)
+	s.Add(http.MethodPut, "/user", h.UpdateUser)
 	s.Add(http.MethodPost, "/user/personal_access_tokens", h.CreatePersonalAccessToken)
 	s.Add(http.MethodGet, "/user/personal_access_tokens", h.ListPersonalAccessTokens)
 	s.Add(http.MethodGet, "/user/personal_access_tokens/:id", h.GetPersonalAccessToken)

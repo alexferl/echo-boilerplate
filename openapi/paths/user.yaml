@@ -14,7 +14,7 @@ get:
         application/json:
           schema:
             $ref: '../components/schemas/User.yaml'
-patch:
+put:
   summary: Update authenticated user
   description: Returns the updated authenticated user.
   operationId: updateUser
