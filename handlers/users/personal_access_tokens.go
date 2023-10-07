@@ -29,7 +29,7 @@ type PersonalAccessToken struct {
 }
 
 func (pat *PersonalAccessToken) Encrypt() error {
-	b, err := util.HashPassword(pat.Token)
+	b, err := util.HashPassword([]byte(pat.Token))
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (pat *PersonalAccessToken) Encrypt() error {
 }
 
 func (pat *PersonalAccessToken) Validate(s string) error {
-	return util.VerifyPassword(pat.Token, s)
+	return util.VerifyPassword([]byte(pat.Token), []byte(s))
 }
 
 type PATWithoutToken struct {

@@ -4,9 +4,9 @@ import (
 	"github.com/matthewhartstonge/argon2"
 )
 
-func HashPassword(password string) (string, error) {
+func HashPassword(password []byte) (string, error) {
 	argon := argon2.DefaultConfig()
-	encoded, err := argon.HashEncoded([]byte(password))
+	encoded, err := argon.HashEncoded(password)
 	if err != nil {
 		return "", err
 	}
@@ -14,8 +14,8 @@ func HashPassword(password string) (string, error) {
 	return string(encoded), nil
 }
 
-func VerifyPassword(password string, encoded string) error {
-	_, err := argon2.VerifyEncoded([]byte(encoded), []byte(password))
+func VerifyPassword(password []byte, encoded []byte) error {
+	_, err := argon2.VerifyEncoded(encoded, password)
 	if err != nil {
 		return err
 	}

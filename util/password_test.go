@@ -8,9 +8,9 @@ import (
 
 func TestPassword(t *testing.T) {
 	pwd := "s3cret"
-	enc, err := HashPassword(pwd)
+	enc, err := HashPassword([]byte(pwd))
 	assert.NoError(t, err)
 
-	err = VerifyPassword(enc, pwd)
+	err = VerifyPassword([]byte(enc), []byte(pwd))
 	assert.NoError(t, err)
 }

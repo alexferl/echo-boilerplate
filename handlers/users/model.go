@@ -57,7 +57,7 @@ func NewAdminUser(email string, username string) *User {
 }
 
 func (u *User) SetPassword(s string) error {
-	b, err := util.HashPassword(s)
+	b, err := util.HashPassword([]byte(s))
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (u *User) SetPassword(s string) error {
 }
 
 func (u *User) ValidatePassword(s string) error {
-	return util.VerifyPassword(u.Password, s)
+	return util.VerifyPassword([]byte(u.Password), []byte(s))
 }
 
 func (u *User) AddRole(role Role) {
@@ -118,7 +118,7 @@ func (u *User) Refresh() ([]byte, []byte, error) {
 }
 
 func (u *User) ValidateRefreshToken(s string) error {
-	return util.VerifyPassword(u.RefreshToken, s)
+	return util.VerifyPassword([]byte(u.RefreshToken), []byte(s))
 }
 
 func (u *User) Public() *PublicUser {
@@ -130,7 +130,7 @@ func (u *User) Public() *PublicUser {
 }
 
 func (u *User) encryptRefreshToken(token []byte) error {
-	b, err := util.HashPassword(string(token))
+	b, err := util.HashPassword(token)
 	if err != nil {
 		return err
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
+	_ "go.uber.org/automaxprocs"
 
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"

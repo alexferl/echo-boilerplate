@@ -18,3 +18,5 @@
 app-bin
 
 private-key.pem
+cert.pem
+key.pem
