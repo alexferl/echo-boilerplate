@@ -152,7 +152,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 
 	updated := newTask.MakeResponse(user, nil, user)
 
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -188,7 +188,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 func TestHandler_UpdateTask_401(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", nil)
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -213,7 +213,7 @@ func TestHandler_UpdateTask_403(t *testing.T) {
 	task := tasks.NewTask()
 	task.Create("another_id")
 
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -248,7 +248,7 @@ func TestHandler_UpdateTask_404(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -292,7 +292,7 @@ func TestHandler_UpdateTask_410(t *testing.T) {
 		},
 	}
 
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -322,7 +322,7 @@ func TestHandler_UpdateTask_422(t *testing.T) {
 	assert.NoError(t, err)
 
 	b := bytes.NewBuffer([]byte(`{"invalid": "invalid"}`))
-	req := httptest.NewRequest(http.MethodPatch, "/tasks/id", b)
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id", b)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()

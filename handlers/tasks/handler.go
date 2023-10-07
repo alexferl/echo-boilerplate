@@ -41,7 +41,7 @@ func (h *Handler) AddRoutes(s *server.Server) {
 	s.Add(http.MethodPost, "/tasks", h.CreateTask)
 	s.Add(http.MethodGet, "/tasks", h.ListTasks)
 	s.Add(http.MethodGet, "/tasks/:id", h.GetTask)
-	s.Add(http.MethodPatch, "/tasks/:id", h.UpdateTask)
+	s.Add(http.MethodPut, "/tasks/:id", h.UpdateTask)
 	s.Add(http.MethodDelete, "/tasks/:id", h.DeleteTask)
 }
 

@@ -24,7 +24,7 @@ get:
       $ref: '../components/responses/NotFound.yaml'
     '410':
       $ref: '../components/responses/Gone.yaml'
-patch:
+put:
   summary: Update a task
   description: Returns the updated task.
   operationId: updateTask
