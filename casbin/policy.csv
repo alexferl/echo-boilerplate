@@ -13,7 +13,7 @@ p, any, /oauth2/login, GET
 p, any, /oauth2/callback, GET
 p, any, /users/:username, GET
 
-p, user, /user, (GET)|(PATCH)
+p, user, /user, (GET)|(PUT)
 p, user, /user/personal_access_tokens, (GET)|(POST)
 p, user, /user/personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)

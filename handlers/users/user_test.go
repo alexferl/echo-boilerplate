@@ -92,7 +92,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPut, "/user", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
@@ -127,7 +127,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 func TestHandler_UpdateUser_401(t *testing.T) {
 	_, s := getMapperAndServer(t)
 
-	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
+	req := httptest.NewRequest(http.MethodPut, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -145,7 +145,7 @@ func TestHandler_UpdateUser_422(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPatch, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
+	req := httptest.NewRequest(http.MethodPut, "/user", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
