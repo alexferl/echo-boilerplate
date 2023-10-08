@@ -208,7 +208,7 @@ func (c *Config) BindFlags() {
 	c.HTTP.BindFlags(pflag.CommandLine)
 	c.MongoDB.BindFlags(pflag.CommandLine)
 
-	err := c.Config.BindFlags()
+	err := c.Config.BindFlagsWithConfigPaths()
 	if err != nil {
 		panic(fmt.Errorf("failed binding flags: %v", err))
 	}
