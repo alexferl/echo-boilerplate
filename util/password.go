@@ -1,6 +1,8 @@
 package util
 
 import (
+	"errors"
+
 	"github.com/matthewhartstonge/argon2"
 )
 
@@ -15,9 +17,13 @@ func HashPassword(password []byte) (string, error) {
 }
 
 func VerifyPassword(password []byte, encoded []byte) error {
-	_, err := argon2.VerifyEncoded(encoded, password)
+	b, err := argon2.VerifyEncoded(encoded, password)
 	if err != nil {
 		return err
+	}
+
+	if !b {
+		return errors.New("mismatch")
 	}
 
 	return nil
