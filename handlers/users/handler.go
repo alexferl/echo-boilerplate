@@ -39,11 +39,14 @@ func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.Mapper) 
 				log.Info().Msg("Creating admin user")
 
 				user := NewAdminUser(viper.GetString(config.AdminEmail), viper.GetString(config.AdminUsername))
+				user.Name = "The Admin"
+				user.Bio = "I am the admin!"
 				err = user.SetPassword(viper.GetString(config.AdminPassword))
-				user.Create(user.Id)
 				if err != nil {
 					panic(fmt.Sprintf("failed setting admin password: %v", err))
 				}
+
+				user.Create(user.Id)
 
 				ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()

@@ -54,8 +54,7 @@ func NewTestServer(handler ...handlers.BaseHandler) *server.Server {
 	c.BindFlags()
 
 	viper.Set(config.CookiesEnabled, true)
-	// TODO: add tests with CSRF enabled
-	viper.Set(config.CSRFEnabled, false)
+	viper.Set(config.CSRFEnabled, true)
 
 	return newServer(handler...)
 }

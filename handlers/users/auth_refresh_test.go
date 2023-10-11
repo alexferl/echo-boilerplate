@@ -53,7 +53,11 @@ func TestHandler_AuthRefresh_200_Cookie(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
-	if assert.Equal(t, 2, len(resp.Result().Cookies())) {
+	expected := 2
+	if viper.GetBool(config.CSRFEnabled) {
+		expected = 3
+	}
+	if assert.Equal(t, expected, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
 			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
@@ -62,8 +66,11 @@ func TestHandler_AuthRefresh_200_Cookie(t *testing.T) {
 			if c.Name == viper.GetString(config.JWTRefreshTokenCookieName) {
 				cookies++
 			}
+			if c.Name == viper.GetString(config.CSRFCookieName) {
+				cookies++
+			}
 		}
-		assert.Equal(t, 2, cookies)
+		assert.Equal(t, expected, cookies)
 	}
 	assert.Contains(t, resp.Body.String(), "access_token")
 	assert.Contains(t, resp.Body.String(), "expires_in")
@@ -168,7 +175,11 @@ func TestHandler_AuthRefresh_200_Token(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
-	if assert.Equal(t, 2, len(resp.Result().Cookies())) {
+	expected := 2
+	if viper.GetBool(config.CSRFEnabled) {
+		expected = 3
+	}
+	if assert.Equal(t, expected, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
 			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
@@ -177,8 +188,11 @@ func TestHandler_AuthRefresh_200_Token(t *testing.T) {
 			if c.Name == viper.GetString(config.JWTRefreshTokenCookieName) {
 				cookies++
 			}
+			if c.Name == viper.GetString(config.CSRFCookieName) {
+				cookies++
+			}
 		}
-		assert.Equal(t, 2, cookies)
+		assert.Equal(t, expected, cookies)
 	}
 	assert.Contains(t, resp.Body.String(), "access_token")
 	assert.Contains(t, resp.Body.String(), "expires_in")

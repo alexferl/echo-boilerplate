@@ -4,12 +4,12 @@ go 1.21
 
 require (
 	github.com/alexferl/echo-casbin v0.3.0
-	github.com/alexferl/echo-jwt v0.6.0
+	github.com/alexferl/echo-jwt v1.0.0
 	github.com/alexferl/echo-openapi v0.2.0
-	github.com/alexferl/golib/config v0.0.0-20231007222533-2dbe4604afe5
-	github.com/alexferl/golib/database/mongodb v0.0.0-20231007222533-2dbe4604afe5
-	github.com/alexferl/golib/http/api v0.0.0-20231007222533-2dbe4604afe5
-	github.com/alexferl/golib/log v0.0.0-20231007222533-2dbe4604afe5
+	github.com/alexferl/golib/config v0.0.0-20231008015603-26982fa3ee12
+	github.com/alexferl/golib/database/mongodb v0.0.0-20231008015603-26982fa3ee12
+	github.com/alexferl/golib/http/api v0.0.0-20231008015603-26982fa3ee12
+	github.com/alexferl/golib/log v0.0.0-20231008015603-26982fa3ee12
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.77.2
 	github.com/labstack/echo/v4 v4.11.1
@@ -80,7 +80,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/net v0.16.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
