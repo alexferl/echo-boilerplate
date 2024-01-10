@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/util"
-	"github.com/labstack/echo/v4"
-
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/rs/zerolog/log"
@@ -84,21 +81,4 @@ func (h *Handler) AddRoutes(s *server.Server) {
 	s.Add(http.MethodDelete, "/user/personal_access_tokens/:id", h.RevokePersonalAccessToken)
 	s.Add(http.MethodGet, "/users/:username", h.GetUsername)
 	s.Add(http.MethodGet, "/users", h.ListUsers)
-}
-
-func (h *Handler) getUser(ctx context.Context, c echo.Context, userId string) (*User, func() error) {
-	result, err := h.Mapper.FindOneById(ctx, userId, &User{})
-	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return nil, util.Wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"}))
-		}
-		return nil, util.Wrap(fmt.Errorf("failed getting user: %v", err))
-	}
-
-	user := result.(*User)
-	if user.DeletedAt != nil {
-		return nil, util.Wrap(h.Validate(c, http.StatusGone, echo.Map{"message": "user was deleted"}))
-	}
-
-	return user, nil
 }
