@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
@@ -42,7 +43,7 @@ func TestHandler_AuthLogin_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -97,7 +98,7 @@ func TestHandler_AuthLogin_401(t *testing.T) {
 			"user not found",
 			b,
 			nil,
-			users.ErrNoDocuments,
+			data.ErrNoDocuments,
 			http.StatusUnauthorized,
 			"invalid email or password",
 		},

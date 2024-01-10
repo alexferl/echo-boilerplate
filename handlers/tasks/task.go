@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
+
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
@@ -55,12 +57,13 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	task.Update(token.Subject())
 
-	update, err := h.Mapper.UpdateById(ctx, taskId, task, []*TaskResponse{})
+	pipeline := h.getPipeline(bson.D{{"id", taskId}}, 1, 0)
+	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
 	if err != nil {
-		return fmt.Errorf("failed updating task: %v", err)
+		return fmt.Errorf("failed getting tasks: %v", err)
 	}
 
-	res := update.([]*TaskResponse)
+	res := result.([]*TaskResponse)
 	if len(res) < 1 {
 		return fmt.Errorf("failed to retrieve updated task: %v", err)
 	}
@@ -80,7 +83,7 @@ func (h *Handler) DeleteTask(c echo.Context) error {
 
 	task.Delete(token.Subject())
 
-	_, err := h.Mapper.UpdateById(ctx, taskId, task, nil)
+	_, err := h.Mapper.UpdateOneById(ctx, taskId, task, nil)
 	if err != nil {
 		return fmt.Errorf("failed deleting task: %v", err)
 	}

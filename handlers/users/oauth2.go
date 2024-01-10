@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2/google"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
@@ -88,7 +89,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	filter := bson.D{{"email", googleUser.Email}}
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
-		if !errors.Is(err, ErrNoDocuments) {
+		if !errors.Is(err, data.ErrNoDocuments) {
 			return fmt.Errorf("oauth2: failed to get user: %v", err)
 		}
 	}
@@ -104,7 +105,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 		newUser.Create(newUser.Id)
 
-		_, err = h.Mapper.Insert(ctx, newUser, nil)
+		_, err = h.Mapper.InsertOne(ctx, newUser, nil)
 		if err != nil {
 			return fmt.Errorf("oauth2: failed to insert user: %v", err)
 		}
@@ -115,7 +116,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 			return fmt.Errorf("oauth2: failed to generate tokens: %v", err)
 		}
 
-		_, err = h.Mapper.UpdateById(ctx, user.Id, user, nil)
+		_, err = h.Mapper.UpdateOneById(ctx, user.Id, user, nil)
 		if err != nil {
 			return fmt.Errorf("oauth2: failed to update user: %v", err)
 		}

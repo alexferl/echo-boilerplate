@@ -103,7 +103,7 @@ func TestHandler_AuthLogout_200_Token(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,

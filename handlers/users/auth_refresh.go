@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
@@ -26,6 +28,9 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 	defer cancel()
 	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
+		if errors.Is(err, data.ErrNoDocuments) {
+			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token not found"})
+		}
 		return fmt.Errorf("failed getting user: %v", err)
 	}
 
@@ -39,7 +44,7 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 		return fmt.Errorf("failed generating tokens: %v", err)
 	}
 
-	_, err = h.Mapper.UpdateById(ctx, token.Subject(), user, nil)
+	_, err = h.Mapper.UpdateOneById(ctx, token.Subject(), user, nil)
 	if err != nil {
 		return fmt.Errorf("failed updating user: %v", err)
 	}

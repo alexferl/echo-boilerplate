@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
@@ -32,7 +33,7 @@ func TestHandler_GetUsername_200(t *testing.T) {
 		retErr     error
 	}{
 		{
-			"not found", "notfound", http.StatusNotFound, nil, users.ErrNoDocuments,
+			"not found", "notfound", http.StatusNotFound, nil, data.ErrNoDocuments,
 		},
 		{
 			"self username", "test", http.StatusOK, result, nil,
@@ -122,7 +123,7 @@ func TestHandler_GetUsername_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			users.ErrNoDocuments,
+			data.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)

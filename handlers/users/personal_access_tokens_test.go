@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexferl/echo-boilerplate/data"
+
 	"github.com/lestrrat-go/jwx/v2/jwt"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +47,7 @@ func TestHandler_CreatePersonalAccessToken_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -62,14 +64,14 @@ func TestHandler_CreatePersonalAccessToken_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
 			mapper,
 		).
 		On(
-			"Upsert",
+			"FindOneAndUpdate",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -129,7 +131,7 @@ func TestHandler_CreatePersonalAccessToken_409(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -211,7 +213,7 @@ func TestHandler_ListPersonalAccessTokens_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -275,7 +277,7 @@ func TestHandler_GetPersonalAccessToken_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -315,7 +317,7 @@ func TestHandler_GetPersonalAccessToken_404(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -329,7 +331,7 @@ func TestHandler_GetPersonalAccessToken_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			users.ErrNoDocuments,
+			data.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)
@@ -362,7 +364,7 @@ func TestHandler_RevokePersonalAccessToken_204(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -379,7 +381,7 @@ func TestHandler_RevokePersonalAccessToken_204(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -409,7 +411,7 @@ func TestHandler_RevokePersonalAccessToken_404(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Collection",
+			"WithCollection",
 			mock.Anything,
 		).
 		Return(
@@ -423,7 +425,7 @@ func TestHandler_RevokePersonalAccessToken_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			users.ErrNoDocuments,
+			data.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)

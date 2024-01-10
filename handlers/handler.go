@@ -6,13 +6,13 @@ import (
 	"github.com/alexferl/golib/http/api/server"
 )
 
-type BaseHandler interface {
+type IHandler interface {
 	AddRoutes(s *server.Server)
 }
 
 type Handler struct{}
 
-func NewHandler() BaseHandler {
+func NewHandler() IHandler {
 	return &Handler{}
 }
 

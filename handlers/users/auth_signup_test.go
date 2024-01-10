@@ -41,7 +41,7 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"Upsert",
+			"FindOneAndUpdate",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,

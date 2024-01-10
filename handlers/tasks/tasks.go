@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -30,9 +33,15 @@ func (h *Handler) CreateTask(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.Insert(ctx, newTask, []*TaskResponse{})
+	insert, err := h.Mapper.InsertOne(ctx, newTask)
 	if err != nil {
 		return fmt.Errorf("failed to insert task: %v", err)
+	}
+
+	pipeline := h.getPipeline(bson.D{{"_id", insert.InsertedID.(primitive.ObjectID)}}, 1, 0)
+	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
+	if err != nil {
+		return fmt.Errorf("failed getting tasks: %v", err)
 	}
 
 	tasks := result.([]*TaskResponse)
@@ -57,7 +66,8 @@ func (h *Handler) ListTasks(c echo.Context) error {
 		return fmt.Errorf("failed counting tasks: %v", err)
 	}
 
-	result, err := h.Mapper.Aggregate(ctx, nil, limit, skip, []*TaskResponse{})
+	pipeline := h.getPipeline(bson.D{{"deleted_at", bson.M{"$eq": nil}}}, limit, skip)
+	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
 	if err != nil {
 		return fmt.Errorf("failed getting tasks: %v", err)
 	}

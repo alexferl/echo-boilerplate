@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/labstack/echo/v4"
+	"github.com/alexferl/echo-boilerplate/data"
 )
 
 type AuthSignUpRequest struct {
@@ -35,7 +36,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	}}}
 	exist, err := h.Mapper.FindOne(ctx, filter, &UserResponse{})
 	if err != nil {
-		if !errors.Is(err, ErrNoDocuments) {
+		if !errors.Is(err, data.ErrNoDocuments) {
 			return fmt.Errorf("failed to get newUser: %v", err)
 		}
 	}
@@ -55,7 +56,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	newUser.Create(newUser.Id)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	user, err := h.Mapper.Upsert(ctx, filter, newUser, &UserResponse{}, opts)
+	user, err := h.Mapper.FindOneAndUpdate(ctx, filter, newUser, &UserResponse{}, opts)
 	if err != nil {
 		return fmt.Errorf("failed to insert newUser: %v", err)
 	}

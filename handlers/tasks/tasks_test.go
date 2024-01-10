@@ -8,6 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -39,14 +42,22 @@ func TestHandler_CreateTask_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Insert",
+			"InsertOne",
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			&mongo.InsertOneResult{InsertedID: primitive.NewObjectID()},
+			nil,
+		).
+		On(
+			"Aggregate",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{task},
-			nil,
+			[]*tasks.TaskResponse{task}, nil,
 		)
 
 	s.ServeHTTP(resp, req)

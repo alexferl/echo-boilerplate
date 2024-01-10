@@ -1,4 +1,4 @@
-.PHONY: dev run test cover fmt generate openapi-lint pre-commit docker-build docker-run
+.PHONY: dev run test cover fmt mocks openapi-lint pre-commit docker-build docker-run
 
 .DEFAULT: help
 help:
@@ -16,8 +16,8 @@ help:
 	@echo "	run go mod tidy"
 	@echo "make fmt"
 	@echo "	run gofumpt"
-	@echo "make generate"
-	@echo "	run go generate"
+	@echo "make mocks"
+	@echo "	run mockery"
 	@echo "make openapi-lint"
 	@echo "	lint openapi spec"
 	@echo "make pre-commit"
@@ -71,8 +71,8 @@ tidy:
 fmt: check-gofumpt
 	gofumpt -l -w .
 
-generate:
-	go generate ./...
+mocks:
+	mockery
 
 openapi-lint: check-redocly
 	redocly lint openapi/openapi.yaml

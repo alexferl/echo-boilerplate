@@ -40,7 +40,7 @@ func TestHandler_AuthRefresh_200_Cookie(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -162,7 +162,7 @@ func TestHandler_AuthRefresh_200_Token(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,

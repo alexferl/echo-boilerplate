@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
@@ -108,9 +109,9 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}, {"name", body.Name}}
-	result, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
+	result, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
-		if !errors.Is(err, ErrNoDocuments) {
+		if !errors.Is(err, data.ErrNoDocuments) {
 			return fmt.Errorf("failed getting personal access token: %v", err)
 		}
 	}
@@ -137,7 +138,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	}
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	upsert, err := h.Mapper.Collection(PATCollection).Upsert(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
+	upsert, err := h.Mapper.WithCollection(PATCollection).FindOneAndUpdate(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
 	if err != nil {
 		return fmt.Errorf("failed inserting personal access token: %v", err)
 	}
@@ -158,7 +159,7 @@ func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}}
-	result, err := h.Mapper.Collection(PATCollection).Find(ctx, filter, []*PATWithoutToken{})
+	result, err := h.Mapper.WithCollection(PATCollection).Find(ctx, filter, []*PATWithoutToken{})
 	if err != nil {
 		return fmt.Errorf("failed getting personal access token: %v", err)
 	}
@@ -185,8 +186,12 @@ func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
 		return errResp()
 	}
 
+	if pat.Revoked == true {
+		return h.Validate(c, http.StatusConflict, echo.Map{"message": "personal access token already revoked"})
+	}
+
 	pat.Revoked = true
-	_, err := h.Mapper.Collection(PATCollection).UpdateById(ctx, c.Param("id"), pat, nil)
+	_, err := h.Mapper.WithCollection(PATCollection).UpdateOneById(ctx, c.Param("id"), pat, nil)
 	if err != nil {
 		return fmt.Errorf("failed inserting personal access token: %v", err)
 	}
@@ -195,23 +200,23 @@ func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
 }
 
 func (h *Handler) getToken(ctx context.Context, c echo.Context) (*PATWithoutToken, func() error) {
-	taskId := c.Param("id")
+	tokenId := c.Param("id")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	filter := bson.D{{"id", taskId}}
-	result, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PATWithoutToken{})
+
+	filter := bson.D{{"$or", bson.A{
+		bson.D{{"id", tokenId}},
+		bson.D{{"name", tokenId}},
+	}}}
+	result, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PATWithoutToken{})
 	if err != nil {
-		if errors.Is(err, ErrNoDocuments) {
-			return nil, wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"}))
+		if errors.Is(err, data.ErrNoDocuments) {
+			return nil, util.Wrap(h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"}))
 		}
-		return nil, wrap(fmt.Errorf("failed getting personal access token: %v", err))
+		return nil, util.Wrap(fmt.Errorf("failed getting personal access token: %v", err))
 	}
 
 	pat := result.(*PATWithoutToken)
 
 	return pat, nil
-}
-
-func wrap(err error) func() error {
-	return func() error { return err }
 }

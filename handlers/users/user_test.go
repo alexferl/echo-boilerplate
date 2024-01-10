@@ -108,7 +108,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 			user,
 			nil,
 		).
-		On("UpdateById",
+		On("FindOneByIdAndUpdate",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -120,6 +120,8 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 		)
 
 	s.ServeHTTP(resp, req)
+
+	fmt.Println(resp)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 }

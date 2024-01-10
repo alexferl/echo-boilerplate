@@ -13,8 +13,8 @@ import (
 	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
-func getMapperAndServer(t *testing.T) (*mocks.Mapper, *server.Server) {
-	mapper := mocks.NewMapper(t)
+func getMapperAndServer(t *testing.T) (*mocks.IMapper, *server.Server) {
+	mapper := mocks.NewIMapper(t)
 	h := tasks.NewHandler(&mongo.Client{}, openapi.NewHandler(), mapper)
 	s := app.NewTestServer(h)
 	return mapper, s

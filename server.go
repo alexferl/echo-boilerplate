@@ -26,7 +26,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func Handlers() []handlers.BaseHandler {
+func Handlers() []handlers.IHandler {
 	client, err := mongodb.New()
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func Handlers() []handlers.BaseHandler {
 
 	openapi := openapiMw.NewHandler()
 
-	return []handlers.BaseHandler{
+	return []handlers.IHandler{
 		handlers.NewHandler(),
 		tasks.NewHandler(client, openapi, nil),
 		users.NewHandler(client, openapi, nil),
@@ -49,7 +49,7 @@ func NewServer() *server.Server {
 	return newServer(Handlers()...)
 }
 
-func NewTestServer(handler ...handlers.BaseHandler) *server.Server {
+func NewTestServer(handler ...handlers.IHandler) *server.Server {
 	c := config.New()
 	c.BindFlags()
 
@@ -59,7 +59,7 @@ func NewTestServer(handler ...handlers.BaseHandler) *server.Server {
 	return newServer(handler...)
 }
 
-func newServer(handler ...handlers.BaseHandler) *server.Server {
+func newServer(handler ...handlers.IHandler) *server.Server {
 	key, err := util.LoadPrivateKey()
 	if err != nil {
 		panic(err)
@@ -70,7 +70,7 @@ func newServer(handler ...handlers.BaseHandler) *server.Server {
 	if err != nil {
 		panic(err)
 	}
-	mapper := users.NewMapper(client, users.PATCollection)
+	mapper := data.NewMapper(client, viper.GetString(config.AppName), users.PATCollection)
 
 	jwtConfig := jwtMw.Config{
 		Key:             key,
@@ -124,9 +124,9 @@ func newServer(handler ...handlers.BaseHandler) *server.Server {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 				filter := bson.D{{"user_id", t.Subject()}}
-				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
+				result, err := mapper.WithCollection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
-					if errors.Is(err, users.ErrNoDocuments) {
+					if errors.Is(err, data.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "Token invalid")
 					}
 					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")

@@ -9,6 +9,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
+
+	"github.com/alexferl/echo-boilerplate/data"
 )
 
 type GetUsernameResponse struct {
@@ -29,7 +31,7 @@ func (h *Handler) GetUsername(c echo.Context) error {
 		bson.D{{"username", username}},
 	}}}
 	result, err := h.Mapper.FindOne(ctx, filter, &GetUsernameResponse{})
-	if errors.Is(err, ErrNoDocuments) {
+	if errors.Is(err, data.ErrNoDocuments) {
 		return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
 	} else if err != nil {
 		return fmt.Errorf("failed getting username: %v", err)

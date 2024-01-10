@@ -33,9 +33,8 @@ func (h *Handler) GetUser(c echo.Context) error {
 }
 
 type UpdateUserRequest struct {
-	Email string `json:"email" bson:"email"`
-	Name  string `json:"name" bson:"name"`
-	Bio   string `json:"bio" bson:"bio"`
+	Name string `json:"name" bson:"name"`
+	Bio  string `json:"bio" bson:"bio"`
 }
 
 func (h *Handler) UpdateUser(c echo.Context) error {
@@ -54,10 +53,6 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	}
 
 	user := result.(*User)
-	if body.Email != "" {
-		user.Email = body.Email
-	}
-
 	if body.Name != "" {
 		user.Name = body.Name
 	}
@@ -68,7 +63,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 	user.Update(user.Id)
 
-	update, err := h.Mapper.UpdateById(ctx, user.Id, user, &UserResponse{})
+	update, err := h.Mapper.FindOneByIdAndUpdate(ctx, user.Id, user, &UserResponse{})
 	if err != nil {
 		return fmt.Errorf("failed updating user: %v", err)
 	}

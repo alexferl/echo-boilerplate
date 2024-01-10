@@ -169,7 +169,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"Aggregate",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -262,7 +262,7 @@ func TestHandler_UpdateTask_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			tasks.ErrTaskNotFound,
+			data.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)
@@ -352,14 +352,6 @@ func TestHandler_DeleteTask_204(t *testing.T) {
 		CompletedBy: task.CompletedBy,
 	}
 	task.Delete(user.Id)
-	update := &tasks.TaskResponse{
-		Id:        task.Id,
-		Title:     task.Title,
-		Completed: task.Completed,
-		CreatedAt: task.CreatedAt,
-		DeletedBy: user.Id,
-		DeletedAt: user.DeletedAt,
-	}
 
 	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -378,14 +370,14 @@ func TestHandler_DeleteTask_204(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{update},
+			nil,
 			nil,
 		)
 
@@ -447,7 +439,7 @@ func TestHandler_DeleteTask_404(t *testing.T) {
 		).
 		Return(
 			nil,
-			tasks.ErrTaskNotFound,
+			data.ErrNoDocuments,
 		)
 
 	s.ServeHTTP(resp, req)
@@ -470,7 +462,6 @@ func TestHandler_DeleteTask_410(t *testing.T) {
 		},
 	}
 	newTask.Delete(user.Id)
-	task := newTask.MakeResponse(user, nil, nil)
 
 	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -489,14 +480,14 @@ func TestHandler_DeleteTask_410(t *testing.T) {
 			nil,
 		).
 		On(
-			"UpdateById",
+			"UpdateOneById",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{task},
+			nil,
 			nil,
 		)
 

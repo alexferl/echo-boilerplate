@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
@@ -38,7 +39,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 	filter := bson.D{{"email", body.Email}}
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
-		if errors.Is(err, ErrNoDocuments) {
+		if errors.Is(err, data.ErrNoDocuments) {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
 		}
 		return fmt.Errorf("failed getting user: %v", err)
@@ -55,7 +56,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 		return fmt.Errorf("failed generating tokens: %v", err)
 	}
 
-	_, err = h.Mapper.UpdateById(ctx, user.Id, user, nil)
+	_, err = h.Mapper.UpdateOneById(ctx, user.Id, user, nil)
 	if err != nil {
 		return fmt.Errorf("failed updating user: %v", err)
 	}
