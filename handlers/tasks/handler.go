@@ -24,18 +24,16 @@ import (
 type Handler struct {
 	*openapi.Handler
 	Mapper data.IMapper
-	Db     *mongo.Client
 }
 
-func NewHandler(db *mongo.Client, openapi *openapi.Handler, mapper data.IMapper) handlers.IHandler {
+func NewHandler(client *mongo.Client, openapi *openapi.Handler, mapper data.IMapper) handlers.IHandler {
 	if mapper == nil {
-		mapper = data.NewMapper(db, viper.GetString(config.AppName), "tasks")
+		mapper = data.NewMapper(client, viper.GetString(config.AppName), "tasks")
 	}
 
 	return &Handler{
 		Handler: openapi,
 		Mapper:  mapper,
-		Db:      db,
 	}
 }
 
