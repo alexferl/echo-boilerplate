@@ -57,6 +57,11 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	task.Update(token.Subject())
 
+	_, err := h.Mapper.UpdateOneById(ctx, taskId, task)
+	if err != nil {
+		return fmt.Errorf("failed updating task: %v", err)
+	}
+
 	pipeline := h.getPipeline(bson.D{{"id", taskId}}, 1, 0)
 	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
 	if err != nil {

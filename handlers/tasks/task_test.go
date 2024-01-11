@@ -169,6 +169,16 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 			nil,
 		).
 		On(
+			"UpdateOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			nil,
+		).
+		On(
 			"Aggregate",
 			mock.Anything,
 			mock.Anything,
