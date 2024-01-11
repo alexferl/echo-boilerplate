@@ -4,7 +4,7 @@ properties:
   id:
     type: string
     description: Unique identifier for this object
-    example: cdndmc5fcls6kndagdgg
+    example: '1'
     readOnly: true
   title:
     type: string
