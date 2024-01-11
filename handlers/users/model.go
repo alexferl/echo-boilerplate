@@ -1,9 +1,8 @@
 package users
 
 import (
+	"slices"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
@@ -42,7 +41,7 @@ type PublicUser struct {
 
 func NewUser(email string, username string) *User {
 	return &User{
-		Model:    data.NewModel(),
+		Model:    data.NewModel(""),
 		Email:    email,
 		Username: username,
 		Roles:    []string{UserRole.String()},

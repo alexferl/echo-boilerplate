@@ -15,9 +15,9 @@ type Task struct {
 	CompletedBy string     `json:"completed_by" bson:"completed_by"`
 }
 
-func NewTask() *Task {
+func NewTask(id string) *Task {
 	return &Task{
-		Model: data.NewModel(),
+		Model: data.NewModel(id),
 	}
 }
 

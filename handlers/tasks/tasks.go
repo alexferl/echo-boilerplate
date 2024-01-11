@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -27,12 +26,17 @@ func (h *Handler) CreateTask(c echo.Context) error {
 
 	token := c.Get("token").(jwt.Token)
 
-	newTask := NewTask()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	seq, err := h.Mapper.GetNextSequence(ctx, "tasks")
+	if err != nil {
+		return err
+	}
+
+	newTask := NewTask(seq.String())
 	newTask.Create(token.Subject())
 	newTask.Title = body.Title
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	insert, err := h.Mapper.InsertOne(ctx, newTask)
 	if err != nil {
 		return fmt.Errorf("failed to insert task: %v", err)

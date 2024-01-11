@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,6 +23,7 @@ type IMapper interface {
 	FindOneAndUpdate(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error)
 	FindOneByIdAndUpdate(ctx context.Context, id string, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error)
 	FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error)
+	GetNextSequence(ctx context.Context, name string) (*Sequence, error)
 	InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 	UpdateOneById(ctx context.Context, id string, document any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
@@ -148,6 +150,35 @@ func (m *Mapper) FindOneByIdAndUpdate(ctx context.Context, id string, update any
 func (m *Mapper) FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error) {
 	filter := bson.D{{"id", id}}
 	return m.FindOne(ctx, filter, result, opts...)
+}
+
+type Sequence struct {
+	Seq int `bson:"seq"`
+}
+
+func (s *Sequence) String() string {
+	return strconv.Itoa(s.Seq)
+}
+
+func (m *Mapper) GetNextSequence(ctx context.Context, name string) (*Sequence, error) {
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+	res := m.db.Collection("counters").FindOneAndUpdate(
+		ctx,
+		bson.D{{"_id", name}},
+		bson.D{{"$inc", bson.D{{"seq", 1}}}},
+		opts,
+	)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	seq := &Sequence{}
+	err := res.Decode(seq)
+	if err != nil {
+		return nil, err
+	}
+
+	return seq, nil
 }
 
 func (m *Mapper) InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {

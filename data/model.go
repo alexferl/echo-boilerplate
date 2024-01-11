@@ -16,26 +16,29 @@ type Model struct {
 	UpdatedBy string     `json:"updated_by" bson:"updated_by"`
 }
 
-func (m *Model) Create(id string) {
+func (m *Model) Create(userId string) {
 	t := time.Now()
 	m.CreatedAt = &t
-	m.CreatedBy = id
+	m.CreatedBy = userId
 }
 
-func (m *Model) Delete(id string) {
+func (m *Model) Delete(userId string) {
 	t := time.Now()
 	m.DeletedAt = &t
-	m.DeletedBy = id
+	m.DeletedBy = userId
 }
 
-func (m *Model) Update(id string) {
+func (m *Model) Update(userId string) {
 	t := time.Now()
 	m.UpdatedAt = &t
-	m.UpdatedBy = id
+	m.UpdatedBy = userId
 }
 
-func NewModel() *Model {
+func NewModel(id string) *Model {
+	if id == "" {
+		id = xid.New().String()
+	}
 	return &Model{
-		Id: xid.New().String(),
+		Id: id,
 	}
 }

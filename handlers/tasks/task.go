@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (h *Handler) GetTask(c echo.Context) error {
@@ -34,11 +33,11 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 		return err
 	}
 
-	taskId := c.Param("id")
+	id := c.Param("id")
 	token := c.Get("token").(jwt.Token)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	task, errResp := h.getTask(ctx, c, taskId, token)
+	task, errResp := h.getTask(ctx, c, id, token)
 	if errResp != nil {
 		return errResp()
 	}
@@ -57,12 +56,12 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	task.Update(token.Subject())
 
-	_, err := h.Mapper.UpdateOneById(ctx, taskId, task)
+	_, err := h.Mapper.UpdateOneById(ctx, id, task)
 	if err != nil {
 		return fmt.Errorf("failed updating task: %v", err)
 	}
 
-	pipeline := h.getPipeline(bson.D{{"id", taskId}}, 1, 0)
+	pipeline := h.getPipeline(bson.D{{"id", id}}, 1, 0)
 	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
 	if err != nil {
 		return fmt.Errorf("failed getting tasks: %v", err)
@@ -77,18 +76,18 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 }
 
 func (h *Handler) DeleteTask(c echo.Context) error {
-	taskId := c.Param("id")
+	id := c.Param("id")
 	token := c.Get("token").(jwt.Token)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	task, errResp := h.getTask(ctx, c, taskId, token)
+	task, errResp := h.getTask(ctx, c, id, token)
 	if errResp != nil {
 		return errResp()
 	}
 
 	task.Delete(token.Subject())
 
-	_, err := h.Mapper.UpdateOneById(ctx, taskId, task, nil)
+	_, err := h.Mapper.UpdateOneById(ctx, id, task, nil)
 	if err != nil {
 		return fmt.Errorf("failed deleting task: %v", err)
 	}

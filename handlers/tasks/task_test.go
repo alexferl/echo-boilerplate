@@ -23,7 +23,7 @@ func TestHandler_GetTask_200(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	newTask := tasks.NewTask()
+	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	task := newTask.MakeResponse(user, nil, nil)
 
@@ -101,7 +101,7 @@ func TestHandler_GetTask_410(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	newTask := tasks.NewTask()
+	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	newTask.Delete(user.Id)
 	task := newTask.MakeResponse(user, nil, nil)
@@ -144,7 +144,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	newTask := tasks.NewTask()
+	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	newTask.CreatedBy = user.Id
 	newTask.Title = payload.Title
@@ -220,7 +220,7 @@ func TestHandler_UpdateTask_403(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
+	task := tasks.NewTask("1")
 	task.Create("another_id")
 
 	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
@@ -293,7 +293,7 @@ func TestHandler_UpdateTask_410(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
+	task := tasks.NewTask("1")
 	task.Create(user.Id)
 	task.Delete(user.Id)
 	find := &tasks.Task{
@@ -349,7 +349,7 @@ func TestHandler_DeleteTask_204(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
+	task := tasks.NewTask("1")
 	task.Create(user.Id)
 	find := &tasks.Task{
 		Model: &data.Model{
@@ -403,7 +403,7 @@ func TestHandler_DeleteTask_403(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	task := tasks.NewTask()
+	task := tasks.NewTask("1")
 	task.Create("another_id")
 
 	req := httptest.NewRequest(http.MethodDelete, "/tasks/id", nil)
@@ -464,7 +464,7 @@ func TestHandler_DeleteTask_410(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	newTask := tasks.NewTask()
+	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	find := &tasks.Task{
 		Model: &data.Model{

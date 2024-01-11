@@ -88,5 +88,21 @@ func CreateIndexes(client *mongo.Client) error {
 
 	db := client.Database(viper.GetString(config.AppName))
 
+	opts := options.Update().SetUpsert(true)
+	_, err := db.Collection("counters").UpdateOne(
+		ctx,
+		bson.D{
+			{"_id", "tasks"},
+			{"seq", bson.D{{"$exists", false}}},
+		},
+		bson.D{{"$inc", bson.D{{"seq", 1}}}},
+		opts,
+	)
+	if err != nil {
+		if !mongo.IsDuplicateKeyError(err) {
+			panic(err)
+		}
+	}
+
 	return mongodb.CreateIndexes(ctx, db, indexes)
 }

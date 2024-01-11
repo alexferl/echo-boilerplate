@@ -22,7 +22,6 @@ require (
 	github.com/stretchr/testify v1.8.4
 	go.mongodb.org/mongo-driver v1.13.1
 	go.uber.org/automaxprocs v1.5.3
-	golang.org/x/exp v0.0.0-20240110193028-0dcbfd608b1e
 	golang.org/x/oauth2 v0.16.0
 )
 

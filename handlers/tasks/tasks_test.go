@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/tasks"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
@@ -31,7 +31,7 @@ func TestHandler_CreateTask_200(t *testing.T) {
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
 
-	newTask := tasks.NewTask()
+	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	task := newTask.MakeResponse(user, nil, nil)
 
@@ -41,6 +41,15 @@ func TestHandler_CreateTask_200(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.
+		On(
+			"GetNextSequence",
+			mock.Anything,
+			"tasks",
+		).
+		Return(
+			&data.Sequence{Seq: 1},
+			nil,
+		).
 		On(
 			"InsertOne",
 			mock.Anything,
@@ -114,7 +123,7 @@ func createTasks(num int, user *users.User) []*tasks.TaskResponse {
 	var result []*tasks.TaskResponse
 
 	for i := 1; i <= num; i++ {
-		newTask := tasks.NewTask()
+		newTask := tasks.NewTask("")
 		newTask.Create(user.Id)
 		task := newTask.MakeResponse(user, nil, nil)
 		result = append(result, task)
