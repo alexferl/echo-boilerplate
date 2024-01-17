@@ -18,8 +18,8 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
-func createTasks(num int, user *users.User) tasks.TasksAggregate {
-	result := make(tasks.TasksAggregate, 0)
+func createTasks(num int, user *users.User) tasks.Aggregates {
+	result := make(tasks.Aggregates, 0)
 
 	for i := 1; i <= num; i++ {
 		newTask := tasks.NewTask("")
@@ -79,12 +79,12 @@ func TestHandler_CreateTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			tasks.TasksAggregate{*task}, nil,
+			tasks.Aggregates{*task}, nil,
 		)
 
 	s.ServeHTTP(resp, req)
 
-	var result tasks.TaskResponse
+	var result tasks.Response
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 

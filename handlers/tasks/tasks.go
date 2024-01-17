@@ -49,13 +49,13 @@ func (h *Handler) CreateTask(c echo.Context) error {
 	}
 
 	pipeline := h.getPipeline(bson.D{{"_id", insert.InsertedID.(primitive.ObjectID)}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return err
 	}
 
-	tasks := result.(TasksAggregate)
+	tasks := result.(Aggregates)
 	if len(tasks) < 1 {
 		logger.Error().Err(err).Msg("failed to retrieve inserted task")
 		return err
@@ -65,7 +65,7 @@ func (h *Handler) CreateTask(c echo.Context) error {
 }
 
 type ListTasksResponse struct {
-	Tasks []*TaskResponse `json:"tasks"`
+	Tasks []*Response `json:"tasks"`
 }
 
 func (h *Handler) ListTasks(c echo.Context) error {
@@ -82,7 +82,7 @@ func (h *Handler) ListTasks(c echo.Context) error {
 	}
 
 	pipeline := h.getPipeline(bson.D{{"deleted_at", bson.M{"$eq": nil}}}, limit, skip)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting tasks")
 		return err
@@ -90,5 +90,5 @@ func (h *Handler) ListTasks(c echo.Context) error {
 
 	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.(TasksAggregate).Response()})
+	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.(Aggregates).Response()})
 }

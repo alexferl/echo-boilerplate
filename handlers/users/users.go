@@ -13,7 +13,7 @@ import (
 )
 
 type ListUsersResponse struct {
-	Users []*UserResponsePublic `json:"users"`
+	Users []*Public `json:"users"`
 }
 
 func (h *Handler) ListUsers(c echo.Context) error {

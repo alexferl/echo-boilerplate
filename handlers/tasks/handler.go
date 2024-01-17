@@ -114,17 +114,17 @@ func (h *Handler) getPipeline(filter any, limit int, skip int) mongo.Pipeline {
 	}
 }
 
-func (h *Handler) getAggregate(ctx context.Context, c echo.Context) (*TaskResponse, func() error) {
+func (h *Handler) getAggregate(ctx context.Context, c echo.Context) (*Response, func() error) {
 	logger := c.Get("logger").(zerolog.Logger)
 
 	pipeline := h.getPipeline(bson.D{{"id", c.Param("id")}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return nil, util.WrapErr(err)
 	}
 
-	tasks := result.(TasksAggregate)
+	tasks := result.(Aggregates)
 	if len(tasks) < 1 {
 		return nil, util.WrapErr(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
 	}

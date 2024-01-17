@@ -36,8 +36,8 @@ type User struct {
 
 type Users []User
 
-func (users Users) Response() []*UserResponse {
-	res := make([]*UserResponse, 0)
+func (users Users) Response() []*Response {
+	res := make([]*Response, 0)
 	for _, user := range users {
 		res = append(res, user.Response())
 	}
@@ -45,8 +45,8 @@ func (users Users) Response() []*UserResponse {
 	return res
 }
 
-func (users Users) Public() []*UserResponsePublic {
-	res := make([]*UserResponsePublic, 0)
+func (users Users) Public() []*Public {
+	res := make([]*Public, 0)
 	for _, user := range users {
 		res = append(res, user.Public())
 	}
@@ -54,7 +54,7 @@ func (users Users) Public() []*UserResponsePublic {
 	return res
 }
 
-type UserResponse struct {
+type Response struct {
 	Id        string     `json:"id" bson:"id"`
 	Href      string     `json:"href" bson:"href"`
 	Username  string     `json:"username" bson:"username"`
@@ -65,7 +65,7 @@ type UserResponse struct {
 	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
 }
 
-type UserResponsePublic struct {
+type Public struct {
 	Id       string `json:"id" bson:"id"`
 	Href     string `json:"href" bson:"href"`
 	Username string `json:"username" bson:"username"`
@@ -98,8 +98,8 @@ func (u *User) SetPassword(s string) error {
 	return nil
 }
 
-func (u *User) Response() *UserResponse {
-	return &UserResponse{
+func (u *User) Response() *Response {
+	return &Response{
 		Id:        u.Id,
 		Href:      util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username:  u.Username,
@@ -111,8 +111,8 @@ func (u *User) Response() *UserResponse {
 	}
 }
 
-func (u *User) Public() *UserResponsePublic {
-	return &UserResponsePublic{
+func (u *User) Public() *Public {
+	return &Public{
 		Id:       u.Id,
 		Href:     util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username: u.Username,

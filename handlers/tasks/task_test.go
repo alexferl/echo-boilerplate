@@ -42,7 +42,7 @@ func TestHandler_GetTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			tasks.TasksAggregate{*task},
+			tasks.Aggregates{*task},
 			nil,
 		)
 
@@ -85,7 +85,7 @@ func TestHandler_GetTask_404(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			tasks.TasksAggregate{},
+			tasks.Aggregates{},
 			nil,
 		)
 
@@ -121,7 +121,7 @@ func TestHandler_GetTask_410(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			tasks.TasksAggregate{*task},
+			tasks.Aggregates{*task},
 			nil,
 		)
 
@@ -186,7 +186,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			tasks.TasksAggregate{*updated},
+			tasks.Aggregates{*updated},
 			nil,
 		)
 

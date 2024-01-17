@@ -17,7 +17,7 @@ type Task struct {
 	Title       string     `json:"title" bson:"title"`
 }
 
-type TaskAggregate struct {
+type Aggregate struct {
 	*data.Model `bson:",inline"`
 	CreatedAt   *time.Time  `json:"created_at" bson:"created_at"`
 	CreatedBy   *users.User `json:"created_by" bson:"created_by"`
@@ -31,8 +31,8 @@ type TaskAggregate struct {
 	Title       string      `json:"title" bson:"title"`
 }
 
-func (ta *TaskAggregate) Response() *TaskResponse {
-	resp := &TaskResponse{
+func (ta *Aggregate) Response() *Response {
+	resp := &Response{
 		Id:          ta.Id,
 		Href:        util.GetFullURL(fmt.Sprintf("/tasks/%s", ta.Id)),
 		CreatedAt:   ta.CreatedAt,
@@ -56,29 +56,29 @@ func (ta *TaskAggregate) Response() *TaskResponse {
 	return resp
 }
 
-type TasksAggregate []TaskAggregate
+type Aggregates []Aggregate
 
-func (ta TasksAggregate) Response() []*TaskResponse {
-	res := make([]*TaskResponse, 0)
+func (ta Aggregates) Response() []*Response {
+	res := make([]*Response, 0)
 	for _, task := range ta {
 		res = append(res, task.Response())
 	}
 	return res
 }
 
-type TaskResponse struct {
-	Id          string                    `json:"id" bson:"id"`
-	Href        string                    `json:"href" bson:"href"`
-	CreatedAt   *time.Time                `json:"created_at" bson:"created_at"`
-	CreatedBy   *users.UserResponsePublic `json:"created_by" bson:"created_by"`
-	DeletedAt   *time.Time                `json:"-" bson:"deleted_at"`
-	DeletedBy   string                    `json:"-" bson:"deleted_by"`
-	UpdatedAt   *time.Time                `json:"updated_at" bson:"updated_at"`
-	UpdatedBy   *users.UserResponsePublic `json:"updated_by" bson:"updated_by"`
-	Completed   bool                      `json:"completed" bson:"completed"`
-	CompletedAt *time.Time                `json:"completed_at" bson:"completed_at"`
-	CompletedBy *users.UserResponsePublic `json:"completed_by" bson:"completed_by"`
-	Title       string                    `json:"title" bson:"title"`
+type Response struct {
+	Id          string        `json:"id" bson:"id"`
+	Href        string        `json:"href" bson:"href"`
+	CreatedAt   *time.Time    `json:"created_at" bson:"created_at"`
+	CreatedBy   *users.Public `json:"created_by" bson:"created_by"`
+	DeletedAt   *time.Time    `json:"-" bson:"deleted_at"`
+	DeletedBy   string        `json:"-" bson:"deleted_by"`
+	UpdatedAt   *time.Time    `json:"updated_at" bson:"updated_at"`
+	UpdatedBy   *users.Public `json:"updated_by" bson:"updated_by"`
+	Completed   bool          `json:"completed" bson:"completed"`
+	CompletedAt *time.Time    `json:"completed_at" bson:"completed_at"`
+	CompletedBy *users.Public `json:"completed_by" bson:"completed_by"`
+	Title       string        `json:"title" bson:"title"`
 }
 
 func NewTask(id string) *Task {
@@ -100,8 +100,8 @@ func (t *Task) Incomplete() {
 	t.CompletedBy = ""
 }
 
-func (t *Task) Aggregate(createdBy *users.User, updatedBy *users.User, completedBy *users.User) *TaskAggregate {
-	resp := &TaskAggregate{
+func (t *Task) Aggregate(createdBy *users.User, updatedBy *users.User, completedBy *users.User) *Aggregate {
+	resp := &Aggregate{
 		Model:       t.Model,
 		CreatedAt:   t.CreatedAt,
 		CreatedBy:   createdBy,

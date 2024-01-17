@@ -292,7 +292,7 @@ func TestHandler_GetPersonalAccessToken_200(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 
-	var result users.PATWithoutToken
+	var result users.PATResponse
 	err = json.Unmarshal(resp.Body.Bytes(), &result)
 	assert.NoError(t, err)
 

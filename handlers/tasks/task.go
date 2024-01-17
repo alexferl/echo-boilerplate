@@ -67,13 +67,13 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 	}
 
 	pipeline := h.getPipeline(bson.D{{"id", id}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return err
 	}
 
-	res := result.(TasksAggregate)
+	res := result.(Aggregates)
 	if len(res) < 1 {
 		msg := "failed to retrieve updated task"
 		logger.Error().Msg(msg)

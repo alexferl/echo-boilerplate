@@ -47,8 +47,8 @@ func (pat *PersonalAccessToken) Validate(s string) error {
 	return util.VerifyPassword([]byte(pat.Token), []byte(s))
 }
 
-func (pat *PersonalAccessToken) Response() *PATWithoutToken {
-	return &PATWithoutToken{
+func (pat *PersonalAccessToken) Response() *PATResponse {
+	return &PATResponse{
 		Id:        pat.Id,
 		Href:      util.GetFullURL(fmt.Sprintf("/user/personal_access_tokens/%s", pat.Id)),
 		Name:      pat.Name,
@@ -61,15 +61,15 @@ func (pat *PersonalAccessToken) Response() *PATWithoutToken {
 
 type PersonalAccessTokens []PersonalAccessToken
 
-func (pats PersonalAccessTokens) Response() []*PATWithoutToken {
-	res := make([]*PATWithoutToken, 0)
+func (pats PersonalAccessTokens) Response() []*PATResponse {
+	res := make([]*PATResponse, 0)
 	for _, pat := range pats {
 		res = append(res, pat.Response())
 	}
 	return res
 }
 
-type PATWithoutToken struct {
+type PATResponse struct {
 	Id        string     `json:"id" bson:"id"`
 	Href      string     `json:"href" bson:"href"`
 	Name      string     `json:"name" bson:"name"`
@@ -169,7 +169,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 }
 
 type ListPATResponse struct {
-	Tokens []*PATWithoutToken `json:"personal_access_tokens"`
+	Tokens []*PATResponse `json:"personal_access_tokens"`
 }
 
 func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
@@ -223,7 +223,7 @@ func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
 	return h.Validate(c, http.StatusNoContent, nil)
 }
 
-func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATWithoutToken, func() error) {
+func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATResponse, func() error) {
 	id := c.Param("id")
 	logger := c.Get("logger").(zerolog.Logger)
 
