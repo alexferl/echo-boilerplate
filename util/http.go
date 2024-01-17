@@ -5,9 +5,13 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/alexferl/httplink"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
+
+	"github.com/alexferl/echo-boilerplate/config"
 )
 
 func ParsePaginationParams(c echo.Context) (int, int, int, int) {
@@ -28,7 +32,13 @@ func ParsePaginationParams(c echo.Context) (int, int, int, int) {
 	return page, perPage, limit, skip
 }
 
-func SetPaginationHeaders(header http.Header, count int, page int, perPage int, uri string) {
+func SetPaginationHeaders(req *http.Request, header http.Header, count int, page int, perPage int) {
+	prefix := "http"
+	if strings.HasPrefix(viper.GetString(config.BaseURL), "https") {
+		prefix = "https"
+	}
+	url := fmt.Sprintf("%s://%s%s", prefix, req.Host, req.URL.Path)
+
 	totalPages := int(math.Ceil(float64(count / perPage)))
 	lastPage := totalPages
 	curPage := page
@@ -48,18 +58,22 @@ func SetPaginationHeaders(header http.Header, count int, page int, perPage int, 
 
 	if nextPage > 0 {
 		header.Set("X-Next-Page", strconv.Itoa(nextPage))
-		httplink.Append(header, formatURI(uri, perPage, nextPage), "next")
+		httplink.Append(header, formatURL(url, perPage, nextPage), "next")
 	}
 
-	httplink.Append(header, formatURI(uri, perPage, lastPage), "last")
-	httplink.Append(header, formatURI(uri, perPage, 1), "first")
+	httplink.Append(header, formatURL(url, perPage, lastPage), "last")
+	httplink.Append(header, formatURL(url, perPage, 1), "first")
 
 	if prevPage > 0 {
 		header.Set("X-Prev-Page", strconv.Itoa(prevPage))
-		httplink.Append(header, formatURI(uri, perPage, prevPage), "prev")
+		httplink.Append(header, formatURL(url, perPage, prevPage), "prev")
 	}
 }
 
-func formatURI(uri string, perPage int, page int) string {
+func formatURL(uri string, perPage int, page int) string {
 	return fmt.Sprintf("%s?per_page=%d&page=%d", uri, perPage, page)
+}
+
+func GetFullURL(path string) string {
+	return fmt.Sprintf("%s%s", viper.GetString(config.BaseURL), path)
 }

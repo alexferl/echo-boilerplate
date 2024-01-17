@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/oauth2"
@@ -60,17 +61,19 @@ func (h *Handler) OAuth2LogIn(c echo.Context) error {
 func (h *Handler) OAuth2Callback(c echo.Context) error {
 	response, err := callback(c)
 	if err != nil {
-		return fmt.Errorf("oauth2: failed callback: %v", err)
+		log.Error().Err(err).Msg("oauth2: failed callback")
+		return err
 	}
 
 	defer response.Body.Close()
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		return fmt.Errorf("oauth2: failed to read body: %v", err)
+		log.Error().Err(err).Msg("oauth2: failed to read body")
+		return err
 	}
 
 	if response.StatusCode != http.StatusOK {
-		c.Logger().Errorf("oauth2: response code was: %d body: %s", response.StatusCode, b)
+		log.Error().Msgf("oauth2: response code was: %d body: %s", response.StatusCode, b)
 		return c.JSON(http.StatusUnauthorized, echo.HTTPError{
 			Code:    http.StatusUnauthorized,
 			Message: "failed to log in",
@@ -80,7 +83,8 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	googleUser := &GoogleUser{}
 	err = json.Unmarshal(b, googleUser)
 	if err != nil {
-		return fmt.Errorf("oauth2: failed unmarshalling body: %v", err)
+		log.Error().Err(err).Msg("oauth2: failed unmarshalling body")
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -90,7 +94,8 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	result, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
-			return fmt.Errorf("oauth2: failed to get user: %v", err)
+			log.Error().Err(err).Msg("oauth2: failed to get user")
+			return err
 		}
 	}
 	var access, refresh []byte
@@ -100,25 +105,29 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 		newUser := NewUser(googleUser.Email, googleUser.Email)
 		access, refresh, err = newUser.Login()
 		if err != nil {
-			return fmt.Errorf("oauth2: failed to generate tokens: %v", err)
+			log.Error().Err(err).Msg("oauth2: failed to generate tokens")
+			return err
 		}
 
 		newUser.Create(newUser.Id)
 
 		_, err = h.Mapper.InsertOne(ctx, newUser, nil)
 		if err != nil {
-			return fmt.Errorf("oauth2: failed to insert user: %v", err)
+			log.Error().Err(err).Msg("oauth2: failed to insert user")
+			return err
 		}
 	} else {
 		user := result.(*User)
 		access, refresh, err = user.Login()
 		if err != nil {
-			return fmt.Errorf("oauth2: failed to generate tokens: %v", err)
+			log.Error().Err(err).Msg("oauth2: failed to generate tokens")
+			return err
 		}
 
 		_, err = h.Mapper.UpdateOneById(ctx, user.Id, user, nil)
 		if err != nil {
-			return fmt.Errorf("oauth2: failed to update user: %v", err)
+			log.Error().Err(err).Msg("oauth2: failed to update user")
+			return err
 		}
 	}
 
@@ -149,23 +158,23 @@ func callback(c echo.Context) (*http.Response, error) {
 
 	stateCooke, err := c.Cookie("state")
 	if err != nil {
-		return nil, fmt.Errorf("oauth2: cookie was empty")
+		return nil, fmt.Errorf("cookie was empty")
 	}
 
 	if state != stateCooke.Value {
-		return nil, fmt.Errorf("oauth2: state mismatch")
+		return nil, fmt.Errorf("state mismatch")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	token, err := getOAuth2Config().Exchange(ctx, code)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed exchanging autorization code: %v", err)
 	}
 
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("oauth2: failed getting user info: %v", err)
+		return nil, fmt.Errorf("failed getting user info: %v", err)
 	}
 
 	return resp, nil

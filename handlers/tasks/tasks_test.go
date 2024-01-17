@@ -18,6 +18,19 @@ import (
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
+func createTasks(num int, user *users.User) tasks.TasksAggregate {
+	result := make(tasks.TasksAggregate, 0)
+
+	for i := 1; i <= num; i++ {
+		newTask := tasks.NewTask("")
+		newTask.Create(user.Id)
+		task := newTask.Aggregate(user, nil, nil)
+		result = append(result, *task)
+	}
+
+	return result
+}
+
 func TestHandler_CreateTask_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
@@ -33,7 +46,7 @@ func TestHandler_CreateTask_200(t *testing.T) {
 
 	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
-	task := newTask.MakeResponse(user, nil, nil)
+	task := newTask.Aggregate(user, nil, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -66,7 +79,7 @@ func TestHandler_CreateTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{task}, nil,
+			tasks.TasksAggregate{*task}, nil,
 		)
 
 	s.ServeHTTP(resp, req)
@@ -117,19 +130,6 @@ func TestHandler_CreateTask_422(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
-}
-
-func createTasks(num int, user *users.User) []*tasks.TaskResponse {
-	var result []*tasks.TaskResponse
-
-	for i := 1; i <= num; i++ {
-		newTask := tasks.NewTask("")
-		newTask.Create(user.Id)
-		task := newTask.MakeResponse(user, nil, nil)
-		result = append(result, task)
-	}
-
-	return result
 }
 
 func TestHandler_ListTasks_200(t *testing.T) {

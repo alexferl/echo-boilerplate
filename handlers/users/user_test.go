@@ -21,13 +21,6 @@ func TestHandler_GetUser_200(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	respUser := &users.UserResponse{
-		Id:        user.Id,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-	}
-
 	req := httptest.NewRequest(http.MethodGet, "/user", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
@@ -41,7 +34,7 @@ func TestHandler_GetUser_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			respUser,
+			user,
 			nil,
 		)
 
@@ -76,16 +69,6 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 	updatedUser.Bio = "bio"
 	updatedUser.Update(user.Id)
 
-	respUser := &users.UserResponse{
-		Id:        updatedUser.Id,
-		Username:  updatedUser.Username,
-		Email:     updatedUser.Email,
-		Name:      updatedUser.Name,
-		Bio:       updatedUser.Bio,
-		CreatedAt: updatedUser.CreatedAt,
-		UpdatedAt: updatedUser.UpdatedAt,
-	}
-
 	b, err := json.Marshal(&users.UpdateUserRequest{
 		Name: updatedUser.Name,
 		Bio:  updatedUser.Bio,
@@ -115,7 +98,7 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			respUser,
+			updatedUser,
 			nil,
 		)
 

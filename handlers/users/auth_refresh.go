@@ -3,12 +3,12 @@ package users
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
@@ -23,6 +23,7 @@ type AuthRefreshRequest struct {
 func (h *Handler) AuthRefresh(c echo.Context) error {
 	token := c.Get("refresh_token").(jwt.Token)
 	encodedToken := c.Get("refresh_token_encoded").(string)
+	logger := c.Get("logger").(zerolog.Logger)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -31,7 +32,8 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token not found"})
 		}
-		return fmt.Errorf("failed getting user: %v", err)
+		logger.Error().Err(err).Msg("failed getting user")
+		return err
 	}
 
 	user := result.(*User)
@@ -41,12 +43,14 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 
 	access, refresh, err := user.Refresh()
 	if err != nil {
-		return fmt.Errorf("failed generating tokens: %v", err)
+		logger.Error().Err(err).Msg("failed generating tokens")
+		return err
 	}
 
 	_, err = h.Mapper.UpdateOneById(ctx, token.Subject(), user, nil)
 	if err != nil {
-		return fmt.Errorf("failed updating user: %v", err)
+		logger.Error().Err(err).Msg("failed updating user")
+		return err
 	}
 
 	if viper.GetBool(config.CookiesEnabled) {

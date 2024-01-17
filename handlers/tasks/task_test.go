@@ -25,7 +25,7 @@ func TestHandler_GetTask_200(t *testing.T) {
 
 	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
-	task := newTask.MakeResponse(user, nil, nil)
+	task := newTask.Aggregate(user, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -42,7 +42,7 @@ func TestHandler_GetTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{task},
+			tasks.TasksAggregate{*task},
 			nil,
 		)
 
@@ -85,7 +85,7 @@ func TestHandler_GetTask_404(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{},
+			tasks.TasksAggregate{},
 			nil,
 		)
 
@@ -104,7 +104,7 @@ func TestHandler_GetTask_410(t *testing.T) {
 	newTask := tasks.NewTask("1")
 	newTask.Create(user.Id)
 	newTask.Delete(user.Id)
-	task := newTask.MakeResponse(user, nil, nil)
+	task := newTask.Aggregate(user, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/tasks/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -121,7 +121,7 @@ func TestHandler_GetTask_410(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{task},
+			tasks.TasksAggregate{*task},
 			nil,
 		)
 
@@ -150,7 +150,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 	newTask.Title = payload.Title
 	newTask.Complete(user.Id)
 
-	updated := newTask.MakeResponse(user, nil, user)
+	updated := newTask.Aggregate(user, nil, user)
 
 	req := httptest.NewRequest(http.MethodPut, "/tasks/id", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -186,7 +186,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			[]*tasks.TaskResponse{updated},
+			tasks.TasksAggregate{*updated},
 			nil,
 		)
 

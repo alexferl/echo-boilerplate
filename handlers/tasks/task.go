@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -28,13 +29,16 @@ type UpdateTaskRequest struct {
 }
 
 func (h *Handler) UpdateTask(c echo.Context) error {
+	id := c.Param("id")
+	logger := c.Get("logger").(zerolog.Logger)
+	token := c.Get("token").(jwt.Token)
+
 	body := &UpdateTaskRequest{}
 	if err := c.Bind(body); err != nil {
+		logger.Error().Err(err).Msg("failed binding body")
 		return err
 	}
 
-	id := c.Param("id")
-	token := c.Get("token").(jwt.Token)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	task, errResp := h.getTask(ctx, c, id, token)
@@ -58,26 +62,32 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 
 	_, err := h.Mapper.UpdateOneById(ctx, id, task)
 	if err != nil {
-		return fmt.Errorf("failed updating task: %v", err)
+		logger.Error().Err(err).Msg("failed updating task")
+		return err
 	}
 
 	pipeline := h.getPipeline(bson.D{{"id", id}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
 	if err != nil {
-		return fmt.Errorf("failed getting tasks: %v", err)
+		logger.Error().Err(err).Msg("failed getting task")
+		return err
 	}
 
-	res := result.([]*TaskResponse)
+	res := result.(TasksAggregate)
 	if len(res) < 1 {
-		return fmt.Errorf("failed to retrieve updated task: %v", err)
+		msg := "failed to retrieve updated task"
+		logger.Error().Msg(msg)
+		return fmt.Errorf(msg)
 	}
 
-	return h.Validate(c, http.StatusOK, res[0])
+	return h.Validate(c, http.StatusOK, res[0].Response())
 }
 
 func (h *Handler) DeleteTask(c echo.Context) error {
 	id := c.Param("id")
+	logger := c.Get("logger").(zerolog.Logger)
 	token := c.Get("token").(jwt.Token)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	task, errResp := h.getTask(ctx, c, id, token)
@@ -89,7 +99,8 @@ func (h *Handler) DeleteTask(c echo.Context) error {
 
 	_, err := h.Mapper.UpdateOneById(ctx, id, task, nil)
 	if err != nil {
-		return fmt.Errorf("failed deleting task: %v", err)
+		logger.Error().Err(err).Msg("failed deleting task")
+		return err
 	}
 
 	return h.Validate(c, http.StatusNoContent, nil)

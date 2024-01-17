@@ -1,8 +1,9 @@
 package util
 
 import (
-	"fmt"
+	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"testing"
 
@@ -77,8 +78,11 @@ func TestPaginate(t *testing.T) {
 			page, _ := strconv.Atoi(tc.xPage)
 			perPage, _ := strconv.Atoi(tc.xPerPage)
 
-			uri := fmt.Sprintf("http://%s%s", "example.com", "/users")
-			SetPaginationHeaders(resp.Header(), total, page, perPage, uri)
+			req := &http.Request{
+				URL:  &url.URL{Path: "/users"},
+				Host: "example.com",
+			}
+			SetPaginationHeaders(req, resp.Header(), total, page, perPage)
 
 			h := resp.Header()
 

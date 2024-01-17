@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	casbinMw "github.com/alexferl/echo-casbin"
 	jwtMw "github.com/alexferl/echo-jwt"
 	openapiMw "github.com/alexferl/echo-openapi"
@@ -141,6 +143,8 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 					return echo.NewHTTPError(http.StatusUnauthorized, "Token is revoked")
 				}
 			}
+
+			c.Set("logger", log.With().Str("token_id", t.Subject()).Logger())
 
 			return nil
 		},

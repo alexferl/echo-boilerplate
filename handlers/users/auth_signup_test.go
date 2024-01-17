@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
@@ -49,7 +50,14 @@ func TestHandler_Auth_Signup_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			nil,
+			&users.User{
+				Model: &data.Model{
+					Id: "1",
+				},
+				Email:    payload.Email,
+				Username: payload.Username,
+				Name:     payload.Name,
+			},
 			nil,
 		)
 

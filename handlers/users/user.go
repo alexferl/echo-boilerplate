@@ -2,34 +2,27 @@ package users
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/rs/zerolog"
 )
-
-type UserResponse struct {
-	Id        string     `json:"id" bson:"id"`
-	Username  string     `json:"username" bson:"username"`
-	Email     string     `json:"email" bson:"email"`
-	Name      string     `json:"name" bson:"name"`
-	Bio       string     `json:"bio" bson:"bio"`
-	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
-}
 
 func (h *Handler) GetUser(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
+	logger := c.Get("logger").(zerolog.Logger)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &UserResponse{})
+	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
-		return fmt.Errorf("failed getting user: %v", err)
+		logger.Error().Err(err).Msg("failed getting user")
+		return err
 	}
 
-	return h.Validate(c, http.StatusOK, result)
+	return h.Validate(c, http.StatusOK, result.(*User).Response())
 }
 
 type UpdateUserRequest struct {
@@ -38,18 +31,21 @@ type UpdateUserRequest struct {
 }
 
 func (h *Handler) UpdateUser(c echo.Context) error {
+	token := c.Get("token").(jwt.Token)
+	logger := c.Get("logger").(zerolog.Logger)
+
 	body := &UpdateUserRequest{}
 	if err := c.Bind(body); err != nil {
+		logger.Error().Err(err).Msg("failed binding body")
 		return err
 	}
-
-	token := c.Get("token").(jwt.Token)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
-		return fmt.Errorf("failed getting user: %v", err)
+		logger.Error().Err(err).Msg("failed getting user")
+		return err
 	}
 
 	user := result.(*User)
@@ -63,10 +59,11 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 	user.Update(user.Id)
 
-	update, err := h.Mapper.FindOneByIdAndUpdate(ctx, user.Id, user, &UserResponse{})
+	update, err := h.Mapper.FindOneByIdAndUpdate(ctx, user.Id, user, &User{})
 	if err != nil {
-		return fmt.Errorf("failed updating user: %v", err)
+		logger.Error().Err(err).Msg("failed updating user")
+		return err
 	}
 
-	return h.Validate(c, http.StatusOK, update)
+	return h.Validate(c, http.StatusOK, update.(*User).Response())
 }

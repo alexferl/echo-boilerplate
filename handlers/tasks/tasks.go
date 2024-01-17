@@ -2,9 +2,10 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog"
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
@@ -19,9 +20,12 @@ type CreateTaskRequest struct {
 }
 
 func (h *Handler) CreateTask(c echo.Context) error {
+	logger := c.Get("logger").(zerolog.Logger)
+
 	body := &CreateTaskRequest{}
 	if err := c.Bind(body); err != nil {
-		return fmt.Errorf("failed to bind: %v", err)
+		logger.Error().Err(err).Msg("failed binding body")
+		return err
 	}
 
 	token := c.Get("token").(jwt.Token)
@@ -30,6 +34,7 @@ func (h *Handler) CreateTask(c echo.Context) error {
 	defer cancel()
 	seq, err := h.Mapper.GetNextSequence(ctx, "tasks")
 	if err != nil {
+		logger.Error().Err(err).Msg("failed getting next sequence")
 		return err
 	}
 
@@ -39,21 +44,24 @@ func (h *Handler) CreateTask(c echo.Context) error {
 
 	insert, err := h.Mapper.InsertOne(ctx, newTask)
 	if err != nil {
-		return fmt.Errorf("failed to insert task: %v", err)
+		logger.Error().Err(err).Msg("failed to insert task")
+		return err
 	}
 
 	pipeline := h.getPipeline(bson.D{{"_id", insert.InsertedID.(primitive.ObjectID)}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
 	if err != nil {
-		return fmt.Errorf("failed getting tasks: %v", err)
+		logger.Error().Err(err).Msg("failed getting task")
+		return err
 	}
 
-	tasks := result.([]*TaskResponse)
+	tasks := result.(TasksAggregate)
 	if len(tasks) < 1 {
-		return fmt.Errorf("failed to retrieve inserted task: %v", err)
+		logger.Error().Err(err).Msg("failed to retrieve inserted task")
+		return err
 	}
 
-	return h.Validate(c, http.StatusOK, tasks[0])
+	return h.Validate(c, http.StatusOK, tasks[0].Response())
 }
 
 type ListTasksResponse struct {
@@ -61,23 +69,26 @@ type ListTasksResponse struct {
 }
 
 func (h *Handler) ListTasks(c echo.Context) error {
+	logger := c.Get("logger").(zerolog.Logger)
+
 	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	count, err := h.Mapper.Count(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed counting tasks: %v", err)
+		logger.Error().Err(err).Msg("failed counting tasks")
+		return err
 	}
 
 	pipeline := h.getPipeline(bson.D{{"deleted_at", bson.M{"$eq": nil}}}, limit, skip)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, []*TaskResponse{})
+	result, err := h.Mapper.Aggregate(ctx, pipeline, TasksAggregate{})
 	if err != nil {
-		return fmt.Errorf("failed getting tasks: %v", err)
+		logger.Error().Err(err).Msg("failed getting tasks")
+		return err
 	}
 
-	uri := fmt.Sprintf("http://%s%s", c.Request().Host, c.Request().URL.Path)
-	util.SetPaginationHeaders(c.Response().Header(), int(count), page, perPage, uri)
+	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.([]*TaskResponse)})
+	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.(TasksAggregate).Response()})
 }

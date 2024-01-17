@@ -3,11 +3,11 @@ package users
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -31,6 +31,7 @@ type TokenResponse struct {
 func (h *Handler) AuthLogIn(c echo.Context) error {
 	body := &AuthLogInRequest{}
 	if err := c.Bind(body); err != nil {
+		log.Error().Err(err).Msg("failed binding body")
 		return err
 	}
 
@@ -42,7 +43,8 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
 		}
-		return fmt.Errorf("failed getting user: %v", err)
+		log.Error().Err(err).Msg("failed getting user")
+		return err
 	}
 
 	user := result.(*User)
@@ -53,12 +55,14 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 
 	access, refresh, err := user.Login()
 	if err != nil {
-		return fmt.Errorf("failed generating tokens: %v", err)
+		log.Error().Err(err).Msg("failed generating tokens")
+		return err
 	}
 
 	_, err = h.Mapper.UpdateOneById(ctx, user.Id, user, nil)
 	if err != nil {
-		return fmt.Errorf("failed updating user: %v", err)
+		log.Error().Err(err).Msg("failed updating user")
+		return err
 	}
 
 	if viper.GetBool(config.CookiesEnabled) {

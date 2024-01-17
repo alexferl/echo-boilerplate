@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"slices"
 	"time"
 
@@ -33,8 +34,40 @@ type User struct {
 	LastRefreshAt *time.Time `json:"-" bson:"last_refresh_at"`
 }
 
-type PublicUser struct {
+type Users []User
+
+func (users Users) Response() []*UserResponse {
+	res := make([]*UserResponse, 0)
+	for _, user := range users {
+		res = append(res, user.Response())
+	}
+
+	return res
+}
+
+func (users Users) Public() []*UserResponsePublic {
+	res := make([]*UserResponsePublic, 0)
+	for _, user := range users {
+		res = append(res, user.Public())
+	}
+
+	return res
+}
+
+type UserResponse struct {
+	Id        string     `json:"id" bson:"id"`
+	Href      string     `json:"href" bson:"href"`
+	Username  string     `json:"username" bson:"username"`
+	Email     string     `json:"email" bson:"email"`
+	Name      string     `json:"name" bson:"name"`
+	Bio       string     `json:"bio" bson:"bio"`
+	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
+}
+
+type UserResponsePublic struct {
 	Id       string `json:"id" bson:"id"`
+	Href     string `json:"href" bson:"href"`
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
 }
@@ -63,6 +96,28 @@ func (u *User) SetPassword(s string) error {
 	u.Password = b
 
 	return nil
+}
+
+func (u *User) Response() *UserResponse {
+	return &UserResponse{
+		Id:        u.Id,
+		Href:      util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
+		Username:  u.Username,
+		Email:     u.Email,
+		Name:      u.Name,
+		Bio:       u.Bio,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}
+}
+
+func (u *User) Public() *UserResponsePublic {
+	return &UserResponsePublic{
+		Id:       u.Id,
+		Href:     util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
+		Username: u.Username,
+		Name:     u.Name,
+	}
 }
 
 func (u *User) ValidatePassword(s string) error {
@@ -118,14 +173,6 @@ func (u *User) Refresh() ([]byte, []byte, error) {
 
 func (u *User) ValidateRefreshToken(s string) error {
 	return util.VerifyPassword([]byte(u.RefreshToken), []byte(s))
-}
-
-func (u *User) Public() *PublicUser {
-	return &PublicUser{
-		Id:       u.Id,
-		Username: u.Username,
-		Name:     u.Name,
-	}
 }
 
 func (u *User) encryptRefreshToken(token []byte) error {

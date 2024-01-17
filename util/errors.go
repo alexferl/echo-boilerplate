@@ -1,5 +1,5 @@
 package util
 
-func Wrap(err error) func() error {
+func WrapErr(err error) func() error {
 	return func() error { return err }
 }

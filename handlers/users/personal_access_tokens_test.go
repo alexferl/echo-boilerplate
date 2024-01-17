@@ -9,16 +9,30 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/data"
-
 	"github.com/lestrrat-go/jwx/v2/jwt"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
 )
+
+func createTokens(t *testing.T, token jwt.Token, num int) users.PersonalAccessTokens {
+	result := make(users.PersonalAccessTokens, 0)
+
+	for i := 1; i <= num; i++ {
+		pat, err := users.NewPersonalAccessToken(
+			token,
+			fmt.Sprintf("my_token%d", i),
+			time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
+		)
+		assert.NoError(t, err)
+		result = append(result, *pat)
+	}
+
+	return result
+}
 
 func TestHandler_CreatePersonalAccessToken_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
@@ -177,23 +191,6 @@ func TestHandler_CreatePersonalAccessToken_422(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
 }
 
-func createTokens(t *testing.T, token jwt.Token, num int) []*users.PATWithoutToken {
-	var result []*users.PATWithoutToken
-
-	for i := 1; i <= num; i++ {
-		pat, err := users.NewPersonalAccessToken(
-			token,
-			fmt.Sprintf("my_token%d", i),
-			time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
-		)
-		assert.NoError(t, err)
-		resp := pat.MakeResponse()
-		result = append(result, resp)
-	}
-
-	return result
-}
-
 func TestHandler_ListPersonalAccessTokens_200(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
@@ -268,7 +265,6 @@ func TestHandler_GetPersonalAccessToken_200(t *testing.T) {
 		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 	)
 	assert.NoError(t, err)
-	pat := newPAT.MakeResponse()
 
 	req := httptest.NewRequest(http.MethodGet, "/user/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -290,7 +286,7 @@ func TestHandler_GetPersonalAccessToken_200(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			pat,
+			newPAT,
 			nil,
 		)
 
@@ -355,7 +351,6 @@ func TestHandler_RevokePersonalAccessToken_204(t *testing.T) {
 		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 	)
 	assert.NoError(t, err)
-	pat := newPAT.MakeResponse()
 
 	req := httptest.NewRequest(http.MethodDelete, "/user/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -377,7 +372,7 @@ func TestHandler_RevokePersonalAccessToken_204(t *testing.T) {
 			mock.Anything,
 		).
 		Return(
-			pat,
+			newPAT,
 			nil,
 		).
 		On(

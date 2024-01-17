@@ -2,7 +2,7 @@ env-name = "local"
 log-level = "DEBUG"
 
 cookies-enabled = true
-csrf-enabled = true
+csrf-enabled = false
 csrf-secret-key = "changeme"
 
 http-cors-enabled = true

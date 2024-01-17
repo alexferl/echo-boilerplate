@@ -3,11 +3,11 @@ package users
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -25,7 +25,8 @@ type AuthSignUpRequest struct {
 func (h *Handler) AuthSignUp(c echo.Context) error {
 	body := &AuthSignUpRequest{}
 	if err := c.Bind(body); err != nil {
-		return fmt.Errorf("failed to bind: %v", err)
+		log.Error().Err(err).Msg("failed binding body")
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -34,10 +35,11 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 		bson.D{{"username", body.Username}},
 		bson.D{{"email", body.Email}},
 	}}}
-	exist, err := h.Mapper.FindOne(ctx, filter, &UserResponse{})
+	exist, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
-			return fmt.Errorf("failed to get newUser: %v", err)
+			log.Error().Err(err).Msg("failed to find user")
+			return err
 		}
 	}
 
@@ -50,16 +52,18 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	newUser.Bio = body.Bio
 	err = newUser.SetPassword(body.Password)
 	if err != nil {
-		return fmt.Errorf("failed to set password: %v", err)
+		log.Error().Err(err).Msg("failed to set password")
+		return err
 	}
 
 	newUser.Create(newUser.Id)
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	user, err := h.Mapper.FindOneAndUpdate(ctx, filter, newUser, &UserResponse{}, opts)
+	user, err := h.Mapper.FindOneAndUpdate(ctx, filter, newUser, &User{}, opts)
 	if err != nil {
-		return fmt.Errorf("failed to insert newUser: %v", err)
+		log.Error().Err(err).Msg("failed to insert new user")
+		return err
 	}
 
-	return h.Validate(c, http.StatusOK, user)
+	return h.Validate(c, http.StatusOK, user.(*User).Response())
 }
