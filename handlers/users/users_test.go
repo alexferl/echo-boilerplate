@@ -39,15 +39,6 @@ func TestHandler_ListUsers_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
-			"Count",
-			mock.Anything,
-			mock.Anything,
-		).
-		Return(
-			int64(10),
-			nil,
-		).
-		On(
 			"Find",
 			mock.Anything,
 			mock.Anything,

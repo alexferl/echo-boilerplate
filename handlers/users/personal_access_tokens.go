@@ -124,7 +124,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}, {"name", body.Name}}
-	result, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
+	res, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
 			logger.Error().Err(err).Msg("failed getting personal access token")
@@ -132,7 +132,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 		}
 	}
 
-	if result != nil {
+	if res != nil {
 		return h.Validate(c, http.StatusConflict, echo.Map{"message": "token name already in-use"})
 	}
 
@@ -179,13 +179,13 @@ func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}}
-	result, err := h.Mapper.WithCollection(PATCollection).Find(ctx, filter, PersonalAccessTokens{})
+	res, err := h.Mapper.WithCollection(PATCollection).Find(ctx, filter, PersonalAccessTokens{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting personal access token")
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, ListPATResponse{Tokens: result.(PersonalAccessTokens).Response()})
+	return h.Validate(c, http.StatusOK, ListPATResponse{Tokens: res.(PersonalAccessTokens).Response()})
 }
 
 func (h *Handler) GetPersonalAccessToken(c echo.Context) error {
@@ -234,7 +234,7 @@ func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATResponse, fun
 		bson.D{{"id", id}},
 		bson.D{{"name", id}},
 	}}}
-	result, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
+	res, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return nil, util.WrapErr(h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"}))
@@ -243,7 +243,7 @@ func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATResponse, fun
 		return nil, util.WrapErr(err)
 	}
 
-	pat := result.(*PersonalAccessToken).Response()
+	pat := res.(*PersonalAccessToken).Response()
 
 	return pat, nil
 }

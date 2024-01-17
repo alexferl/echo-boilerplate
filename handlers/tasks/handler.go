@@ -48,7 +48,7 @@ func (h *Handler) AddRoutes(s *server.Server) {
 func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, token jwt.Token) (*Task, func() error) {
 	logger := c.Get("logger").(zerolog.Logger)
 
-	result, err := h.Mapper.FindOneById(ctx, taskId, &Task{})
+	res, err := h.Mapper.FindOneById(ctx, taskId, &Task{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return nil, util.WrapErr(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
@@ -57,7 +57,7 @@ func (h *Handler) getTask(ctx context.Context, c echo.Context, taskId string, to
 		return nil, util.WrapErr(err)
 	}
 
-	task := result.(*Task)
+	task := res.(*Task)
 	if task.DeletedAt != nil {
 		return nil, util.WrapErr(h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"}))
 	}
@@ -118,13 +118,13 @@ func (h *Handler) getAggregate(ctx context.Context, c echo.Context) (*Response, 
 	logger := c.Get("logger").(zerolog.Logger)
 
 	pipeline := h.getPipeline(bson.D{{"id", c.Param("id")}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
+	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return nil, util.WrapErr(err)
 	}
 
-	tasks := result.(Aggregates)
+	tasks := res.(Aggregates)
 	if len(tasks) < 1 {
 		return nil, util.WrapErr(h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"}))
 	}

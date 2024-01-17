@@ -38,7 +38,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"email", body.Email}}
-	result, err := h.Mapper.FindOne(ctx, filter, &User{})
+	res, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
@@ -47,7 +47,7 @@ func (h *Handler) AuthLogIn(c echo.Context) error {
 		return err
 	}
 
-	user := result.(*User)
+	user := res.(*User)
 	err = user.ValidatePassword(body.Password)
 	if err != nil {
 		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})

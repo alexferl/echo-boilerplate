@@ -22,20 +22,15 @@ func (h *Handler) ListUsers(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	count, err := h.Mapper.Count(ctx, nil)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed counting users")
-		return err
-	}
-
 	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(skip))
-	result, err := h.Mapper.Find(ctx, nil, Users{}, opts)
+	res, err := h.Mapper.Find(ctx, nil, Users{}, opts)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting users")
 		return err
 	}
 
-	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
+	users := res.(Users)
+	util.SetPaginationHeaders(c.Request(), c.Response().Header(), len(users), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListUsersResponse{Users: result.(Users).Public()})
+	return h.Validate(c, http.StatusOK, &ListUsersResponse{Users: users.Public()})
 }

@@ -41,7 +41,7 @@ func getOAuth2Config() *oauth2.Config {
 func (h *Handler) OAuth2LogIn(c echo.Context) error {
 	state, err := util.GenerateRandomString(80)
 	if err != nil {
-		return fmt.Errorf("oauth2: failed to generate state: %v", err)
+		return fmt.Errorf("oauth2: failed generating state: %v", err)
 	}
 
 	url := getOAuth2Config().AuthCodeURL(state)
@@ -68,7 +68,7 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	defer response.Body.Close()
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Error().Err(err).Msg("oauth2: failed to read body")
+		log.Error().Err(err).Msg("oauth2: failed reading body")
 		return err
 	}
 
@@ -91,21 +91,21 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 	defer cancel()
 
 	filter := bson.D{{"email", googleUser.Email}}
-	result, err := h.Mapper.FindOne(ctx, filter, &User{})
+	res, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
-			log.Error().Err(err).Msg("oauth2: failed to get user")
+			log.Error().Err(err).Msg("oauth2: failed getting user")
 			return err
 		}
 	}
 	var access, refresh []byte
 
-	if result == nil {
+	if res == nil {
 		// TODO: username?
 		newUser := NewUser(googleUser.Email, googleUser.Email)
 		access, refresh, err = newUser.Login()
 		if err != nil {
-			log.Error().Err(err).Msg("oauth2: failed to generate tokens")
+			log.Error().Err(err).Msg("oauth2: failed generating tokens")
 			return err
 		}
 
@@ -113,20 +113,20 @@ func (h *Handler) OAuth2Callback(c echo.Context) error {
 
 		_, err = h.Mapper.InsertOne(ctx, newUser, nil)
 		if err != nil {
-			log.Error().Err(err).Msg("oauth2: failed to insert user")
+			log.Error().Err(err).Msg("oauth2: failed inserting user")
 			return err
 		}
 	} else {
-		user := result.(*User)
+		user := res.(*User)
 		access, refresh, err = user.Login()
 		if err != nil {
-			log.Error().Err(err).Msg("oauth2: failed to generate tokens")
+			log.Error().Err(err).Msg("oauth2: failed generating tokens")
 			return err
 		}
 
 		_, err = h.Mapper.UpdateOneById(ctx, user.Id, user, nil)
 		if err != nil {
-			log.Error().Err(err).Msg("oauth2: failed to update user")
+			log.Error().Err(err).Msg("oauth2: failed updating user")
 			return err
 		}
 	}

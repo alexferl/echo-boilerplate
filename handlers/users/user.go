@@ -16,13 +16,13 @@ func (h *Handler) GetUser(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
+	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting user")
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, result.(*User).Response())
+	return h.Validate(c, http.StatusOK, res.(*User).Response())
 }
 
 type UpdateUserRequest struct {
@@ -42,13 +42,13 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
+	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting user")
 		return err
 	}
 
-	user := result.(*User)
+	user := res.(*User)
 	if body.Name != "" {
 		user.Name = body.Name
 	}

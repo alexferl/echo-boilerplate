@@ -67,20 +67,20 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 	}
 
 	pipeline := h.getPipeline(bson.D{{"id", id}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
+	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return err
 	}
 
-	res := result.(Aggregates)
-	if len(res) < 1 {
-		msg := "failed to retrieve updated task"
+	resp := res.(Aggregates)
+	if len(resp) < 1 {
+		msg := "failed retrieving updated task"
 		logger.Error().Msg(msg)
 		return fmt.Errorf(msg)
 	}
 
-	return h.Validate(c, http.StatusOK, res[0].Response())
+	return h.Validate(c, http.StatusOK, resp[0].Response())
 }
 
 func (h *Handler) DeleteTask(c echo.Context) error {

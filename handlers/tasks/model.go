@@ -60,8 +60,8 @@ type Aggregates []Aggregate
 
 func (aggregates Aggregates) Response() []*Response {
 	res := make([]*Response, 0)
-	for _, task := range aggregates {
-		res = append(res, task.Response())
+	for _, aggregate := range aggregates {
+		res = append(res, aggregate.Response())
 	}
 	return res
 }

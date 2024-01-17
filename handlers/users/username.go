@@ -30,14 +30,14 @@ func (h *Handler) GetUsername(c echo.Context) error {
 		bson.D{{"id", username}},
 		bson.D{{"username", username}},
 	}}}
-	result, err := h.Mapper.FindOne(ctx, filter, &User{})
+	res, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if errors.Is(err, data.ErrNoDocuments) {
 		return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
 	} else if err != nil {
 		log.Error().Err(err).Msg("failed getting user")
 	}
 
-	user := result.(*User)
+	user := res.(*User)
 	if user.DeletedAt != nil {
 		return h.Validate(c, http.StatusGone, echo.Map{"message": "user deleted"})
 	}

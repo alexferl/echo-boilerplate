@@ -38,7 +38,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	exist, err := h.Mapper.FindOne(ctx, filter, &User{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
-			log.Error().Err(err).Msg("failed to find user")
+			log.Error().Err(err).Msg("failed finding user")
 			return err
 		}
 	}
@@ -52,7 +52,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	newUser.Bio = body.Bio
 	err = newUser.SetPassword(body.Password)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to set password")
+		log.Error().Err(err).Msg("failed setting password")
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	user, err := h.Mapper.FindOneAndUpdate(ctx, filter, newUser, &User{}, opts)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to insert new user")
+		log.Error().Err(err).Msg("failed inserting new user")
 		return err
 	}
 

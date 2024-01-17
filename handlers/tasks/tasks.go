@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -21,14 +22,13 @@ type CreateTaskRequest struct {
 
 func (h *Handler) CreateTask(c echo.Context) error {
 	logger := c.Get("logger").(zerolog.Logger)
+	token := c.Get("token").(jwt.Token)
 
 	body := &CreateTaskRequest{}
 	if err := c.Bind(body); err != nil {
 		logger.Error().Err(err).Msg("failed binding body")
 		return err
 	}
-
-	token := c.Get("token").(jwt.Token)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -44,21 +44,22 @@ func (h *Handler) CreateTask(c echo.Context) error {
 
 	insert, err := h.Mapper.InsertOne(ctx, newTask)
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to insert task")
+		logger.Error().Err(err).Msg("failed inserting task")
 		return err
 	}
 
 	pipeline := h.getPipeline(bson.D{{"_id", insert.InsertedID.(primitive.ObjectID)}}, 1, 0)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
+	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting task")
 		return err
 	}
 
-	tasks := result.(Aggregates)
+	tasks := res.(Aggregates)
 	if len(tasks) < 1 {
-		logger.Error().Err(err).Msg("failed to retrieve inserted task")
-		return err
+		msg := "failed retrieving inserted task"
+		logger.Error().Msg(msg)
+		return fmt.Errorf(msg)
 	}
 
 	return h.Validate(c, http.StatusOK, tasks[0].Response())
@@ -70,25 +71,19 @@ type ListTasksResponse struct {
 
 func (h *Handler) ListTasks(c echo.Context) error {
 	logger := c.Get("logger").(zerolog.Logger)
-
 	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	count, err := h.Mapper.Count(ctx, nil)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed counting tasks")
-		return err
-	}
-
 	pipeline := h.getPipeline(bson.D{{"deleted_at", bson.M{"$eq": nil}}}, limit, skip)
-	result, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
+	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting tasks")
 		return err
 	}
 
-	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
+	tasks := res.(Aggregates)
+	util.SetPaginationHeaders(c.Request(), c.Response().Header(), len(tasks), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: result.(Aggregates).Response()})
+	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: tasks.Response()})
 }

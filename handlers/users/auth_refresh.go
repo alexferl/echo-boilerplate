@@ -27,7 +27,7 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
+	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token not found"})
@@ -36,7 +36,7 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 		return err
 	}
 
-	user := result.(*User)
+	user := res.(*User)
 	if err = user.ValidateRefreshToken(encodedToken); err != nil {
 		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token mismatch"})
 	}
