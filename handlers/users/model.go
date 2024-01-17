@@ -41,7 +41,6 @@ func (users Users) Response() []*Response {
 	for _, user := range users {
 		res = append(res, user.Response())
 	}
-
 	return res
 }
 
@@ -50,7 +49,6 @@ func (users Users) Public() []*Public {
 	for _, user := range users {
 		res = append(res, user.Public())
 	}
-
 	return res
 }
 
@@ -84,7 +82,6 @@ func NewUser(email string, username string) *User {
 func NewAdminUser(email string, username string) *User {
 	user := NewUser(email, username)
 	user.AddRole(AdminRole)
-
 	return user
 }
 
@@ -94,7 +91,6 @@ func (u *User) SetPassword(s string) error {
 		return err
 	}
 	u.Password = b
-
 	return nil
 }
 

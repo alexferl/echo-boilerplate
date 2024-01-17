@@ -31,26 +31,26 @@ type Aggregate struct {
 	Title       string      `json:"title" bson:"title"`
 }
 
-func (ta *Aggregate) Response() *Response {
+func (a *Aggregate) Response() *Response {
 	resp := &Response{
-		Id:          ta.Id,
-		Href:        util.GetFullURL(fmt.Sprintf("/tasks/%s", ta.Id)),
-		CreatedAt:   ta.CreatedAt,
-		CreatedBy:   ta.CreatedBy.Public(),
-		DeletedAt:   ta.DeletedAt,
-		DeletedBy:   ta.DeletedBy,
-		UpdatedAt:   ta.UpdatedAt,
-		Title:       ta.Title,
-		Completed:   ta.Completed,
-		CompletedAt: ta.CompletedAt,
+		Id:          a.Id,
+		Href:        util.GetFullURL(fmt.Sprintf("/tasks/%s", a.Id)),
+		CreatedAt:   a.CreatedAt,
+		CreatedBy:   a.CreatedBy.Public(),
+		DeletedAt:   a.DeletedAt,
+		DeletedBy:   a.DeletedBy,
+		UpdatedAt:   a.UpdatedAt,
+		Title:       a.Title,
+		Completed:   a.Completed,
+		CompletedAt: a.CompletedAt,
 	}
 
-	if ta.UpdatedBy != nil {
-		resp.UpdatedBy = ta.UpdatedBy.Public()
+	if a.UpdatedBy != nil {
+		resp.UpdatedBy = a.UpdatedBy.Public()
 	}
 
-	if ta.CompletedBy != nil {
-		resp.CompletedBy = ta.CompletedBy.Public()
+	if a.CompletedBy != nil {
+		resp.CompletedBy = a.CompletedBy.Public()
 	}
 
 	return resp
@@ -58,9 +58,9 @@ func (ta *Aggregate) Response() *Response {
 
 type Aggregates []Aggregate
 
-func (ta Aggregates) Response() []*Response {
+func (aggregates Aggregates) Response() []*Response {
 	res := make([]*Response, 0)
-	for _, task := range ta {
+	for _, task := range aggregates {
 		res = append(res, task.Response())
 	}
 	return res
