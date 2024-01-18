@@ -4,8 +4,8 @@ cloud.google.com/go/compute/metadata v0.2.3 h1:mg4jlk7mCAj6xXp9UJ4fjI9VUI5rubuGB
 cloud.google.com/go/compute/metadata v0.2.3/go.mod h1:VAV5nSsACxMJvgaAuX6Pk2AawlZn8kiOGuCv6gTkwuA=
 github.com/alexferl/echo-casbin v0.3.0 h1:7sO7ZtM1/kFTPmCVPwCqBJeGOjXxzrlCEECiVCNOZTM=
 github.com/alexferl/echo-casbin v0.3.0/go.mod h1:jpimZtcnylKhqjJoRy4MGGlFY9StC7I7TJJyRDGLqbE=
-github.com/alexferl/echo-jwt v1.0.0 h1:S6ZnMY7aDb5YTW1WH4AqS2Qe1qhgRZkkZiV4/YrDkAE=
-github.com/alexferl/echo-jwt v1.0.0/go.mod h1:/d5jXpJL7MaQ2gjvUx+V0miEft6lCQyaqqjUDtqRPuY=
+github.com/alexferl/echo-jwt v1.2.0 h1:sYMfdfBDTomPQgEv/gLyYoUJ8ZnTVyRrboL9aXie9m8=
+github.com/alexferl/echo-jwt v1.2.0/go.mod h1:b6O6q61Fy7Tc0AYvGmb6fP2qdvYuIrxP48g6AL+VrpU=
 github.com/alexferl/echo-openapi v0.2.0 h1:kROwdc+O5XHrFVizCCBmYwmyoyDB9eMQCywQ0BMc4TY=
 github.com/alexferl/echo-openapi v0.2.0/go.mod h1:h99zPWS+5bOZWPj40vy+ivtFVzTZZBO3fJNWPdtky1w=
 github.com/alexferl/golib/config v0.0.0-20231008015603-26982fa3ee12 h1:8kJISa0jkFX7ZUZg4x8GPd8/7NaX9mZTukVd33LvvZI=

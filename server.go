@@ -105,16 +105,16 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 					default: // Validate token only for requests which are not defined as 'safe' by RFC7231
 						cookie, err := c.Cookie(viper.GetString(config.JWTAccessTokenCookieName))
 						if err != nil {
-							return echo.NewHTTPError(http.StatusBadRequest, "Missing access token cookie")
+							return echo.NewHTTPError(http.StatusBadRequest, "missing access token cookie")
 						}
 
 						h := c.Request().Header.Get(viper.GetString(config.CSRFHeaderName))
 						if h == "" {
-							return echo.NewHTTPError(http.StatusBadRequest, "Missing CSRF token header")
+							return echo.NewHTTPError(http.StatusBadRequest, "missing CSRF token header")
 						}
 
 						if !util.ValidMAC([]byte(cookie.Value), []byte(h), []byte(viper.GetString(config.CSRFSecretKey))) {
-							return echo.NewHTTPError(http.StatusForbidden, "Invalid CSRF token")
+							return echo.NewHTTPError(http.StatusForbidden, "invalid CSRF token")
 						}
 					}
 				}
@@ -129,18 +129,18 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 				result, err := mapper.WithCollection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
 					if errors.Is(err, data.ErrNoDocuments) {
-						return echo.NewHTTPError(http.StatusUnauthorized, "Token invalid")
+						return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")
 					}
 					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 				}
 
 				pat := result.(*users.PersonalAccessToken)
 				if err = pat.Validate(encodedToken); err != nil {
-					return echo.NewHTTPError(http.StatusUnauthorized, "Token mismatch")
+					return echo.NewHTTPError(http.StatusUnauthorized, "token mismatch")
 				}
 
 				if pat.Revoked {
-					return echo.NewHTTPError(http.StatusUnauthorized, "Token is revoked")
+					return echo.NewHTTPError(http.StatusUnauthorized, "token is revoked")
 				}
 			}
 

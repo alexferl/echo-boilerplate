@@ -87,7 +87,7 @@ func TestHandler_AuthRefresh_400_Cookie_Missing(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Request malformed")
+	assert.Contains(t, resp.Body.String(), "request malformed")
 }
 
 func TestHandler_AuthRefresh_401_Cookie_Invalid(t *testing.T) {
@@ -100,7 +100,7 @@ func TestHandler_AuthRefresh_401_Cookie_Invalid(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Token invalid")
+	assert.Contains(t, resp.Body.String(), "token invalid")
 }
 
 func TestHandler_AuthRefresh_401_Cookie_Mismatch(t *testing.T) {
@@ -130,7 +130,7 @@ func TestHandler_AuthRefresh_401_Cookie_Mismatch(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Token mismatch")
+	assert.Contains(t, resp.Body.String(), "token mismatch")
 }
 
 func TestHandler_AuthRefresh_200_Token(t *testing.T) {
@@ -209,7 +209,7 @@ func TestHandler_AuthRefresh_400_Token_Missing(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Request malformed")
+	assert.Contains(t, resp.Body.String(), "request malformed")
 }
 
 func TestHandler_AuthRefresh_401_Token_Invalid(t *testing.T) {
@@ -227,7 +227,7 @@ func TestHandler_AuthRefresh_401_Token_Invalid(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Token invalid")
+	assert.Contains(t, resp.Body.String(), "token invalid")
 }
 
 func TestHandler_AuthRefresh_401_Token_Mismatch(t *testing.T) {
@@ -262,5 +262,5 @@ func TestHandler_AuthRefresh_401_Token_Mismatch(t *testing.T) {
 
 	s.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Token mismatch")
+	assert.Contains(t, resp.Body.String(), "token mismatch")
 }

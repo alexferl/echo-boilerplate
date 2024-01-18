@@ -28,7 +28,7 @@ func (h *Handler) AuthLogOut(c echo.Context) error {
 	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token not found"})
+			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token not found"})
 		}
 		logger.Error().Err(err).Msg("failed getting user")
 		return err
@@ -36,7 +36,7 @@ func (h *Handler) AuthLogOut(c echo.Context) error {
 
 	user := res.(*User)
 	if err = user.ValidateRefreshToken(encodedToken); err != nil {
-		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "Token mismatch"})
+		return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token mismatch"})
 	}
 
 	user.Logout()
