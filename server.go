@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	casbinMw "github.com/alexferl/echo-casbin"
 	jwtMw "github.com/alexferl/echo-jwt"
 	openapiMw "github.com/alexferl/echo-openapi"
@@ -16,6 +14,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
 	_ "go.uber.org/automaxprocs"
@@ -33,6 +32,7 @@ func Handlers() []handlers.IHandler {
 	if err != nil {
 		panic(err)
 	}
+
 	err = data.CreateIndexes(client)
 	if err != nil {
 		panic(err)
@@ -84,10 +84,10 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
-			"/auth/signup":     {http.MethodPost},
 			"/auth/login":      {http.MethodPost},
-			"/oauth2/login":    {http.MethodGet},
+			"/auth/signup":     {http.MethodPost},
 			"/oauth2/callback": {http.MethodGet},
+			"/oauth2/login":    {http.MethodGet},
 		},
 		OptionalRoutes: map[string][]string{
 			"/users/:username": {http.MethodGet},
@@ -164,8 +164,8 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
-			"/oauth2/login":    {http.MethodGet},
 			"/oauth2/callback": {http.MethodGet},
+			"/oauth2/login":    {http.MethodGet},
 		},
 	}
 

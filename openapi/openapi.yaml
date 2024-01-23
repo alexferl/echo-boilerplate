@@ -27,28 +27,30 @@ tags:
   - name: users
     description: Operations on users
 paths:
-  /auth/signup:
-    $ref: './paths/auth_signup.yaml'
   /auth/login:
     $ref: './paths/auth_login.yaml'
-  /auth/refresh:
-    $ref: './paths/auth_refresh.yaml'
   /auth/logout:
     $ref: './paths/auth_logout.yaml'
+  /auth/refresh:
+    $ref: './paths/auth_refresh.yaml'
+  /auth/signup:
+    $ref: './paths/auth_signup.yaml'
+  /auth/token:
+    $ref: './paths/auth_token.yaml'
+  /me:
+    $ref: './paths/user.yaml'
+  /me/personal_access_tokens:
+    $ref: './paths/user_personal_access_tokens.yaml'
+  /me/personal_access_tokens/{id}:
+    $ref: './paths/user_personal_access_tokens_{id}.yaml'
   /tasks:
     $ref: './paths/tasks.yaml'
   /tasks/{id}:
     $ref: './paths/tasks_{id}.yaml'
-  /user:
-    $ref: './paths/user.yaml'
-  /user/personal_access_tokens:
-    $ref: './paths/user_personal_access_tokens.yaml'
-  /user/personal_access_tokens/{id}:
-    $ref: './paths/user_personal_access_tokens_{id}.yaml'
-  /users/{username}:
-    $ref: './paths/users_{username}.yaml'
   /users:
     $ref: './paths/users.yaml'
+  /users/{username}:
+    $ref: './paths/users_{username}.yaml'
 components:
   securitySchemes:
     cookieAuth:

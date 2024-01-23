@@ -74,14 +74,14 @@ Request:
 Using the `Authorization` header:
 ```shell
 curl --request GET \
-  --url http://localhost:1323/user \
+  --url http://localhost:1323/me \
   --header 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
 ```
 
 Using the cookie (the cookie is sent automatically with web browsers, HTTPie and some other clients):
 ```shell
 curl --request GET \
-  --url http://localhost:1323/user \
+  --url http://localhost:1323/me \
   --cookie access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
