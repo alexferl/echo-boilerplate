@@ -6,7 +6,7 @@ required:
 properties:
   title:
     type: string
-    description: The name of the user
+    description: The title of the task
     minLength: 1
     maxLength: 100
     example: My Task

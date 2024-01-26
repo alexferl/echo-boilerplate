@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,6 +23,11 @@ func (h *Handler) ListUsers(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	count, err := h.Mapper.Count(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed counting tasks: %v", err)
+	}
+
 	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(skip))
 	res, err := h.Mapper.Find(ctx, nil, Users{}, opts)
 	if err != nil {
@@ -30,7 +36,7 @@ func (h *Handler) ListUsers(c echo.Context) error {
 	}
 
 	users := res.(Users)
-	util.SetPaginationHeaders(c.Request(), c.Response().Header(), len(users), page, perPage)
+	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
 	return h.Validate(c, http.StatusOK, &ListUsersResponse{Users: users.Public()})
 }

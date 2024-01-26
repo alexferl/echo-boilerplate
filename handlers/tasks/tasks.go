@@ -75,7 +75,14 @@ func (h *Handler) ListTasks(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	pipeline := h.getPipeline(bson.D{{"deleted_at", bson.M{"$eq": nil}}}, limit, skip)
+
+	filter := bson.D{{"deleted_at", bson.M{"$eq": nil}}}
+	count, err := h.Mapper.Count(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("failed counting tasks: %v", err)
+	}
+
+	pipeline := h.getPipeline(filter, limit, skip)
 	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting tasks")
@@ -83,7 +90,7 @@ func (h *Handler) ListTasks(c echo.Context) error {
 	}
 
 	tasks := res.(Aggregates)
-	util.SetPaginationHeaders(c.Request(), c.Response().Header(), len(tasks), page, perPage)
+	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
 	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: tasks.Response()})
 }

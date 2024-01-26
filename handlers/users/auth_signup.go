@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/alexferl/echo-boilerplate/data"
@@ -61,6 +62,9 @@ func (h *Handler) AuthSignUp(c echo.Context) error {
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	user, err := h.Mapper.FindOneAndUpdate(ctx, filter, newUser, &User{}, opts)
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return h.Validate(c, http.StatusConflict, echo.Map{"message": "email or username already in-use"})
+		}
 		log.Error().Err(err).Msg("failed inserting new user")
 		return err
 	}

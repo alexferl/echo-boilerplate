@@ -81,7 +81,6 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/":                {http.MethodGet},
 			"/readyz":          {http.MethodGet},
 			"/livez":           {http.MethodGet},
-			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
 			"/auth/login":      {http.MethodPost},
@@ -161,7 +160,6 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/":                {http.MethodGet},
 			"/readyz":          {http.MethodGet},
 			"/livez":           {http.MethodGet},
-			"/favicon.ico":     {http.MethodGet},
 			"/docs":            {http.MethodGet},
 			"/openapi/*":       {http.MethodGet},
 			"/oauth2/callback": {http.MethodGet},
@@ -181,7 +179,6 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 		h.AddRoutes(s)
 	}
 
-	s.File("/favicon.ico", "./assets/images/favicon.ico")
 	s.File("/docs", "./assets/index.html")
 	s.Static("/openapi/", "./openapi")
 
