@@ -1,11 +1,11 @@
 get:
   summary: Get a user
   description: Returns a single user.
-  operationId: getUsername
+  operationId: getUser
   tags:
     - users
   parameters:
-    - name: username
+    - name: id_or_username
       in: path
       required: true
       schema:
@@ -16,7 +16,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/Username.yaml'
+            $ref: '../components/schemas/User.yaml'
     '404':
       $ref: '../components/responses/NotFound.yaml'
     '410':

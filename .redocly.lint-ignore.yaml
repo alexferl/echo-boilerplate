@@ -1,26 +1,38 @@
 # This file instructs Redocly's linter to ignore the rules contained for specific parts of your API.
 # See https://redoc.ly/docs/cli/ for more information.
+openapi/openapi.yaml:
+  no-server-example.com:
+    - '#/servers/0/url'
+    - '#/servers/1/url'
+    - '#/servers/2/url'
+openapi/paths/auth_token.yaml:
+  operation-4xx-response:
+    - '#/get/responses'
+openapi/paths/user.yaml:
+  operation-4xx-response:
+    - '#/get/responses'
 openapi/paths/user_personal_access_tokens.yaml:
   operation-4xx-response:
     - '#/get/responses'
 openapi/paths/tasks.yaml:
   operation-4xx-response:
     - '#/get/responses'
-openapi/paths/user.yaml:
-  operation-4xx-response:
-    - '#/get/responses'
-openapi/paths/auth_signup.yaml:
-  security-defined:
-    - '#/post'
+openapi/components/schemas/Task.yaml:
+  spec:
+    - '#/properties/completed_by/nullable'
+    - '#/properties/updated_by/nullable'
 openapi/paths/auth_login.yaml:
-  security-defined:
-    - '#/post'
-openapi/paths/auth_refresh.yaml:
   security-defined:
     - '#/post'
 openapi/paths/auth_logout.yaml:
   security-defined:
     - '#/post'
-openapi/paths/users_{username}.yaml:
+openapi/paths/auth_refresh.yaml:
+  security-defined:
+    - '#/post'
+openapi/paths/auth_signup.yaml:
+  security-defined:
+    - '#/post'
+openapi/paths/users_{id_or_username}.yaml:
   security-defined:
     - '#/get'

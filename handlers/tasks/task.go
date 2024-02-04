@@ -24,8 +24,7 @@ func (h *Handler) GetTask(c echo.Context) error {
 }
 
 type UpdateTaskRequest struct {
-	Title     string `json:"title" bson:"title"`
-	Completed bool   `json:"completed" bson:"completed"`
+	Title string `json:"title"`
 }
 
 func (h *Handler) UpdateTask(c echo.Context) error {
@@ -50,6 +49,53 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 		task.Title = body.Title
 	}
 
+	task.Update(token.Subject())
+
+	_, err := h.Mapper.UpdateOneById(ctx, id, task)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed updating task")
+		return err
+	}
+
+	pipeline := h.getPipeline(bson.D{{"id", id}}, 1, 0)
+	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
+	if err != nil {
+		logger.Error().Err(err).Msg("failed getting task")
+		return err
+	}
+
+	resp := res.(Aggregates)
+	if len(resp) < 1 {
+		msg := "failed retrieving updated task"
+		logger.Error().Msg(msg)
+		return fmt.Errorf(msg)
+	}
+
+	return h.Validate(c, http.StatusOK, resp[0].Response())
+}
+
+type TransitionTaskRequest struct {
+	Completed bool `json:"completed"`
+}
+
+func (h *Handler) TransitionTask(c echo.Context) error {
+	id := c.Param("id")
+	logger := c.Get("logger").(zerolog.Logger)
+	token := c.Get("token").(jwt.Token)
+
+	body := &TransitionTaskRequest{}
+	if err := c.Bind(body); err != nil {
+		logger.Error().Err(err).Msg("failed binding body")
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	task, errResp := h.getTask(ctx, c, id, token)
+	if errResp != nil {
+		return errResp()
+	}
+
 	if body.Completed != task.Completed {
 		if body.Completed {
 			task.Complete(token.Subject())
@@ -57,8 +103,6 @@ func (h *Handler) UpdateTask(c echo.Context) error {
 			task.Incomplete()
 		}
 	}
-
-	task.Update(token.Subject())
 
 	_, err := h.Mapper.UpdateOneById(ctx, id, task)
 	if err != nil {

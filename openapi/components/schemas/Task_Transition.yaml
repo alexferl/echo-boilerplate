@@ -1,0 +1,9 @@
+type: object
+description: Task update request
+additionalProperties: false
+required:
+  - completed
+properties:
+  completed:
+    type: boolean
+    example: true

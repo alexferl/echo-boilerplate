@@ -33,6 +33,23 @@ get:
   tags:
     - tasks
   parameters:
+    - name: created_by
+      in: query
+      description: Created by
+      schema:
+        type: string
+    - name: completed
+      in: query
+      description: Completed
+      schema:
+        type: string
+    - name: q
+      in: query
+      description: Query
+      schema:
+        type: array
+        items:
+          type: string
     - name: per_page
       in: query
       description: Number of tasks to return per page
@@ -54,7 +71,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/ArrayOfTasks.yaml'
+            $ref: '../components/schemas/Tasks_Array.yaml'
       headers:
         Link:
           schema:

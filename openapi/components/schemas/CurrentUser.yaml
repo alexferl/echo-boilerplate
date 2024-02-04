@@ -1,5 +1,4 @@
 type: object
-description: Username response
 additionalProperties: false
 properties:
   id:
@@ -17,10 +16,18 @@ properties:
     pattern: '^[0-9a-zA-Z._]+$'
     description: The username of the user
     example: test
+  email:
+    type: string
+    description: The email of the user
+    example: test@example.com
   name:
     type: string
     description: The name of the user
     example: Test
+  bio:
+    type: string
+    description: The biography of the user
+    example: This is my bio.
   created_at:
     type: string
     format: date-time

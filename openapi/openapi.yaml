@@ -47,10 +47,12 @@ paths:
     $ref: './paths/tasks.yaml'
   /tasks/{id}:
     $ref: './paths/tasks_{id}.yaml'
+  /tasks/{id}/transition:
+    $ref: './paths/tasks_{id}_transition.yaml'
   /users:
     $ref: './paths/users.yaml'
-  /users/{username}:
-    $ref: './paths/users_{username}.yaml'
+  /users/{id_or_username}:
+    $ref: './paths/users_{id_or_username}.yaml'
 components:
   securitySchemes:
     cookieAuth:

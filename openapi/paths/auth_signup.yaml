@@ -9,14 +9,14 @@ post:
     content:
       application/json:
         schema:
-          $ref: '../components/schemas/SignUp.yaml'
+          $ref: '../components/schemas/AuthSignup.yaml'
   responses:
     '200':
       description: Successfully created user
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/User.yaml'
+            $ref: '../components/schemas/CurrentUser.yaml'
     '409':
       $ref: '../components/responses/Conflict.yaml'
     '422':

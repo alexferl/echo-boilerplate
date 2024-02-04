@@ -19,6 +19,7 @@ p, user, /me/personal_access_tokens, (GET)|(POST)
 p, user, /me/personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)
 p, user, /tasks/:id, (GET)|(PUT)|(DELETE)
+p, user, /tasks/:id/transition, PUT
 
 p, admin, /users, GET
 

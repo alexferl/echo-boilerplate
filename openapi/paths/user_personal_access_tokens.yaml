@@ -25,7 +25,7 @@ post:
 get:
   summary: List personal access tokens
   description: Returns a list of personal access tokens for the authenticated user.
-  operationId: findPersonalAccessTokens
+  operationId: listPersonalAccessTokens
   security:
     - cookieAuth: []
     - bearerAuth: []
@@ -37,4 +37,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/ArrayOfPersonalAccessTokens.yaml'
+            $ref: '../components/schemas/PersonalAccessTokens_Array.yaml'

@@ -138,8 +138,7 @@ func TestHandler_UpdateTask_200(t *testing.T) {
 	assert.NoError(t, err)
 
 	payload := &tasks.UpdateTaskRequest{
-		Title:     "My Edited Task",
-		Completed: true,
+		Title: "My Edited Task",
 	}
 	b, err := json.Marshal(payload)
 	assert.NoError(t, err)
@@ -333,6 +332,179 @@ func TestHandler_UpdateTask_422(t *testing.T) {
 
 	b := bytes.NewBuffer([]byte(`{"invalid": "invalid"}`))
 	req := httptest.NewRequest(http.MethodPut, "/tasks/id", b)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
+}
+
+func TestHandler_TransitionTask_200(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	payload := &tasks.TransitionTaskRequest{
+		Completed: true,
+	}
+	b, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	newTask := tasks.NewTask("1")
+	newTask.Create(user.Id)
+	newTask.CreatedBy = user.Id
+	newTask.Completed = payload.Completed
+	newTask.Complete(user.Id)
+
+	updated := newTask.Aggregate(user, nil, user)
+
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id/transition", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			newTask,
+			nil,
+		).
+		On(
+			"UpdateOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			nil,
+		).
+		On(
+			"Aggregate",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			tasks.Aggregates{*updated},
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+}
+
+func TestHandler_TransitionTask_401(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id/transition", nil)
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusUnauthorized, resp.Code)
+}
+
+func TestHandler_TransitionTask_404(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	payload := &tasks.TransitionTaskRequest{
+		Completed: true,
+	}
+	b, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id/transition", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			data.ErrNoDocuments,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNotFound, resp.Code)
+}
+
+func TestHandler_TransitionTask_410(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	payload := &tasks.TransitionTaskRequest{
+		Completed: true,
+	}
+	b, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	task := tasks.NewTask("1")
+	task.Create(user.Id)
+	task.Delete(user.Id)
+	find := &tasks.Task{
+		Model: &data.Model{
+			DeletedAt: task.DeletedAt,
+		},
+	}
+
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id/transition", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOneById",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			find,
+			nil,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusGone, resp.Code)
+}
+
+func TestHandler_TransitionTask_422(t *testing.T) {
+	_, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	b := bytes.NewBuffer([]byte(`{"invalid": "invalid"}`))
+	req := httptest.NewRequest(http.MethodPut, "/tasks/id/transition", b)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()

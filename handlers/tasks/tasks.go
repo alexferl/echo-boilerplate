@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
-
-	"github.com/rs/zerolog"
 
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -76,7 +76,29 @@ func (h *Handler) ListTasks(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.D{{"deleted_at", bson.M{"$eq": nil}}}
+	filter := bson.M{"deleted_at": bson.M{"$eq": nil}}
+	completed := c.QueryParams()["completed"]
+	if len(completed) > 0 {
+		arr := bson.A{}
+		for _, i := range completed {
+			s := strings.ToLower(i)
+			if s == "true" {
+				arr = append(arr, true)
+			} else if s == "false" {
+				arr = append(arr, false)
+			}
+		}
+		filter["completed"] = bson.M{"$in": arr}
+	}
+	createdBy := c.QueryParam("created_by")
+	if createdBy != "" {
+		filter["created_by"] = createdBy
+	}
+	query := c.QueryParams()["q"]
+	if len(query) > 0 {
+		filter["$text"] = bson.M{"$search": strings.Join(query, " ")}
+	}
+
 	count, err := h.Mapper.Count(ctx, filter)
 	if err != nil {
 		return fmt.Errorf("failed counting tasks: %v", err)

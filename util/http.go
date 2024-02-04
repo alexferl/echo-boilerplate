@@ -39,13 +39,14 @@ func SetPaginationHeaders(req *http.Request, header http.Header, count int, page
 	}
 	url := fmt.Sprintf("%s://%s%s", prefix, req.Host, req.URL.Path)
 
-	totalPages := int(math.Ceil(float64(count / perPage)))
+	totalPages := int(math.Ceil(float64(count) / float64(perPage)))
 	lastPage := totalPages
 	curPage := page
 	prevPage := 0
 	if curPage >= 2 {
 		prevPage = curPage - 1
 	}
+
 	nextPage := 0
 	if (curPage + 1) <= totalPages {
 		nextPage = curPage + 1

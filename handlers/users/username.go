@@ -13,14 +13,6 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 )
 
-type GetUsernameResponse struct {
-	Id        string     `json:"id"`
-	Href      string     `json:"href"`
-	Username  string     `json:"username"`
-	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
-}
-
 func (h *Handler) GetUsername(c echo.Context) error {
 	username := c.Param("username")
 
@@ -42,13 +34,5 @@ func (h *Handler) GetUsername(c echo.Context) error {
 		return h.Validate(c, http.StatusGone, echo.Map{"message": "user deleted"})
 	}
 
-	resp := user.Response()
-
-	return h.Validate(c, http.StatusOK, &GetUsernameResponse{
-		Id:        resp.Id,
-		Href:      resp.Href,
-		Username:  resp.Username,
-		CreatedAt: resp.CreatedAt,
-		UpdatedAt: resp.UpdatedAt,
-	})
+	return h.Validate(c, http.StatusOK, user.Public())
 }

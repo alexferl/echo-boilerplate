@@ -1,7 +1,7 @@
 get:
   summary: List users
   description: Returns a list of users. Admin role required.
-  operationId: findUsers
+  operationId: listUsers
   security:
     - cookieAuth: []
     - bearerAuth: []
@@ -29,7 +29,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/ArrayOfUsers.yaml'
+            $ref: '../components/schemas/Users_Array.yaml'
       headers:
         Link:
           schema:

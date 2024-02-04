@@ -148,6 +148,15 @@ func TestHandler_ListTasks_200(t *testing.T) {
 
 	mapper.Mock.
 		On(
+			"Count",
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			int64(10),
+			nil,
+		).
+		On(
 			"Aggregate",
 			mock.Anything,
 			mock.Anything,

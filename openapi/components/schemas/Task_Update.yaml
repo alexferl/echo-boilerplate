@@ -8,6 +8,3 @@ properties:
     minLength: 0
     maxLength: 100
     example: My Updated Task
-  completed:
-    type: boolean
-    example: true

@@ -68,6 +68,7 @@ type Public struct {
 	Href     string `json:"href" bson:"href"`
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
+	Bio      string `json:"bio" bson:"bio"`
 }
 
 func NewUser(email string, username string) *User {
@@ -113,6 +114,7 @@ func (u *User) Public() *Public {
 		Href:     util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username: u.Username,
 		Name:     u.Name,
+		Bio:      u.Bio,
 	}
 }
 

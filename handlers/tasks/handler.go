@@ -42,6 +42,7 @@ func (h *Handler) AddRoutes(s *server.Server) {
 	s.Add(http.MethodGet, "/tasks", h.ListTasks)
 	s.Add(http.MethodGet, "/tasks/:id", h.GetTask)
 	s.Add(http.MethodPut, "/tasks/:id", h.UpdateTask)
+	s.Add(http.MethodPut, "/tasks/:id/transition", h.TransitionTask)
 	s.Add(http.MethodDelete, "/tasks/:id", h.DeleteTask)
 }
 
@@ -109,6 +110,7 @@ func (h *Handler) getPipeline(filter any, limit int, skip int) mongo.Pipeline {
 				{"preserveNullAndEmptyArrays", true},
 			},
 		}},
+		{{"$sort", bson.D{{"_id", -1}}}},
 		{{"$limit", skip + limit}},
 		{{"$skip", skip}},
 	}

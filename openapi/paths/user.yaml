@@ -1,7 +1,7 @@
 get:
-  summary: Get authenticated user
-  description: Returns the authenticated user.
-  operationId: getUser
+  summary: Get current user
+  description: Returns the current user.
+  operationId: getCurrentUser
   security:
     - cookieAuth: []
     - bearerAuth: []
@@ -9,15 +9,15 @@ get:
     - users
   responses:
     '200':
-      description: Successfully returned a user
+      description: Successfully returned the current user
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/User.yaml'
+            $ref: '../components/schemas/CurrentUser.yaml'
 put:
-  summary: Update authenticated user
-  description: Returns the updated authenticated user.
-  operationId: updateUser
+  summary: Update current user
+  description: Returns the updated current user.
+  operationId: updateCurrentUser
   security:
     - cookieAuth: []
     - bearerAuth: []
@@ -28,13 +28,13 @@ put:
     content:
       application/json:
         schema:
-          $ref: '../components/schemas/User_Update.yaml'
+          $ref: '../components/schemas/CurrentUser_Update.yaml'
   responses:
     '200':
-      description: Successfully returned user modifications
+      description: Successfully returned current user modifications
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/User.yaml'
+            $ref: '../components/schemas/CurrentUser.yaml'
     '422':
       $ref: '../components/responses/UnprocessableEntity.yaml'

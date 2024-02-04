@@ -56,6 +56,11 @@ func CreateIndexes(client *mongo.Client) error {
 				Unique: &t,
 			},
 		},
+		{
+			Keys: bson.D{
+				{"title", "text"},
+			},
+		},
 	}
 
 	indexes["personal_access_tokens"] = []mongo.IndexModel{

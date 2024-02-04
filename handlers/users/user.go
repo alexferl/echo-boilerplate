@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (h *Handler) GetUser(c echo.Context) error {
+func (h *Handler) GetMe(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
 	logger := c.Get("logger").(zerolog.Logger)
 
@@ -30,7 +30,7 @@ type UpdateUserRequest struct {
 	Bio  string `json:"bio" bson:"bio"`
 }
 
-func (h *Handler) UpdateUser(c echo.Context) error {
+func (h *Handler) UpdateMe(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
 	logger := c.Get("logger").(zerolog.Logger)
 
