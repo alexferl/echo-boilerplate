@@ -2,68 +2,37 @@ package users
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/bson"
+
+	"github.com/alexferl/echo-boilerplate/data"
 )
 
-func (h *Handler) GetMe(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
-	logger := c.Get("logger").(zerolog.Logger)
+func (h *Handler) GetUser(c echo.Context) error {
+	id := c.Param("id_or_username")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
-	if err != nil {
-		logger.Error().Err(err).Msg("failed getting user")
-		return err
-	}
-
-	return h.Validate(c, http.StatusOK, res.(*User).Response())
-}
-
-type UpdateUserRequest struct {
-	Name string `json:"name" bson:"name"`
-	Bio  string `json:"bio" bson:"bio"`
-}
-
-func (h *Handler) UpdateMe(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
-	logger := c.Get("logger").(zerolog.Logger)
-
-	body := &UpdateUserRequest{}
-	if err := c.Bind(body); err != nil {
-		logger.Error().Err(err).Msg("failed binding body")
-		return err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	res, err := h.Mapper.FindOneById(ctx, token.Subject(), &User{})
-	if err != nil {
-		logger.Error().Err(err).Msg("failed getting user")
-		return err
+	filter := bson.D{{"$or", bson.A{
+		bson.D{{"id", id}},
+		bson.D{{"username", id}},
+	}}}
+	res, err := h.Mapper.FindOne(ctx, filter, &User{})
+	if errors.Is(err, data.ErrNoDocuments) {
+		return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
+	} else if err != nil {
+		log.Error().Err(err).Msg("failed getting user")
 	}
 
 	user := res.(*User)
-	if body.Name != "" {
-		user.Name = body.Name
+	if user.DeletedAt != nil {
+		return h.Validate(c, http.StatusGone, echo.Map{"message": "user deleted"})
 	}
 
-	if body.Bio != "" {
-		user.Bio = body.Bio
-	}
-
-	user.Update(user.Id)
-
-	update, err := h.Mapper.FindOneByIdAndUpdate(ctx, user.Id, user, &User{})
-	if err != nil {
-		logger.Error().Err(err).Msg("failed updating user")
-		return err
-	}
-
-	return h.Validate(c, http.StatusOK, update.(*User).Response())
+	return h.Validate(c, http.StatusOK, user.Public())
 }

@@ -1,8 +1,6 @@
 package users_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -11,24 +9,71 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 )
 
 func TestHandler_GetUser_200(t *testing.T) {
-	mapper, s := getMapperAndServer(t)
-
 	user := users.NewUser("test@example.com", "test")
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodGet, "/me", nil)
+	testCases := []struct {
+		name       string
+		username   string
+		statusCode int
+		retUser    *users.User
+		retErr     error
+	}{
+		{
+			"not found", "notfound", http.StatusNotFound, nil, data.ErrNoDocuments,
+		},
+		{
+			"self username", "test", http.StatusOK, user, nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mapper, s := getMapperAndServer(t)
+
+			target := fmt.Sprintf("/users/%s", tc.username)
+			req := httptest.NewRequest(http.MethodGet, target, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+			resp := httptest.NewRecorder()
+
+			mapper.Mock.
+				On(
+					"FindOne",
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+				).
+				Return(
+					tc.retUser,
+					tc.retErr,
+				)
+
+			s.ServeHTTP(resp, req)
+
+			assert.Equal(t, tc.statusCode, resp.Code)
+		})
+	}
+}
+
+func TestHandler_GetUser_200_Not_Logged_In(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+
+	req := httptest.NewRequest(http.MethodGet, "/users/test", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.
 		On(
-			"FindOneById",
+			"FindOne",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -43,46 +88,51 @@ func TestHandler_GetUser_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestHandler_GetUser_401(t *testing.T) {
-	_, s := getMapperAndServer(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/me", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.ServeHTTP(resp, req)
-
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-}
-
-func TestHandler_UpdateUser_200(t *testing.T) {
+func TestHandler_GetUser_404(t *testing.T) {
 	mapper, s := getMapperAndServer(t)
 
 	user := users.NewUser("test@example.com", "test")
-	user.Name = "test name"
-	user.Bio = "test bio"
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	updatedUser := user
-	updatedUser.Name = "name"
-	updatedUser.Bio = "bio"
-	updatedUser.Update(user.Id)
-
-	b, err := json.Marshal(&users.UpdateUserRequest{
-		Name: updatedUser.Name,
-		Bio:  updatedUser.Bio,
-	})
-	assert.NoError(t, err)
-
-	req := httptest.NewRequest(http.MethodPut, "/me", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodGet, "/users/notfound", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
 	mapper.Mock.
 		On(
-			"FindOneById",
+			"FindOne",
+			mock.Anything,
+			mock.Anything,
+			mock.Anything,
+		).
+		Return(
+			nil,
+			data.ErrNoDocuments,
+		)
+
+	s.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusNotFound, resp.Code)
+}
+
+func TestHandler_GetUser_410(t *testing.T) {
+	mapper, s := getMapperAndServer(t)
+
+	user := users.NewUser("test@example.com", "test")
+	user.Delete(user.Id)
+	access, _, err := user.Login()
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodGet, "/users/test", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
+	resp := httptest.NewRecorder()
+
+	mapper.Mock.
+		On(
+			"FindOne",
 			mock.Anything,
 			mock.Anything,
 			mock.Anything,
@@ -90,52 +140,9 @@ func TestHandler_UpdateUser_200(t *testing.T) {
 		Return(
 			user,
 			nil,
-		).
-		On("FindOneByIdAndUpdate",
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-		).
-		Return(
-			updatedUser,
-			nil,
 		)
 
 	s.ServeHTTP(resp, req)
 
-	fmt.Println(resp)
-
-	assert.Equal(t, http.StatusOK, resp.Code)
-}
-
-func TestHandler_UpdateUser_401(t *testing.T) {
-	_, s := getMapperAndServer(t)
-
-	req := httptest.NewRequest(http.MethodPut, "/me", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.ServeHTTP(resp, req)
-
-	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-}
-
-func TestHandler_UpdateUser_422(t *testing.T) {
-	_, s := getMapperAndServer(t)
-
-	user := users.NewUser("test@example.com", "test")
-	user.Name = "test name"
-	user.Bio = "test bio"
-	access, _, err := user.Login()
-	assert.NoError(t, err)
-
-	req := httptest.NewRequest(http.MethodPut, "/me", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
-	resp := httptest.NewRecorder()
-
-	s.ServeHTTP(resp, req)
-
-	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
+	assert.Equal(t, http.StatusGone, resp.Code)
 }

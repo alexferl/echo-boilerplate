@@ -89,7 +89,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/oauth2/login":    {http.MethodGet},
 		},
 		OptionalRoutes: map[string][]string{
-			"/users/:username": {http.MethodGet},
+			"/users/:id_or_username": {http.MethodGet},
 		},
 		AfterParseFunc: func(c echo.Context, t jwt.Token, encodedToken string, src jwtMw.TokenSource) *echo.HTTPError {
 			// set roles for casbin
