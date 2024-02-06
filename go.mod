@@ -6,17 +6,17 @@ require (
 	github.com/alexferl/echo-casbin v0.3.0
 	github.com/alexferl/echo-jwt v1.2.0
 	github.com/alexferl/echo-openapi v0.2.0
-	github.com/alexferl/golib/config v0.0.0-20231008015603-26982fa3ee12
-	github.com/alexferl/golib/database/mongodb v0.0.0-20231008015603-26982fa3ee12
-	github.com/alexferl/golib/http/api v0.0.0-20231008015603-26982fa3ee12
-	github.com/alexferl/golib/log v0.0.0-20231008015603-26982fa3ee12
+	github.com/alexferl/golib/config v0.0.0-20240121021450-a9b1676bf81c
+	github.com/alexferl/golib/database/mongodb v0.0.0-20240121021450-a9b1676bf81c
+	github.com/alexferl/golib/http/api v0.0.0-20240121021450-a9b1676bf81c
+	github.com/alexferl/golib/log v0.0.0-20240121021450-a9b1676bf81c
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.81.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/lestrrat-go/jwx/v2 v2.0.19
 	github.com/matthewhartstonge/argon2 v1.0.0
 	github.com/rs/xid v1.5.0
-	github.com/rs/zerolog v1.31.0
+	github.com/rs/zerolog v1.32.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
