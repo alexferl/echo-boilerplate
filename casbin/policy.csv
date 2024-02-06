@@ -1,7 +1,6 @@
 p, any, /, GET
 p, any, /readyz, GET
 p, any, /livez, GET
-p, any, /favicon.ico, GET
 p, any, /docs, GET
 p, any, /openapi/*, GET
 
