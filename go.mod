@@ -3,13 +3,13 @@ module github.com/alexferl/echo-boilerplate
 go 1.21
 
 require (
-	github.com/alexferl/echo-casbin v0.3.0
+	github.com/alexferl/echo-casbin v1.0.0
 	github.com/alexferl/echo-jwt v1.2.0
-	github.com/alexferl/echo-openapi v0.2.0
-	github.com/alexferl/golib/config v0.0.0-20240121021450-a9b1676bf81c
-	github.com/alexferl/golib/database/mongodb v0.0.0-20240121021450-a9b1676bf81c
-	github.com/alexferl/golib/http/api v0.0.0-20240121021450-a9b1676bf81c
-	github.com/alexferl/golib/log v0.0.0-20240121021450-a9b1676bf81c
+	github.com/alexferl/echo-openapi v1.0.0
+	github.com/alexferl/golib/config v0.0.0-20240206175453-2c95fe2eb915
+	github.com/alexferl/golib/database/mongodb v0.0.0-20240206175453-2c95fe2eb915
+	github.com/alexferl/golib/http/api v0.0.0-20240206175453-2c95fe2eb915
+	github.com/alexferl/golib/log v0.0.0-20240206175453-2c95fe2eb915
 	github.com/alexferl/httplink v0.1.0
 	github.com/casbin/casbin/v2 v2.81.0
 	github.com/labstack/echo/v4 v4.11.4
