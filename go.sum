@@ -6,8 +6,8 @@ github.com/alexferl/echo-casbin v1.0.0 h1:5EV1DpVvpVtygtKK50s0Sk8YLZKmKJCaoUnOSu
 github.com/alexferl/echo-casbin v1.0.0/go.mod h1:w+Qs1dJU9jekESM2M6iUKZymQRDDEt88uYEdDvSURf8=
 github.com/alexferl/echo-jwt v1.2.0 h1:sYMfdfBDTomPQgEv/gLyYoUJ8ZnTVyRrboL9aXie9m8=
 github.com/alexferl/echo-jwt v1.2.0/go.mod h1:b6O6q61Fy7Tc0AYvGmb6fP2qdvYuIrxP48g6AL+VrpU=
-github.com/alexferl/echo-openapi v1.0.0 h1:h5E/m5J7uJBK/HgPx8X78tfDA6yDMR8MX9y4lXoeE3c=
-github.com/alexferl/echo-openapi v1.0.0/go.mod h1:RBBUF2wAOm+SbAqlAtbWeCRNdYszx1FGYLffC7YEK00=
+github.com/alexferl/echo-openapi v1.1.0 h1:qTI1O2j9LpTHtwr27T/4QZAZi+1w3mdCT8/pbkjQmwM=
+github.com/alexferl/echo-openapi v1.1.0/go.mod h1:EiH0MatsUUANSpjL7sSodpDq+qJTKAWYbaqpqd9K9Sc=
 github.com/alexferl/golib/config v0.0.0-20240206175453-2c95fe2eb915 h1:BdW2pbqVpEg7iiomMCwA5gItBZqrJhQ0l8XSw10sreE=
 github.com/alexferl/golib/config v0.0.0-20240206175453-2c95fe2eb915/go.mod h1:byAGMLTlsDgOLQzljmaP1j48KACcrgqQnQcRY1SxMXw=
 github.com/alexferl/golib/database/mongodb v0.0.0-20240206175453-2c95fe2eb915 h1:xxRsUtBPAFKuWMyoRBbK+FtmagQeAs93OTNMI8cA19Y=

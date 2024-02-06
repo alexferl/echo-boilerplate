@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/alexferl/echo-casbin v1.0.0
 	github.com/alexferl/echo-jwt v1.2.0
-	github.com/alexferl/echo-openapi v1.0.0
+	github.com/alexferl/echo-openapi v1.1.0
 	github.com/alexferl/golib/config v0.0.0-20240206175453-2c95fe2eb915
 	github.com/alexferl/golib/database/mongodb v0.0.0-20240206175453-2c95fe2eb915
 	github.com/alexferl/golib/http/api v0.0.0-20240206175453-2c95fe2eb915
