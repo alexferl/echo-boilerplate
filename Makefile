@@ -84,4 +84,4 @@ docker-build:
 	docker build -t app .
 
 docker-run:
-	docker run -p 1323:1323 --rm app
+	docker run -p 1323:1323 --rm app --http-bind-address 0.0.0.0
