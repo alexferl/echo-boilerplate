@@ -65,7 +65,7 @@ func TestHasRole(t *testing.T) {
 			token, err := ParseToken(access)
 			assert.NoError(t, err)
 
-			assert.Equal(t, tc.hasRole, HasRole(token, tc.role))
+			assert.Equal(t, tc.hasRole, HasRoles(token, tc.role))
 		})
 	}
 }

@@ -130,10 +130,10 @@ const (
 
 	BaseURL = "base-url"
 
-	AdminCreate   = "admin-create"
-	AdminEmail    = "admin-email"
-	AdminUsername = "admin-username"
-	AdminPassword = "admin-password"
+	SuperUserCreate   = "superuser-create"
+	SuperUserEmail    = "superuser-email"
+	SuperUserUsername = "superuser-username"
+	SuperUserPassword = "superuser-password"
 
 	OAuth2ClientId     = "oauth2-client-id"
 	OAuth2ClientSecret = "oauth2-client-secret"
@@ -164,10 +164,10 @@ const (
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
 
-	fs.BoolVar(&c.Admin.Create, AdminCreate, c.Admin.Create, "Create admin")
-	fs.StringVar(&c.Admin.Email, AdminEmail, c.Admin.Email, "Admin email")
-	fs.StringVar(&c.Admin.Username, AdminUsername, c.Admin.Username, "Admin username")
-	fs.StringVar(&c.Admin.Password, AdminPassword, c.Admin.Password, "Admin password")
+	fs.BoolVar(&c.Admin.Create, SuperUserCreate, c.Admin.Create, "Create admin")
+	fs.StringVar(&c.Admin.Email, SuperUserEmail, c.Admin.Email, "Admin email")
+	fs.StringVar(&c.Admin.Username, SuperUserUsername, c.Admin.Username, "Admin username")
+	fs.StringVar(&c.Admin.Password, SuperUserPassword, c.Admin.Password, "Admin password")
 
 	fs.StringVar(&c.OAuth2.ClientId, OAuth2ClientId, c.OAuth2.ClientId, "OAuth2 client id")
 	fs.StringVar(&c.OAuth2.ClientSecret, OAuth2ClientSecret, c.OAuth2.ClientSecret, "OAuth2 client secret")
@@ -226,7 +226,7 @@ func (c *Config) BindFlags() {
 		log.Panic().Msg("CSRF: secret key is unset!")
 	}
 
-	if viper.GetBool(AdminCreate) && viper.GetString(AdminPassword) == "" {
+	if viper.GetBool(SuperUserCreate) && viper.GetString(SuperUserPassword) == "" {
 		log.Panic().Msg("Admin create: password is unset!")
 	}
 

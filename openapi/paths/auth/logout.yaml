@@ -1,0 +1,27 @@
+post:
+  summary: Log out
+  description: Revoke a refresh token.
+  operationId: authLogout
+  tags:
+    - auth
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/auth/RefreshToken.yaml'
+  responses:
+    '204':
+      description: Successfully revoked token
+      headers:
+        Set-Cookie:
+          schema:
+            type: string
+            example: access_token=; Path=/; Secure; SameSite=Strict; Domain=localhost
+        "\0Set-Cookie":
+          schema:
+            type: string
+            example: refresh_token=; Path=/auth; HttpOnly; Secure; SameSite=Strict; Domain=localhost
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

@@ -15,7 +15,8 @@ import (
 
 var ErrNoDocuments = errors.New("no documents in result")
 
-type IMapper interface {
+type Mapper interface {
+	Collection(name string) Mapper
 	Aggregate(ctx context.Context, pipeline mongo.Pipeline, results any, opts ...*options.AggregateOptions) (any, error)
 	Count(ctx context.Context, filter any, opts ...*options.CountOptions) (int64, error)
 	Find(ctx context.Context, filter any, results any, opts ...*options.FindOptions) (any, error)
@@ -27,20 +28,19 @@ type IMapper interface {
 	InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 	UpdateOneById(ctx context.Context, id string, document any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
-	WithCollection(name string) IMapper
 }
 
-type Mapper struct {
+type mapper struct {
 	client     *mongo.Client
 	db         *mongo.Database
 	dbName     string
 	collection *mongo.Collection
 }
 
-func NewMapper(client *mongo.Client, databaseName string, collectionName string) IMapper {
+func NewMapper(client *mongo.Client, databaseName string, collectionName string) Mapper {
 	db := client.Database(databaseName)
 	collection := db.Collection(collectionName)
-	return &Mapper{
+	return &mapper{
 		client,
 		db,
 		databaseName,
@@ -48,7 +48,11 @@ func NewMapper(client *mongo.Client, databaseName string, collectionName string)
 	}
 }
 
-func (m *Mapper) Aggregate(ctx context.Context, pipeline mongo.Pipeline, results any, opts ...*options.AggregateOptions) (any, error) {
+func (m *mapper) Collection(name string) Mapper {
+	return NewMapper(m.client, m.dbName, name)
+}
+
+func (m *mapper) Aggregate(ctx context.Context, pipeline mongo.Pipeline, results any, opts ...*options.AggregateOptions) (any, error) {
 	cur, err := m.collection.Aggregate(ctx, pipeline, opts...)
 	if err != nil {
 		return nil, err
@@ -73,7 +77,7 @@ func (m *Mapper) Aggregate(ctx context.Context, pipeline mongo.Pipeline, results
 	return results, nil
 }
 
-func (m *Mapper) Count(ctx context.Context, filter any, opts ...*options.CountOptions) (int64, error) {
+func (m *mapper) Count(ctx context.Context, filter any, opts ...*options.CountOptions) (int64, error) {
 	if filter == nil {
 		filter = bson.D{}
 	}
@@ -86,7 +90,7 @@ func (m *Mapper) Count(ctx context.Context, filter any, opts ...*options.CountOp
 	return count, nil
 }
 
-func (m *Mapper) Find(ctx context.Context, filter any, results any, opts ...*options.FindOptions) (any, error) {
+func (m *mapper) Find(ctx context.Context, filter any, results any, opts ...*options.FindOptions) (any, error) {
 	if filter == nil {
 		filter = bson.D{}
 	}
@@ -115,7 +119,7 @@ func (m *Mapper) Find(ctx context.Context, filter any, results any, opts ...*opt
 	return results, nil
 }
 
-func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*options.FindOneOptions) (any, error) {
+func (m *mapper) FindOne(ctx context.Context, filter any, result any, opts ...*options.FindOneOptions) (any, error) {
 	err := m.collection.FindOne(ctx, filter, opts...).Decode(result)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoDocuments
@@ -126,7 +130,7 @@ func (m *Mapper) FindOne(ctx context.Context, filter any, result any, opts ...*o
 	return result, nil
 }
 
-func (m *Mapper) FindOneAndUpdate(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
+func (m *mapper) FindOneAndUpdate(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
 	opts = append(opts, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	res := m.collection.FindOneAndUpdate(ctx, filter, bson.D{{"$set", update}}, opts...)
 	if res.Err() != nil {
@@ -143,11 +147,11 @@ func (m *Mapper) FindOneAndUpdate(ctx context.Context, filter any, update any, r
 	return result, nil
 }
 
-func (m *Mapper) FindOneByIdAndUpdate(ctx context.Context, id string, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
+func (m *mapper) FindOneByIdAndUpdate(ctx context.Context, id string, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
 	return m.FindOneAndUpdate(ctx, bson.D{{"id", id}}, update, result, opts...)
 }
 
-func (m *Mapper) FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error) {
+func (m *mapper) FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error) {
 	filter := bson.D{{"id", id}}
 	return m.FindOne(ctx, filter, result, opts...)
 }
@@ -160,7 +164,7 @@ func (s *Sequence) String() string {
 	return strconv.Itoa(s.Seq)
 }
 
-func (m *Mapper) GetNextSequence(ctx context.Context, name string) (*Sequence, error) {
+func (m *mapper) GetNextSequence(ctx context.Context, name string) (*Sequence, error) {
 	opts := options.FindOneAndUpdate().SetUpsert(true)
 	res := m.db.Collection("counters").FindOneAndUpdate(
 		ctx,
@@ -181,12 +185,12 @@ func (m *Mapper) GetNextSequence(ctx context.Context, name string) (*Sequence, e
 	return seq, nil
 }
 
-func (m *Mapper) InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+func (m *mapper) InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
 	res, err := m.collection.InsertOne(ctx, document, opts...)
 	return res, err
 }
 
-func (m *Mapper) UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (m *mapper) UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	res, err := m.collection.UpdateOne(ctx, filter, update, opts...)
 	if err != nil {
 		return nil, err
@@ -194,15 +198,11 @@ func (m *Mapper) UpdateOne(ctx context.Context, filter any, update any, opts ...
 	return res, nil
 }
 
-func (m *Mapper) UpdateOneById(ctx context.Context, id string, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (m *mapper) UpdateOneById(ctx context.Context, id string, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	return m.UpdateOne(ctx, bson.D{{"id", id}}, bson.D{{"$set", update}}, opts...)
 }
 
-func (m *Mapper) WithCollection(name string) IMapper {
-	return NewMapper(m.client, m.dbName, name)
-}
-
-func (m *Mapper) getSession() (mongo.Session, *options.TransactionOptions, error) {
+func (m *mapper) getSession() (mongo.Session, *options.TransactionOptions, error) {
 	wc := writeconcern.Majority()
 	rc := readconcern.Snapshot()
 	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)

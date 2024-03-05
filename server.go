@@ -22,6 +22,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/handlers/auth"
 	"github.com/alexferl/echo-boilerplate/handlers/tasks"
 	"github.com/alexferl/echo-boilerplate/handlers/users"
 	"github.com/alexferl/echo-boilerplate/util"
@@ -42,6 +43,7 @@ func Handlers() []handlers.IHandler {
 
 	return []handlers.IHandler{
 		handlers.NewHandler(),
+		auth.NewHandler(client, openapi, nil),
 		tasks.NewHandler(client, openapi, nil),
 		users.NewHandler(client, openapi, nil),
 	}
@@ -95,6 +97,19 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
+			isBanned := claims["is_banned"]
+			isLocked := claims["is_locked"]
+
+			if val, ok := isBanned.(bool); ok {
+				if val {
+					return echo.NewHTTPError(http.StatusForbidden, "account banned")
+				}
+			}
+			if val, ok := isLocked.(bool); ok {
+				if val {
+					return echo.NewHTTPError(http.StatusForbidden, "account locked")
+				}
+			}
 
 			// CSRF
 			if viper.GetBool(config.CookiesEnabled) && viper.GetBool(config.CSRFEnabled) {
@@ -125,7 +140,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 				filter := bson.D{{"user_id", t.Subject()}}
-				result, err := mapper.WithCollection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
+				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
 				if err != nil {
 					if errors.Is(err, data.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")
@@ -179,7 +194,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 		h.AddRoutes(s)
 	}
 
-	s.File("/docs", "./assets/index.html")
+	s.File("/docs", "./docs/index.html")
 	s.Static("/openapi/", "./openapi")
 
 	return s

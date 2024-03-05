@@ -28,31 +28,33 @@ tags:
     description: Operations on users
 paths:
   /auth/login:
-    $ref: './paths/auth_login.yaml'
+    $ref: './paths/auth/login.yaml'
   /auth/logout:
-    $ref: './paths/auth_logout.yaml'
+    $ref: './paths/auth/logout.yaml'
   /auth/refresh:
-    $ref: './paths/auth_refresh.yaml'
+    $ref: './paths/auth/refresh.yaml'
   /auth/signup:
-    $ref: './paths/auth_signup.yaml'
+    $ref: './paths/auth/signup.yaml'
   /auth/token:
-    $ref: './paths/auth_token.yaml'
+    $ref: './paths/auth/token.yaml'
   /me:
-    $ref: './paths/user.yaml'
+    $ref: './paths/me/me.yaml'
   /me/personal_access_tokens:
-    $ref: './paths/user_personal_access_tokens.yaml'
+    $ref: './paths/me/personal_access_tokens.yaml'
   /me/personal_access_tokens/{id}:
-    $ref: './paths/user_personal_access_tokens_{id}.yaml'
+    $ref: './paths/me/personal_access_tokens_{id}.yaml'
   /tasks:
-    $ref: './paths/tasks.yaml'
+    $ref: './paths/tasks/tasks.yaml'
   /tasks/{id}:
-    $ref: './paths/tasks_{id}.yaml'
+    $ref: './paths/tasks/{id}.yaml'
   /tasks/{id}/transition:
-    $ref: './paths/tasks_{id}_transition.yaml'
+    $ref: './paths/tasks/{id}_transition.yaml'
   /users:
-    $ref: './paths/users.yaml'
+    $ref: './paths/users/users.yaml'
   /users/{id_or_username}:
-    $ref: './paths/users_{id_or_username}.yaml'
+    $ref: './paths/users/{id_or_username}.yaml'
+  /users/{id_or_username}/status:
+    $ref: './paths/users/{id_or_username}_status.yaml'
 components:
   securitySchemes:
     cookieAuth:

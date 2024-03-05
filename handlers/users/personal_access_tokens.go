@@ -47,8 +47,8 @@ func (pat *PersonalAccessToken) Validate(s string) error {
 	return util.VerifyPassword([]byte(pat.Token), []byte(s))
 }
 
-func (pat *PersonalAccessToken) Response() *PATResponse {
-	return &PATResponse{
+func (pat *PersonalAccessToken) Response() *PersonalAccessTokenResponse {
+	return &PersonalAccessTokenResponse{
 		Id:        pat.Id,
 		Href:      util.GetFullURL(fmt.Sprintf("/user/personal_access_tokens/%s", pat.Id)),
 		Name:      pat.Name,
@@ -61,15 +61,15 @@ func (pat *PersonalAccessToken) Response() *PATResponse {
 
 type PersonalAccessTokens []PersonalAccessToken
 
-func (pats PersonalAccessTokens) Response() []*PATResponse {
-	res := make([]*PATResponse, 0)
+func (pats PersonalAccessTokens) Response() []*PersonalAccessTokenResponse {
+	res := make([]*PersonalAccessTokenResponse, 0)
 	for _, pat := range pats {
 		res = append(res, pat.Response())
 	}
 	return res
 }
 
-type PATResponse struct {
+type PersonalAccessTokenResponse struct {
 	Id        string     `json:"id" bson:"id"`
 	Href      string     `json:"href" bson:"href"`
 	Name      string     `json:"name" bson:"name"`
@@ -124,7 +124,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}, {"name", body.Name}}
-	res, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
+	res, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
 		if !errors.Is(err, data.ErrNoDocuments) {
 			logger.Error().Err(err).Msg("failed getting personal access token")
@@ -156,7 +156,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 	}
 
 	opts := options.FindOneAndUpdate().SetUpsert(true)
-	upsert, err := h.Mapper.WithCollection(PATCollection).FindOneAndUpdate(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
+	upsert, err := h.Mapper.Collection(PATCollection).FindOneAndUpdate(ctx, filter, newPAT, &PersonalAccessToken{}, opts)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed inserting personal access token")
 		return err
@@ -169,7 +169,7 @@ func (h *Handler) CreatePersonalAccessToken(c echo.Context) error {
 }
 
 type ListPATResponse struct {
-	Tokens []*PATResponse `json:"personal_access_tokens"`
+	Tokens []*PersonalAccessTokenResponse `json:"personal_access_tokens"`
 }
 
 func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
@@ -179,7 +179,7 @@ func (h *Handler) ListPersonalAccessTokens(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	filter := bson.D{{"user_id", token.Subject()}}
-	res, err := h.Mapper.WithCollection(PATCollection).Find(ctx, filter, PersonalAccessTokens{})
+	res, err := h.Mapper.Collection(PATCollection).Find(ctx, filter, PersonalAccessTokens{})
 	if err != nil {
 		logger.Error().Err(err).Msg("failed getting personal access token")
 		return err
@@ -196,7 +196,7 @@ func (h *Handler) GetPersonalAccessToken(c echo.Context) error {
 		return errResp()
 	}
 
-	return h.Validate(c, http.StatusOK, pat)
+	return h.Validate(c, http.StatusOK, pat.Response())
 }
 
 func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
@@ -214,7 +214,7 @@ func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
 	}
 
 	pat.Revoked = true
-	_, err := h.Mapper.WithCollection(PATCollection).UpdateOneById(ctx, c.Param("id"), pat, nil)
+	_, err := h.Mapper.Collection(PATCollection).UpdateOneById(ctx, c.Param("id"), pat, nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed deleting personal access token")
 		return err
@@ -223,18 +223,15 @@ func (h *Handler) RevokePersonalAccessToken(c echo.Context) error {
 	return h.Validate(c, http.StatusNoContent, nil)
 }
 
-func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATResponse, func() error) {
+func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PersonalAccessToken, func() error) {
 	id := c.Param("id")
 	logger := c.Get("logger").(zerolog.Logger)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	filter := bson.D{{"$or", bson.A{
 		bson.D{{"id", id}},
 		bson.D{{"name", id}},
 	}}}
-	res, err := h.Mapper.WithCollection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
+	res, err := h.Mapper.Collection(PATCollection).FindOne(ctx, filter, &PersonalAccessToken{})
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {
 			return nil, util.WrapErr(h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"}))
@@ -243,7 +240,5 @@ func (h *Handler) getPAT(ctx context.Context, c echo.Context) (*PATResponse, fun
 		return nil, util.WrapErr(err)
 	}
 
-	pat := res.(*PersonalAccessToken).Response()
-
-	return pat, nil
+	return res.(*PersonalAccessToken), nil
 }

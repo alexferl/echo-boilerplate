@@ -1,0 +1,40 @@
+post:
+  summary: Create a personal access token
+  description: Returns newly personal access token for the authenticated user.
+  operationId: createPersonalAccessToken
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/personal_access_tokens/Create.yaml'
+  responses:
+    '200':
+      description: Successfully created token
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/personal_access_tokens/CreateResponse.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'
+get:
+  summary: List personal access tokens
+  description: Returns a list of personal access tokens for the authenticated user.
+  operationId: listPersonalAccessTokens
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  responses:
+    '200':
+      description: Successfully returned a list of personal access tokens
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/personal_access_tokens/List.yaml'

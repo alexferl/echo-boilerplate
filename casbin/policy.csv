@@ -21,7 +21,10 @@ p, user, /tasks/:id, (GET)|(PUT)|(DELETE)
 p, user, /tasks/:id/transition, PUT
 
 p, admin, /users, GET
+p, admin, /users/:id_or_username, PUT
+p, admin, /users/:id_or_username/status, PUT
 
 g, *, any
 g, user, any
 g, admin, user
+g, super, admin

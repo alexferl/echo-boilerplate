@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/alexferl/echo-boilerplate/util"
 )
@@ -32,37 +30,15 @@ func (h *Handler) CreateTask(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	seq, err := h.Mapper.GetNextSequence(ctx, "tasks")
+
+	model := h.model.New()
+	task, err := model.Create(ctx, token.Subject(), *body)
 	if err != nil {
-		logger.Error().Err(err).Msg("failed getting next sequence")
+		logger.Error().Err(err).Msg("failed creating task")
 		return err
 	}
 
-	newTask := NewTask(seq.String())
-	newTask.Create(token.Subject())
-	newTask.Title = body.Title
-
-	insert, err := h.Mapper.InsertOne(ctx, newTask)
-	if err != nil {
-		logger.Error().Err(err).Msg("failed inserting task")
-		return err
-	}
-
-	pipeline := h.getPipeline(bson.D{{"_id", insert.InsertedID.(primitive.ObjectID)}}, 1, 0)
-	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
-	if err != nil {
-		logger.Error().Err(err).Msg("failed getting task")
-		return err
-	}
-
-	tasks := res.(Aggregates)
-	if len(tasks) < 1 {
-		msg := "failed retrieving inserted task"
-		logger.Error().Msg(msg)
-		return fmt.Errorf(msg)
-	}
-
-	return h.Validate(c, http.StatusOK, tasks[0].Response())
+	return h.Validate(c, http.StatusOK, task.Response())
 }
 
 type ListTasksResponse struct {
@@ -99,19 +75,12 @@ func (h *Handler) ListTasks(c echo.Context) error {
 		filter["$text"] = bson.M{"$search": strings.Join(query, " ")}
 	}
 
-	count, err := h.Mapper.Count(ctx, filter)
+	count, tasks, err := h.model.Find(ctx, filter, limit, skip)
 	if err != nil {
-		return fmt.Errorf("failed counting tasks: %v", err)
-	}
-
-	pipeline := h.getPipeline(filter, limit, skip)
-	res, err := h.Mapper.Aggregate(ctx, pipeline, Aggregates{})
-	if err != nil {
-		logger.Error().Err(err).Msg("failed getting tasks")
+		logger.Error().Err(err).Msg("failed finding tasks")
 		return err
 	}
 
-	tasks := res.(Aggregates)
 	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
 	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: tasks.Response()})

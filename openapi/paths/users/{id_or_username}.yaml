@@ -1,0 +1,53 @@
+get:
+  summary: Get a user
+  description: Returns a single user.
+  operationId: getUser
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully returned a user
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/User.yaml'
+    '404':
+      $ref: '../../components/responses/NotFound.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+put:
+  summary: Update user
+  description: Returns the updated user.
+  operationId: updateUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/Update.yaml'
+  responses:
+    '200':
+      description: Successfully returned user modifications
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/User.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

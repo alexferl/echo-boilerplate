@@ -1,0 +1,40 @@
+get:
+  summary: Get current user
+  description: Returns the current user.
+  operationId: getCurrentUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  responses:
+    '200':
+      description: Successfully returned the current user
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/me/CurrentUser.yaml'
+put:
+  summary: Update current user
+  description: Returns the updated current user.
+  operationId: updateCurrentUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/me/Update.yaml'
+  responses:
+    '200':
+      description: Successfully returned current user modifications
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/me/CurrentUser.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

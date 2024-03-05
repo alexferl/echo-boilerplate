@@ -1,0 +1,42 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    example: cdmt48tfcls65a7mb590
+    readOnly: true
+  href:
+    type: string
+    description: Unique hypertext reference attribute for this object
+    example: https://example.com/users/cdmt48tfcls65a7mb590
+    readOnly: true
+  username:
+    type: string
+    pattern: '^[0-9a-zA-Z._]+$'
+    description: Username of the user
+    example: test
+  email:
+    type: string
+    description: Email of the user
+    example: test@example.com
+  name:
+    type: string
+    description: Name of the user
+    example: Test
+  bio:
+    type: string
+    description: Biography of the user
+    example: This is my bio.
+  created_at:
+    type: string
+    format: date-time
+    description: User creation date time
+    example: '2022-11-12T09:11:42.420Z'
+    nullable: true
+  updated_at:
+    type: string
+    format: date-time
+    description: User last update date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true

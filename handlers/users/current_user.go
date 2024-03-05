@@ -22,12 +22,12 @@ func (h *Handler) GetCurrentUser(c echo.Context) error {
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, res.(*User).Response())
+	return h.Validate(c, http.StatusOK, res.(*User).Public())
 }
 
 type UpdateCurrentUserRequest struct {
-	Name string `json:"name" bson:"name"`
-	Bio  string `json:"bio" bson:"bio"`
+	Name *string `json:"name" bson:"name"`
+	Bio  *string `json:"bio" bson:"bio"`
 }
 
 func (h *Handler) UpdateCurrentUser(c echo.Context) error {
@@ -49,12 +49,12 @@ func (h *Handler) UpdateCurrentUser(c echo.Context) error {
 	}
 
 	user := res.(*User)
-	if body.Name != "" {
-		user.Name = body.Name
+	if body.Name != nil {
+		user.Name = *body.Name
 	}
 
-	if body.Bio != "" {
-		user.Bio = body.Bio
+	if body.Bio != nil {
+		user.Bio = *body.Bio
 	}
 
 	user.Update(user.Id)
@@ -65,5 +65,5 @@ func (h *Handler) UpdateCurrentUser(c echo.Context) error {
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, update.(*User).Response())
+	return h.Validate(c, http.StatusOK, update.(*User).Public())
 }
