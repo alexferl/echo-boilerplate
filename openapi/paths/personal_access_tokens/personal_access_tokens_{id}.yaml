@@ -6,7 +6,7 @@ get:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - users
+    - personal access tokens
   parameters:
     - name: id
       in: path
@@ -19,7 +19,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/users/personal_access_tokens/Token.yaml'
+            $ref: '../../components/schemas/personal_access_tokens/Token.yaml'
     '404':
       $ref: '../../components/responses/NotFound.yaml'
 delete:
@@ -30,7 +30,7 @@ delete:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - users
+    - personal access tokens
   parameters:
     - name: id
       in: path

@@ -1,11 +1,9 @@
-package users
+package models
 
 import (
-	"fmt"
 	"slices"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
@@ -22,7 +20,7 @@ func (r Role) String() string {
 }
 
 type User struct {
-	*data.Model   `bson:",inline"`
+	Model         `bson:",inline"`
 	Bio           string     `json:"bio" bson:"bio"`
 	Email         string     `json:"email" bson:"email"`
 	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
@@ -36,13 +34,13 @@ type User struct {
 	LastLogoutAt  *time.Time `json:"-" bson:"last_logout_at"`
 	LastRefreshAt *time.Time `json:"-" bson:"last_refresh_at"`
 	BannedAt      *time.Time `json:"banned_at" bson:"banned_at"`
-	BannedBy      string     `json:"banned_by" bson:"banned_by"`
+	BannedBy      any        `json:"banned_by" bson:"banned_by"`
 	UnbannedAt    *time.Time `json:"unbanned_at" bson:"unbanned_at"`
-	UnbannedBy    string     `json:"unbanned_by" bson:"unbanned_by"`
+	UnbannedBy    any        `json:"unbanned_by" bson:"unbanned_by"`
 	LockedAt      *time.Time `json:"locked_at" bson:"locked_at"`
-	LockedBy      string     `json:"locked_by" bson:"locked_by"`
+	LockedBy      any        `json:"locked_by" bson:"locked_by"`
 	UnlockedAt    *time.Time `json:"unlocked_at" bson:"unlocked_at"`
-	UnlockedBy    string     `json:"unlocked_by" bson:"unlocked_by"`
+	UnlockedBy    any        `json:"unlocked_by" bson:"unlocked_by"`
 }
 
 type Users []User
@@ -65,7 +63,6 @@ func (users Users) Public() []*Public {
 
 type Response struct {
 	Id        string     `json:"id" bson:"id"`
-	Href      string     `json:"href" bson:"href"`
 	Bio       string     `json:"bio" bson:"bio"`
 	Email     string     `json:"email" bson:"email"`
 	Name      string     `json:"name" bson:"name"`
@@ -76,7 +73,6 @@ type Response struct {
 
 type AdminResponse struct {
 	Id            string     `json:"id" bson:"id"`
-	Href          string     `json:"href" bson:"href"`
 	Bio           string     `json:"bio" bson:"bio"`
 	Email         string     `json:"email" bson:"email"`
 	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
@@ -105,15 +101,13 @@ type AdminResponse struct {
 
 type Public struct {
 	Id       string `json:"id" bson:"id"`
-	Href     string `json:"href" bson:"href"`
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
-	Bio      string `json:"bio" bson:"bio"`
 }
 
 func NewUser(email string, username string) *User {
 	return &User{
-		Model:    data.NewModel(""),
+		Model:    NewModel(),
 		Email:    email,
 		Username: username,
 		Roles:    []string{UserRole.String()},
@@ -138,7 +132,6 @@ func (u *User) SetPassword(s string) error {
 func (u *User) Response() *Response {
 	return &Response{
 		Id:        u.Id,
-		Href:      util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username:  u.Username,
 		Email:     u.Email,
 		Name:      u.Name,
@@ -151,7 +144,6 @@ func (u *User) Response() *Response {
 func (u *User) AdminResponse() *AdminResponse {
 	return &AdminResponse{
 		Id:        u.Id,
-		Href:      util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username:  u.Username,
 		Email:     u.Email,
 		Name:      u.Name,
@@ -166,10 +158,8 @@ func (u *User) AdminResponse() *AdminResponse {
 func (u *User) Public() *Public {
 	return &Public{
 		Id:       u.Id,
-		Href:     util.GetFullURL(fmt.Sprintf("/users/%s", u.Id)),
 		Username: u.Username,
 		Name:     u.Name,
-		Bio:      u.Bio,
 	}
 }
 
@@ -187,36 +177,36 @@ func (u *User) Ban(id string) {
 	u.IsBanned = true
 	t := time.Now()
 	u.BannedAt = &t
-	u.BannedBy = id
+	u.BannedBy = &Ref{Id: id}
 	u.UnbannedAt = nil
-	u.UnbannedBy = ""
+	u.UnbannedBy = nil
 }
 
 func (u *User) Unban(id string) {
 	u.IsBanned = false
 	t := time.Now()
 	u.BannedAt = nil
-	u.BannedBy = ""
+	u.BannedBy = nil
 	u.UnbannedAt = &t
-	u.UnbannedBy = id
+	u.UnbannedBy = &Ref{Id: id}
 }
 
 func (u *User) Lock(id string) {
 	u.IsLocked = true
 	t := time.Now()
 	u.LockedAt = &t
-	u.LockedBy = id
+	u.LockedBy = &Ref{Id: id}
 	u.UnlockedAt = nil
-	u.UnlockedBy = ""
+	u.UnlockedBy = nil
 }
 
 func (u *User) Unlock(id string) {
 	u.IsLocked = false
 	t := time.Now()
 	u.LockedAt = nil
-	u.LockedBy = ""
+	u.LockedBy = nil
 	u.UnlockedAt = &t
-	u.UnlockedBy = id
+	u.UnlockedBy = &Ref{Id: id}
 }
 
 func (u *User) Login() ([]byte, []byte, error) {
@@ -286,4 +276,9 @@ func (u *User) encryptRefreshToken(token []byte) error {
 	u.RefreshToken = b
 
 	return nil
+}
+
+type UserSearchParams struct {
+	Limit int
+	Skip  int
 }

@@ -22,6 +22,8 @@ servers:
 tags:
   - name: auth
     description: Authentication operations
+  - name: personal access tokens
+    description: Operations on personal access tokens
   - name: tasks
     description: Operations on tasks
   - name: users
@@ -38,11 +40,11 @@ paths:
   /auth/token:
     $ref: './paths/auth/token.yaml'
   /me:
-    $ref: './paths/me/me.yaml'
-  /me/personal_access_tokens:
-    $ref: './paths/me/personal_access_tokens.yaml'
-  /me/personal_access_tokens/{id}:
-    $ref: './paths/me/personal_access_tokens_{id}.yaml'
+    $ref: './paths/users/me.yaml'
+  /personal_access_tokens:
+    $ref: './paths/personal_access_tokens/personal_access_tokens.yaml'
+  /personal_access_tokens/{id}:
+    $ref: './paths/personal_access_tokens/personal_access_tokens_{id}.yaml'
   /tasks:
     $ref: './paths/tasks/tasks.yaml'
   /tasks/{id}:
@@ -51,10 +53,10 @@ paths:
     $ref: './paths/tasks/{id}_transition.yaml'
   /users:
     $ref: './paths/users/users.yaml'
-  /users/{id_or_username}:
-    $ref: './paths/users/{id_or_username}.yaml'
-  /users/{id_or_username}/status:
-    $ref: './paths/users/{id_or_username}_status.yaml'
+  /users/{id}:
+    $ref: './paths/users/{id}.yaml'
+  /users/{id}/status:
+    $ref: './paths/users/{id}_status.yaml'
 components:
   securitySchemes:
     cookieAuth:

@@ -11,18 +11,18 @@ p, any, /auth/signup, POST
 p, any, /auth/token, GET
 p, any, /oauth2/login, GET
 p, any, /oauth2/callback, GET
-p, any, /users/:id_or_username, GET
+p, any, /users/:id, GET
 
 p, user, /me, (GET)|(PUT)
-p, user, /me/personal_access_tokens, (GET)|(POST)
-p, user, /me/personal_access_tokens/:id, (GET)|(DELETE)
+p, user, /personal_access_tokens, (GET)|(POST)
+p, user, /personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)
 p, user, /tasks/:id, (GET)|(PUT)|(DELETE)
 p, user, /tasks/:id/transition, PUT
 
 p, admin, /users, GET
-p, admin, /users/:id_or_username, PUT
-p, admin, /users/:id_or_username/status, PUT
+p, admin, /users/:id, PUT
+p, admin, /users/:id/status, PUT
 
 g, *, any
 g, user, any

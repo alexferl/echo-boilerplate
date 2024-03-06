@@ -7,11 +7,6 @@ properties:
     description: Unique identifier for this object
     example: cdmt48tfcls65a7mb590
     readOnly: true
-  href:
-    type: string
-    description: Unique hypertext reference attribute for this object
-    example: https://example.com/users/cdmt48tfcls65a7mb590
-    readOnly: true
   username:
     type: string
     pattern: '^[0-9a-zA-Z._]+$'

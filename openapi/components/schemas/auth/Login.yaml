@@ -2,7 +2,6 @@ type: object
 description: Auth login request
 additionalProperties: false
 required:
-  - email
   - password
 properties:
   email:
@@ -13,3 +12,12 @@ properties:
     type: string
     description: The password of the user
     example: correct-horse-staple-battery
+  username:
+    type: string
+    description: Username of the user
+    example: test
+oneOf:
+  - required:
+    - email
+  - required:
+    - username

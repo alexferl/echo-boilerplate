@@ -22,13 +22,13 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
-	"github.com/alexferl/echo-boilerplate/handlers/auth"
-	"github.com/alexferl/echo-boilerplate/handlers/tasks"
-	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/alexferl/echo-boilerplate/mappers"
+	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func Handlers() []handlers.IHandler {
+func Handlers() []handlers.Handler {
 	client, err := mongodb.New()
 	if err != nil {
 		panic(err)
@@ -41,11 +41,21 @@ func Handlers() []handlers.IHandler {
 
 	openapi := openapiMw.NewHandler()
 
-	return []handlers.IHandler{
-		handlers.NewHandler(),
-		auth.NewHandler(client, openapi, nil),
-		tasks.NewHandler(client, openapi, nil),
-		users.NewHandler(client, openapi, nil),
+	patMapper := mappers.NewPersonalAccessToken(client)
+	patSvc := services.NewPersonalAccessToken(patMapper)
+
+	taskMapper := mappers.NewTask(client)
+	taskSvc := services.NewTask(taskMapper)
+
+	userMapper := mappers.NewUser(client)
+	userSvc := services.NewUser(userMapper)
+
+	return []handlers.Handler{
+		handlers.NewRootHandler(openapi),
+		handlers.NewAuthHandler(openapi, userSvc),
+		handlers.NewPersonalAccessTokenHandler(openapi, patSvc),
+		handlers.NewTaskHandler(openapi, taskSvc),
+		handlers.NewUserHandler(openapi, userSvc),
 	}
 }
 
@@ -53,7 +63,7 @@ func NewServer() *server.Server {
 	return newServer(Handlers()...)
 }
 
-func NewTestServer(handler ...handlers.IHandler) *server.Server {
+func NewTestServer(handler ...handlers.Handler) *server.Server {
 	c := config.New()
 	c.BindFlags()
 
@@ -63,18 +73,17 @@ func NewTestServer(handler ...handlers.IHandler) *server.Server {
 	return newServer(handler...)
 }
 
-func newServer(handler ...handlers.IHandler) *server.Server {
+func newServer(handler ...handlers.Handler) *server.Server {
 	key, err := util.LoadPrivateKey()
 	if err != nil {
 		panic(err)
 	}
 
-	// TODO: already called in Handlers, use it?
 	client, err := mongodb.New()
 	if err != nil {
 		panic(err)
 	}
-	mapper := data.NewMapper(client, viper.GetString(config.AppName), users.PATCollection)
+	mapper := data.NewMapper(client, viper.GetString(config.AppName), "personal_access_tokens")
 
 	jwtConfig := jwtMw.Config{
 		Key:             key,
@@ -140,7 +149,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
 				filter := bson.D{{"user_id", t.Subject()}}
-				result, err := mapper.Collection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
+				result, err := mapper.Collection("personal_access_tokens").FindOne(ctx, filter, &models.PersonalAccessToken{})
 				if err != nil {
 					if errors.Is(err, data.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")
@@ -148,7 +157,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 				}
 
-				pat := result.(*users.PersonalAccessToken)
+				pat := result.(*models.PersonalAccessToken)
 				if err = pat.Validate(encodedToken); err != nil {
 					return echo.NewHTTPError(http.StatusUnauthorized, "token mismatch")
 				}
@@ -158,7 +167,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 				}
 			}
 
-			c.Set("logger", log.With().Str("token_id", t.Subject()).Logger())
+			log.Logger = log.Logger.With().Str("token_id", t.Subject()).Logger()
 
 			return nil
 		},
@@ -191,7 +200,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 	)
 
 	for _, h := range handler {
-		h.AddRoutes(s)
+		h.Register(s)
 	}
 
 	s.File("/docs", "./docs/index.html")

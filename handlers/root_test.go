@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexferl/echo-openapi"
 	"github.com/stretchr/testify/assert"
 
 	app "github.com/alexferl/echo-boilerplate"
@@ -13,7 +14,9 @@ import (
 )
 
 func TestHandler_Root(t *testing.T) {
-	s := app.NewTestServer(handlers.NewHandler())
+	h := handlers.NewRootHandler(openapi.NewHandler())
+	s := app.NewTestServer(h)
+
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 

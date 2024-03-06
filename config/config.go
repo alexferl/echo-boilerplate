@@ -22,7 +22,7 @@ type Config struct {
 
 	BaseURL string
 
-	Admin   *Admin
+	Super   *Super
 	OAuth2  *OAuth2
 	JWT     *JWT
 	Cookies *Cookies
@@ -31,7 +31,7 @@ type Config struct {
 	OpenAPI *OpenAPI
 }
 
-type Admin struct {
+type Super struct {
 	Create   bool
 	Email    string
 	Username string
@@ -82,10 +82,10 @@ func New() *Config {
 		Logging: libLog.DefaultConfig,
 		MongoDB: libMongo.DefaultConfig,
 		BaseURL: "http://localhost:1323",
-		Admin: &Admin{
+		Super: &Super{
 			Create:   false,
-			Email:    "admin@example.com",
-			Username: "admin",
+			Email:    "super@example.com",
+			Username: "super",
 			Password: "",
 		},
 		OAuth2: &OAuth2{
@@ -130,10 +130,10 @@ const (
 
 	BaseURL = "base-url"
 
-	SuperUserCreate   = "superuser-create"
-	SuperUserEmail    = "superuser-email"
-	SuperUserUsername = "superuser-username"
-	SuperUserPassword = "superuser-password"
+	SuperCreate   = "super-create"
+	SuperEmail    = "super-email"
+	SuperUsername = "super-username"
+	SuperPassword = "super-password"
 
 	OAuth2ClientId     = "oauth2-client-id"
 	OAuth2ClientSecret = "oauth2-client-secret"
@@ -164,10 +164,10 @@ const (
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
 
-	fs.BoolVar(&c.Admin.Create, SuperUserCreate, c.Admin.Create, "Create admin")
-	fs.StringVar(&c.Admin.Email, SuperUserEmail, c.Admin.Email, "Admin email")
-	fs.StringVar(&c.Admin.Username, SuperUserUsername, c.Admin.Username, "Admin username")
-	fs.StringVar(&c.Admin.Password, SuperUserPassword, c.Admin.Password, "Admin password")
+	fs.BoolVar(&c.Super.Create, SuperCreate, c.Super.Create, "create admin")
+	fs.StringVar(&c.Super.Email, SuperEmail, c.Super.Email, "Super email")
+	fs.StringVar(&c.Super.Username, SuperUsername, c.Super.Username, "Super username")
+	fs.StringVar(&c.Super.Password, SuperPassword, c.Super.Password, "Super password")
 
 	fs.StringVar(&c.OAuth2.ClientId, OAuth2ClientId, c.OAuth2.ClientId, "OAuth2 client id")
 	fs.StringVar(&c.OAuth2.ClientSecret, OAuth2ClientSecret, c.OAuth2.ClientSecret, "OAuth2 client secret")
@@ -226,8 +226,8 @@ func (c *Config) BindFlags() {
 		log.Panic().Msg("CSRF: secret key is unset!")
 	}
 
-	if viper.GetBool(SuperUserCreate) && viper.GetString(SuperUserPassword) == "" {
-		log.Panic().Msg("Admin create: password is unset!")
+	if viper.GetBool(SuperCreate) && viper.GetString(SuperPassword) == "" {
+		log.Panic().Msg("Super create: password is unset!")
 	}
 
 	if viper.GetBool(libHttp.HTTPCORSEnabled) {

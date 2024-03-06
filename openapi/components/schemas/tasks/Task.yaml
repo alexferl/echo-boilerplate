@@ -6,11 +6,6 @@ properties:
     description: Unique identifier for this object
     example: '1'
     readOnly: true
-  href:
-    type: string
-    description: Unique hypertext reference attribute for this object
-    example: https://example.com/tasks/1
-    readOnly: true
   title:
     type: string
     description: The title of the task

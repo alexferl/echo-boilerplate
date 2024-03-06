@@ -6,20 +6,20 @@ post:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - users
+    - personal access tokens
   requestBody:
     required: true
     content:
       application/json:
         schema:
-          $ref: '../../components/schemas/users/personal_access_tokens/Create.yaml'
+          $ref: '../../components/schemas/personal_access_tokens/Create.yaml'
   responses:
     '200':
       description: Successfully created token
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/users/personal_access_tokens/CreateResponse.yaml'
+            $ref: '../../components/schemas/personal_access_tokens/CreateResponse.yaml'
     '422':
       $ref: '../../components/responses/UnprocessableEntity.yaml'
 get:
@@ -30,11 +30,11 @@ get:
     - cookieAuth: []
     - bearerAuth: []
   tags:
-    - users
+    - personal access tokens
   responses:
     '200':
       description: Successfully returned a list of personal access tokens
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/users/personal_access_tokens/List.yaml'
+            $ref: '../../components/schemas/personal_access_tokens/List.yaml'

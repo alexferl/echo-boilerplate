@@ -6,6 +6,7 @@ import (
 	"runtime"
 )
 
+// to correctly load config files, keys etc.
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "..")

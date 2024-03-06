@@ -5,9 +5,9 @@ mockname: "Mock{{.InterfaceName}}"
 outpkg: "{{.PackageName}}"
 inpackage: True
 packages:
-  github.com/alexferl/echo-boilerplate/data:
+  github.com/alexferl/echo-boilerplate/handlers:
     interfaces:
-      Mapper:
-  github.com/alexferl/echo-boilerplate/handlers/tasks:
-    interfaces:
-      IModel:
+      PersonalAccessTokenService:
+      RootService:
+      TaskService:
+      UserService:
