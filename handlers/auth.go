@@ -143,6 +143,7 @@ func (h *AuthHandler) logout(c echo.Context) error {
 }
 
 type RefreshRequest struct {
+	GrantType    string `json:"grant_type"`
 	RefreshToken string `json:"refresh_token"`
 }
 

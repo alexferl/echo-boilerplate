@@ -2,6 +2,7 @@ post:
   summary: Log in
   description: Returns tokens.
   operationId: login
+  security: []
   tags:
     - auth
   requestBody:

@@ -1,4 +1,4 @@
-.PHONY: dev run test cover fmt mocks openapi-lint pre-commit docker-build docker-run
+.PHONY: dev run test cover fmt mock openapi-lint pre-commit docker-build docker-run
 
 .DEFAULT: help
 help:
@@ -16,7 +16,7 @@ help:
 	@echo "	run go mod tidy"
 	@echo "make fmt"
 	@echo "	run gofumpt"
-	@echo "make mocks"
+	@echo "make mock"
 	@echo "	run mockery"
 	@echo "make openapi-lint"
 	@echo "	lint openapi spec"
@@ -50,10 +50,10 @@ endif
 	pre-commit install
 
 run:
-	go build -o app-bin ./cmd/app && ./app-bin
+	go build -o server-bin ./cmd/server && ./server-bin
 
 build:
-	go build -o app-bin ./cmd/app
+	go build -o server-bin ./cmd/server
 
 test:
 	go test -v ./...
@@ -81,7 +81,7 @@ pre-commit: check-pre-commit
 	pre-commit
 
 docker-build:
-	docker build -t app .
+	docker build -t echo-boilerplate .
 
 docker-run:
-	docker run -p 1323:1323 --rm app --http-bind-address 0.0.0.0
+	docker run -p 1323:1323 --rm echo-boilerplate --http-bind-address 0.0.0.0

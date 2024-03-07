@@ -13,6 +13,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/models"
 )
 
+// PersonalAccessToken represents the mapper used for interacting with PersonalAccessToken documents.
 type PersonalAccessToken struct {
 	mapper data.Mapper
 }

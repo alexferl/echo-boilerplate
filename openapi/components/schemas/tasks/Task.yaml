@@ -20,6 +20,7 @@ properties:
     example: '2022-11-13T07:12:33.017Z'
     nullable: true
   completed_by:
+    type: object
     nullable: true
     allOf:
       - $ref: '../users/PublicUser.yaml'
@@ -38,6 +39,7 @@ properties:
     example: '2022-11-12T14:58:33.409Z'
     nullable: true
   updated_by:
+    type: object
     nullable: true
     allOf:
       - $ref: '../users/PublicUser.yaml'

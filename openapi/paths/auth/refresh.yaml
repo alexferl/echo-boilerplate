@@ -2,6 +2,7 @@ post:
   summary: Refresh token
   description: Returns new tokens.
   operationId: authRefresh
+  security: []
   tags:
     - auth
   requestBody:

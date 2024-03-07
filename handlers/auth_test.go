@@ -318,7 +318,12 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
 	user := models.NewUser("test@example.com", "test")
 	_, refresh, _ := user.Login()
 
-	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
+	payload := &handlers.RefreshRequest{
+		GrantType: "refresh_token",
+	}
+	b, _ := json.Marshal(payload)
+
+	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(util.NewRefreshTokenCookie(refresh))
 	resp := httptest.NewRecorder()
@@ -405,6 +410,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Token() {
 	_, refresh, _ := user.Login()
 
 	payload := &handlers.RefreshRequest{
+		GrantType:    "refresh_token",
 		RefreshToken: string(refresh),
 	}
 	b, _ := json.Marshal(payload)
@@ -469,6 +475,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Token_Missing() {
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Invalid() {
 	payload := &handlers.RefreshRequest{
+		GrantType:    "refresh_token",
 		RefreshToken: "invalid",
 	}
 	b, _ := json.Marshal(payload)
@@ -492,6 +499,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Mismatch() {
 	user.Logout()
 
 	payload := &handlers.RefreshRequest{
+		GrantType:    "refresh_token",
 		RefreshToken: string(refresh),
 	}
 	b, _ := json.Marshal(payload)

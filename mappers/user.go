@@ -13,6 +13,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/models"
 )
 
+// User represents the mapper used for interacting with User documents.
 type User struct {
 	mapper data.Mapper
 }
