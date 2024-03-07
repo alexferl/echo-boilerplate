@@ -52,5 +52,7 @@ get:
         X-Total-Pages:
           schema:
             $ref: '../../components/headers/X-Total-Pages.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../../components/responses/Forbidden.yaml'

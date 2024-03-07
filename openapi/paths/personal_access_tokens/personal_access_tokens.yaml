@@ -20,6 +20,8 @@ post:
         application/json:
           schema:
             $ref: '../../components/schemas/personal_access_tokens/CreateResponse.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '422':
       $ref: '../../components/responses/UnprocessableEntity.yaml'
 get:
@@ -38,3 +40,5 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas/personal_access_tokens/List.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'

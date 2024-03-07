@@ -20,8 +20,8 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas/tasks/Task.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
 put:
@@ -52,10 +52,10 @@ put:
         application/json:
           schema:
             $ref: '../../components/schemas/tasks/Task.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../../components/responses/Forbidden.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
     '422':
@@ -78,9 +78,9 @@ delete:
   responses:
     '204':
       description: Successfully deleted a task
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../../components/responses/Forbidden.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'

@@ -20,8 +20,8 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas/personal_access_tokens/Token.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
 delete:
   summary: Revoke a personal access token
   description: Revokes a personal access token for the authenticated user.
@@ -40,5 +40,5 @@ delete:
   responses:
     '204':
       description: Successfully revoked a personal access token
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'

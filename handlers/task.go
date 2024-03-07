@@ -106,6 +106,7 @@ func (h *TaskHandler) list(c echo.Context) error {
 
 func (h *TaskHandler) get(c echo.Context) error {
 	id := c.Param("id")
+
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 

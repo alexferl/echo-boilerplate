@@ -26,10 +26,10 @@ put:
         application/json:
           schema:
             $ref: '../../components/schemas/tasks/Task.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../../components/responses/Forbidden.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
     '422':

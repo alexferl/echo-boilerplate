@@ -1,6 +1,6 @@
 module github.com/alexferl/echo-boilerplate
 
-go 1.21
+go 1.22
 
 require (
 	github.com/alexferl/echo-casbin v1.0.0

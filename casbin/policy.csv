@@ -11,7 +11,6 @@ p, any, /auth/signup, POST
 p, any, /auth/token, GET
 p, any, /oauth2/login, GET
 p, any, /oauth2/callback, GET
-p, any, /users/:id, GET
 
 p, user, /me, (GET)|(PUT)
 p, user, /personal_access_tokens, (GET)|(POST)
@@ -19,6 +18,7 @@ p, user, /personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)
 p, user, /tasks/:id, (GET)|(PUT)|(DELETE)
 p, user, /tasks/:id/transition, PUT
+p, user, /users/:id, GET
 
 p, admin, /users, GET
 p, admin, /users/:id, PUT

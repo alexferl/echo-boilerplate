@@ -2,10 +2,13 @@ get:
   summary: Get a user
   description: Returns a single user.
   operationId: getUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: id
       in: path
       required: true
       schema:
@@ -17,8 +20,8 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas/users/User.yaml'
-    '404':
-      $ref: '../../components/responses/NotFound.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
 put:
@@ -31,7 +34,7 @@ put:
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: id
       in: path
       required: true
       schema:
@@ -49,5 +52,11 @@ put:
         application/json:
           schema:
             $ref: '../../components/schemas/users/User.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
     '422':
       $ref: '../../components/responses/UnprocessableEntity.yaml'

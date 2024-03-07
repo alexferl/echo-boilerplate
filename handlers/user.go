@@ -94,8 +94,8 @@ func (h *UserHandler) getCurrentUser(c echo.Context) error {
 }
 
 type UpdateCurrentUserRequest struct {
-	Name *string `json:"name" bson:"name"`
-	Bio  *string `json:"bio" bson:"bio"`
+	Name *string `json:"name,omitempty"`
+	Bio  *string `json:"bio,omitempty"`
 }
 
 func (h *UserHandler) updateCurrentUser(c echo.Context) error {
@@ -156,8 +156,8 @@ func (h *UserHandler) get(c echo.Context) error {
 }
 
 type UpdateUserRequest struct {
-	Name *string `json:"name" bson:"name"`
-	Bio  *string `json:"bio" bson:"bio"`
+	Name *string `json:"name,omitempty"`
+	Bio  *string `json:"bio,omitempty"`
 }
 
 func (h *UserHandler) update(c echo.Context) error {
@@ -204,8 +204,8 @@ func (h *UserHandler) update(c echo.Context) error {
 }
 
 type UpdateUserStatusRequest struct {
-	IsBanned *bool `json:"is_banned"`
-	IsLocked *bool `json:"is_locked"`
+	IsBanned *bool `json:"is_banned,omitempty"`
+	IsLocked *bool `json:"is_locked,omitempty"`
 }
 
 func (h *UserHandler) updateStatus(c echo.Context) error {
@@ -235,7 +235,7 @@ func (h *UserHandler) updateStatus(c echo.Context) error {
 	}
 
 	if user.Id == token.Subject() {
-		return c.JSON(http.StatusForbidden, echo.Map{"message": "you cannot update your own status"})
+		return c.JSON(http.StatusConflict, echo.Map{"message": "you cannot update your own status"})
 	}
 
 	if body.IsBanned != nil {

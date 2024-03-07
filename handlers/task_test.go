@@ -489,7 +489,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_410() {
 func createTasks(num int, user *models.User) models.Tasks {
 	result := make(models.Tasks, 0)
 
-	for i := 1; i <= num; i++ {
+	for range num {
 		newTask := models.NewTask()
 		newTask.Create(user.Id)
 		newTask.CreatedBy = user

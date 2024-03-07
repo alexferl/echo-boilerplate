@@ -20,9 +20,10 @@ post:
         application/json:
           schema:
             $ref: '../../components/schemas/tasks/Task.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '422':
       $ref: '../../components/responses/UnprocessableEntity.yaml'
-
 get:
   summary: List tasks
   description: Returns a list of tasks.
@@ -94,3 +95,5 @@ get:
         X-Total-Pages:
           schema:
             $ref: '../../components/headers/X-Total-Pages.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'

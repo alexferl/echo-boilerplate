@@ -45,8 +45,8 @@ type User struct {
 
 type Users []User
 
-func (users Users) Response() []*Response {
-	res := make([]*Response, 0)
+func (users Users) Response() []*UserResponse {
+	res := make([]*UserResponse, 0)
 	for _, user := range users {
 		res = append(res, user.Response())
 	}
@@ -61,7 +61,7 @@ func (users Users) Public() []*Public {
 	return res
 }
 
-type Response struct {
+type UserResponse struct {
 	Id        string     `json:"id" bson:"id"`
 	Bio       string     `json:"bio" bson:"bio"`
 	Email     string     `json:"email" bson:"email"`
@@ -129,8 +129,8 @@ func (u *User) SetPassword(s string) error {
 	return nil
 }
 
-func (u *User) Response() *Response {
-	return &Response{
+func (u *User) Response() *UserResponse {
+	return &UserResponse{
 		Id:        u.Id,
 		Username:  u.Username,
 		Email:     u.Email,

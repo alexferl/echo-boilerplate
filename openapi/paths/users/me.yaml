@@ -14,6 +14,8 @@ get:
         application/json:
           schema:
             $ref: '../../components/schemas/users/me/CurrentUser.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
 put:
   summary: Update current user
   description: Returns the updated current user.
@@ -36,5 +38,7 @@ put:
         application/json:
           schema:
             $ref: '../../components/schemas/users/me/CurrentUser.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
     '422':
       $ref: '../../components/responses/UnprocessableEntity.yaml'
