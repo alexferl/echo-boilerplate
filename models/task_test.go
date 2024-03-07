@@ -52,7 +52,7 @@ func TestTask_CustomBSON(t *testing.T) {
 	assert.Equal(t, id, m.CreatedBy.(*User).Id)
 	assert.Equal(t, id, m.DeletedBy.(*User).Id)
 	assert.Equal(t, id, m.UpdatedBy.(*User).Id)
-	assert.IsType(t, &Public{}, m.Response().CompletedBy)
-	assert.IsType(t, &Public{}, m.Response().CreatedBy)
-	assert.IsType(t, &Public{}, m.Response().UpdatedBy)
+	assert.IsType(t, &UserPublic{}, m.Response().CompletedBy)
+	assert.IsType(t, &UserPublic{}, m.Response().CreatedBy)
+	assert.IsType(t, &UserPublic{}, m.Response().UpdatedBy)
 }

@@ -502,7 +502,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_List_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	var result handlers.ListTasksResponse
+	var result models.TasksResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	h := resp.Header()

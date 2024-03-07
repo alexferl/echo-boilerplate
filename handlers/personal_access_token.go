@@ -31,10 +31,10 @@ type PersonalAccessTokenHandler struct {
 }
 
 func (h *PersonalAccessTokenHandler) Register(s *server.Server) {
-	s.Add(http.MethodPost, "/personal_access_tokens", h.create)
-	s.Add(http.MethodGet, "/personal_access_tokens", h.list)
-	s.Add(http.MethodGet, "/personal_access_tokens/:id", h.get)
-	s.Add(http.MethodDelete, "/personal_access_tokens/:id", h.revoke)
+	s.Add(http.MethodPost, "/me/personal_access_tokens", h.create)
+	s.Add(http.MethodGet, "/me/personal_access_tokens", h.list)
+	s.Add(http.MethodGet, "/me/personal_access_tokens/:id", h.get)
+	s.Add(http.MethodDelete, "/me/personal_access_tokens/:id", h.revoke)
 }
 
 func NewPersonalAccessTokenHandler(openapi *openapi.Handler, svc PersonalAccessTokenService) *PersonalAccessTokenHandler {
@@ -103,10 +103,6 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 	return h.Validate(c, http.StatusOK, pat.Response())
 }
 
-type ListPersonalAccessTokeResponse struct {
-	Tokens []*models.PersonalAccessTokenResponse `json:"personal_access_tokens"`
-}
-
 func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
 	token := c.Get("token").(jwt.Token)
 
@@ -119,7 +115,7 @@ func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, ListPersonalAccessTokeResponse{Tokens: pats.Response()})
+	return h.Validate(c, http.StatusOK, pats.Response())
 }
 
 func (h *PersonalAccessTokenHandler) get(c echo.Context) error {

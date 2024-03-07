@@ -13,7 +13,21 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 )
 
-func CreateIndexes(client *mongo.Client) error {
+func MewMongoClient() (*mongo.Client, error) {
+	client, err := mongodb.New()
+	if err != nil {
+		return nil, err
+	}
+
+	err = createIndexes(client)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func createIndexes(client *mongo.Client) error {
 	indexes := map[string][]mongo.IndexModel{}
 
 	username := "username"

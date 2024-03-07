@@ -77,7 +77,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	newPAT, _ := models.NewPersonalAccessToken(token, payload.Name, payload.ExpiresAt)
 
-	req := httptest.NewRequest(http.MethodPost, "/personal_access_tokens", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/me/personal_access_tokens", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -99,7 +99,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_401() {
-	req := httptest.NewRequest(http.MethodPost, "/personal_access_tokens", nil)
+	req := httptest.NewRequest(http.MethodPost, "/me/personal_access_tokens", nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -119,7 +119,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	newPAT, _ := models.NewPersonalAccessToken(token, payload.Name, payload.ExpiresAt)
 
-	req := httptest.NewRequest(http.MethodPost, "/personal_access_tokens", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/me/personal_access_tokens", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -140,7 +140,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 	}
 	b, _ := json.Marshal(payload)
 
-	req := httptest.NewRequest(http.MethodPost, "/personal_access_tokens", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/me/personal_access_tokens", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -161,7 +161,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	newPAT, _ := models.NewPersonalAccessToken(token, payload.Name, payload.ExpiresAt)
 
-	req := httptest.NewRequest(http.MethodPost, "/personal_access_tokens", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPost, "/me/personal_access_tokens", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -180,7 +180,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 	num := 10
 	pats := createTokens(token, num)
 
-	req := httptest.NewRequest(http.MethodGet, "/personal_access_tokens", nil)
+	req := httptest.NewRequest(http.MethodGet, "/me/personal_access_tokens", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -191,7 +191,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 
 	s.server.ServeHTTP(resp, req)
 
-	var result handlers.ListPersonalAccessTokeResponse
+	var result models.PersonalAccessTokensResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
@@ -199,7 +199,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_List_401() {
-	req := httptest.NewRequest(http.MethodGet, "/personal_access_tokens", nil)
+	req := httptest.NewRequest(http.MethodGet, "/me/personal_access_tokens", nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -217,7 +217,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 	)
 
-	req := httptest.NewRequest(http.MethodGet, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodGet, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -235,7 +235,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get_404() {
-	req := httptest.NewRequest(http.MethodGet, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodGet, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -258,7 +258,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 	)
 
-	req := httptest.NewRequest(http.MethodDelete, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -277,7 +277,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_401() {
-	req := httptest.NewRequest(http.MethodDelete, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 
@@ -287,7 +287,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_404() {
-	req := httptest.NewRequest(http.MethodDelete, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
@@ -311,7 +311,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 	)
 	newPAT.Revoked = true
 
-	req := httptest.NewRequest(http.MethodDelete, "/personal_access_tokens/id", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()

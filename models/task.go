@@ -19,12 +19,16 @@ type Task struct {
 
 type Tasks []Task
 
-func (t Tasks) Response() []TaskResponse {
+type TasksResponse struct {
+	Tasks []TaskResponse `json:"tasks"`
+}
+
+func (t Tasks) Response() *TasksResponse {
 	res := make([]TaskResponse, 0)
 	for _, task := range t {
-		res = append(res, task.Response())
+		res = append(res, *task.Response())
 	}
-	return res
+	return &TasksResponse{Tasks: res}
 }
 
 func NewTask() *Task {
@@ -32,28 +36,28 @@ func NewTask() *Task {
 }
 
 type TaskResponse struct {
-	Id          string     `json:"id"`
-	CreatedAt   *time.Time `json:"created_at"`
-	CreatedBy   *Public    `json:"created_by"`
-	DeletedAt   *time.Time `json:"-"`
-	DeletedBy   *Public    `json:"-"`
-	UpdatedAt   *time.Time `json:"updated_at"`
-	UpdatedBy   *Public    `json:"updated_by"`
-	Completed   bool       `json:"completed"`
-	CompletedAt *time.Time `json:"completed_at"`
-	CompletedBy *Public    `json:"completed_by"`
-	Title       string     `json:"title"`
+	Id          string      `json:"id"`
+	Completed   bool        `json:"completed"`
+	CompletedAt *time.Time  `json:"completed_at"`
+	CompletedBy *UserPublic `json:"completed_by"`
+	CreatedAt   *time.Time  `json:"created_at"`
+	CreatedBy   *UserPublic `json:"created_by"`
+	DeletedAt   *time.Time  `json:"-"`
+	DeletedBy   *UserPublic `json:"-"`
+	Title       string      `json:"title"`
+	UpdatedAt   *time.Time  `json:"updated_at"`
+	UpdatedBy   *UserPublic `json:"updated_by"`
 }
 
-func (t *Task) Response() TaskResponse {
-	resp := TaskResponse{
+func (t *Task) Response() *TaskResponse {
+	resp := &TaskResponse{
 		Id:          t.Id,
-		CreatedAt:   t.CreatedAt,
-		CreatedBy:   t.CreatedBy.(*User).Public(),
-		UpdatedAt:   t.UpdatedAt,
-		Title:       t.Title,
 		Completed:   t.Completed,
 		CompletedAt: t.CompletedAt,
+		CreatedAt:   t.CreatedAt,
+		CreatedBy:   t.CreatedBy.(*User).Public(),
+		Title:       t.Title,
+		UpdatedAt:   t.UpdatedAt,
 	}
 
 	if t.CompletedBy != nil {

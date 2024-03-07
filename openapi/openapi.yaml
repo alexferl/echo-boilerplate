@@ -41,9 +41,9 @@ paths:
     $ref: './paths/auth/token.yaml'
   /me:
     $ref: './paths/users/me.yaml'
-  /personal_access_tokens:
+  /me/personal_access_tokens:
     $ref: './paths/personal_access_tokens/personal_access_tokens.yaml'
-  /personal_access_tokens/{id}:
+  /me/personal_access_tokens/{id}:
     $ref: './paths/personal_access_tokens/personal_access_tokens_{id}.yaml'
   /tasks:
     $ref: './paths/tasks/tasks.yaml'

@@ -406,7 +406,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	var result handlers.ListUsersResponse
+	var result models.PublicUsersResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	h := resp.Header()

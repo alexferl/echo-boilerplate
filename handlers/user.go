@@ -265,10 +265,6 @@ func (h *UserHandler) updateStatus(c echo.Context) error {
 	return h.Validate(c, http.StatusOK, res.Response())
 }
 
-type ListUsersResponse struct {
-	Users []*models.Public `json:"users"`
-}
-
 func (h *UserHandler) list(c echo.Context) error {
 	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
@@ -287,5 +283,5 @@ func (h *UserHandler) list(c echo.Context) error {
 
 	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListUsersResponse{Users: users.Public()})
+	return h.Validate(c, http.StatusOK, users.Public())
 }

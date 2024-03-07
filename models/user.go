@@ -21,44 +21,52 @@ func (r Role) String() string {
 
 type User struct {
 	*Model        `bson:",inline"`
+	BannedAt      *time.Time `json:"banned_at" bson:"banned_at"`
+	BannedBy      any        `json:"banned_by" bson:"banned_by"`
 	Bio           string     `json:"bio" bson:"bio"`
 	Email         string     `json:"email" bson:"email"`
 	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
 	IsLocked      bool       `json:"is_locked" bson:"is_locked"`
+	LastLoginAt   *time.Time `json:"-" bson:"last_login_at"`
+	LastLogoutAt  *time.Time `json:"-" bson:"last_logout_at"`
+	LastRefreshAt *time.Time `json:"-" bson:"last_refresh_at"`
+	LockedAt      *time.Time `json:"locked_at" bson:"locked_at"`
+	LockedBy      any        `json:"locked_by" bson:"locked_by"`
 	Name          string     `json:"name" bson:"name"`
 	Password      string     `json:"-" bson:"password"`
 	RefreshToken  string     `json:"-" bson:"refresh_token"`
 	Roles         []string   `json:"-" bson:"roles"`
-	Username      string     `json:"username" bson:"username"`
-	LastLoginAt   *time.Time `json:"-" bson:"last_login_at"`
-	LastLogoutAt  *time.Time `json:"-" bson:"last_logout_at"`
-	LastRefreshAt *time.Time `json:"-" bson:"last_refresh_at"`
-	BannedAt      *time.Time `json:"banned_at" bson:"banned_at"`
-	BannedBy      any        `json:"banned_by" bson:"banned_by"`
 	UnbannedAt    *time.Time `json:"unbanned_at" bson:"unbanned_at"`
 	UnbannedBy    any        `json:"unbanned_by" bson:"unbanned_by"`
-	LockedAt      *time.Time `json:"locked_at" bson:"locked_at"`
-	LockedBy      any        `json:"locked_by" bson:"locked_by"`
 	UnlockedAt    *time.Time `json:"unlocked_at" bson:"unlocked_at"`
 	UnlockedBy    any        `json:"unlocked_by" bson:"unlocked_by"`
+	Username      string     `json:"username" bson:"username"`
 }
 
 type Users []User
 
-func (users Users) Response() []*UserResponse {
-	res := make([]*UserResponse, 0)
+func (users Users) Response() *UsersResponse {
+	res := make([]UserResponse, 0)
 	for _, user := range users {
-		res = append(res, user.Response())
+		res = append(res, *user.Response())
 	}
-	return res
+	return &UsersResponse{Users: res}
 }
 
-func (users Users) Public() []*Public {
-	res := make([]*Public, 0)
+type UsersResponse struct {
+	Users []UserResponse `json:"users"`
+}
+
+type PublicUsersResponse struct {
+	Users []UserPublic `json:"users"`
+}
+
+func (users Users) Public() *PublicUsersResponse {
+	res := make([]UserPublic, 0)
 	for _, user := range users {
-		res = append(res, user.Public())
+		res = append(res, *user.Public())
 	}
-	return res
+	return &PublicUsersResponse{Users: res}
 }
 
 type UserResponse struct {
@@ -99,7 +107,7 @@ type AdminResponse struct {
 	UnlockedBy    string     `json:"unlocked_by" bson:"unlocked_by"`
 }
 
-type Public struct {
+type UserPublic struct {
 	Id       string `json:"id" bson:"id"`
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
@@ -155,8 +163,8 @@ func (u *User) AdminResponse() *AdminResponse {
 	}
 }
 
-func (u *User) Public() *Public {
-	return &Public{
+func (u *User) Public() *UserPublic {
+	return &UserPublic{
 		Id:       u.Id,
 		Username: u.Username,
 		Name:     u.Name,

@@ -14,12 +14,12 @@ var ErrExpiresAtPast = errors.New("expires_at cannot be in the past")
 
 type PersonalAccessToken struct {
 	Id        string     `json:"id" bson:"id"`
-	Name      string     `json:"name" bson:"name"`
-	Revoked   bool       `json:"revoked" bson:"revoked"`
-	UserId    string     `json:"user_id" bson:"user_id"`
 	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
 	ExpiresAt *time.Time `json:"expires_at" bson:"expires_at"`
+	Name      string     `json:"name" bson:"name"`
 	Token     string     `json:"token" bson:"token"`
+	Revoked   bool       `json:"revoked" bson:"revoked"`
+	UserId    string     `json:"user_id" bson:"user_id"`
 }
 
 func (pat *PersonalAccessToken) Encrypt() error {
@@ -40,31 +40,35 @@ func (pat *PersonalAccessToken) Validate(s string) error {
 func (pat *PersonalAccessToken) Response() *PersonalAccessTokenResponse {
 	return &PersonalAccessTokenResponse{
 		Id:        pat.Id,
+		CreatedAt: pat.CreatedAt,
+		ExpiresAt: pat.ExpiresAt,
 		Name:      pat.Name,
 		Revoked:   pat.Revoked,
 		UserId:    pat.UserId,
-		CreatedAt: pat.CreatedAt,
-		ExpiresAt: pat.ExpiresAt,
 	}
 }
 
 type PersonalAccessTokens []PersonalAccessToken
 
-func (pats PersonalAccessTokens) Response() []*PersonalAccessTokenResponse {
-	res := make([]*PersonalAccessTokenResponse, 0)
+type PersonalAccessTokensResponse struct {
+	Tokens []PersonalAccessTokenResponse `json:"personal_access_tokens"`
+}
+
+func (pats PersonalAccessTokens) Response() *PersonalAccessTokensResponse {
+	res := make([]PersonalAccessTokenResponse, 0)
 	for _, pat := range pats {
-		res = append(res, pat.Response())
+		res = append(res, *pat.Response())
 	}
-	return res
+	return &PersonalAccessTokensResponse{Tokens: res}
 }
 
 type PersonalAccessTokenResponse struct {
 	Id        string     `json:"id" bson:"id"`
+	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
+	ExpiresAt *time.Time `json:"expires_at" bson:"expires_at"`
 	Name      string     `json:"name" bson:"name"`
 	Revoked   bool       `json:"revoked" bson:"revoked"`
 	UserId    string     `json:"user_id" bson:"user_id"`
-	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
-	ExpiresAt *time.Time `json:"expires_at" bson:"expires_at"`
 }
 
 func NewPersonalAccessToken(token jwt.Token, name string, expiresAt string) (*PersonalAccessToken, error) {
@@ -86,10 +90,10 @@ func NewPersonalAccessToken(token jwt.Token, name string, expiresAt string) (*Pe
 
 	return &PersonalAccessToken{
 		Id:        xid.New().String(),
-		Name:      name,
-		UserId:    token.Subject(),
-		Token:     string(pat),
 		CreatedAt: &now,
 		ExpiresAt: &t,
+		Name:      name,
+		Token:     string(pat),
+		UserId:    token.Subject(),
 	}, nil
 }

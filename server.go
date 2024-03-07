@@ -28,15 +28,10 @@ import (
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func Handlers() []handlers.Handler {
-	client, err := mongodb.New()
+func NewServer() *server.Server {
+	client, err := data.MewMongoClient()
 	if err != nil {
-		panic(err)
-	}
-
-	err = data.CreateIndexes(client)
-	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed creating mongo client")
 	}
 
 	openapi := openapiMw.NewHandler()
@@ -50,17 +45,13 @@ func Handlers() []handlers.Handler {
 	userMapper := mappers.NewUser(client)
 	userSvc := services.NewUser(userMapper)
 
-	return []handlers.Handler{
+	return newServer([]handlers.Handler{
 		handlers.NewRootHandler(openapi),
 		handlers.NewAuthHandler(openapi, userSvc),
 		handlers.NewPersonalAccessTokenHandler(openapi, patSvc),
 		handlers.NewTaskHandler(openapi, taskSvc),
 		handlers.NewUserHandler(openapi, userSvc),
-	}
-}
-
-func NewServer() *server.Server {
-	return newServer(Handlers()...)
+	}...)
 }
 
 func NewTestServer(handler ...handlers.Handler) *server.Server {
@@ -76,12 +67,12 @@ func NewTestServer(handler ...handlers.Handler) *server.Server {
 func newServer(handler ...handlers.Handler) *server.Server {
 	key, err := util.LoadPrivateKey()
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed loading private key")
 	}
 
 	client, err := mongodb.New()
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed creating mongo client")
 	}
 	mapper := data.NewMapper(client, viper.GetString(config.AppName), "personal_access_tokens")
 
@@ -143,10 +134,11 @@ func newServer(handler ...handlers.Handler) *server.Server {
 			// Personal Access Tokens
 			typ := claims["type"]
 			if typ == util.PersonalToken.String() {
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 				defer cancel()
+
 				filter := bson.D{{"user_id", t.Subject()}}
-				result, err := mapper.Collection("personal_access_tokens").FindOne(ctx, filter, &models.PersonalAccessToken{})
+				result, err := mapper.FindOne(ctx, filter, &models.PersonalAccessToken{})
 				if err != nil {
 					if errors.Is(err, data.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")

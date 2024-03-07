@@ -16,18 +16,14 @@ import (
 var ErrNoDocuments = errors.New("no documents in result")
 
 type Mapper interface {
-	Collection(name string) Mapper
 	Aggregate(ctx context.Context, pipeline mongo.Pipeline, results any, opts ...*options.AggregateOptions) (any, error)
 	Count(ctx context.Context, filter any, opts ...*options.CountOptions) (int64, error)
 	Find(ctx context.Context, filter any, results any, opts ...*options.FindOptions) (any, error)
 	FindOne(ctx context.Context, filter any, result any, opts ...*options.FindOneOptions) (any, error)
 	FindOneAndUpdate(ctx context.Context, filter any, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error)
-	FindOneByIdAndUpdate(ctx context.Context, id string, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error)
-	FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error)
-	GetNextSequence(ctx context.Context, name string) (*Sequence, error)
 	InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
-	UpdateOneById(ctx context.Context, id string, document any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
+	GetNextSequence(ctx context.Context, name string) (*Sequence, error)
 }
 
 type mapper struct {
@@ -46,10 +42,6 @@ func NewMapper(client *mongo.Client, databaseName string, collectionName string)
 		databaseName,
 		collection,
 	}
-}
-
-func (m *mapper) Collection(name string) Mapper {
-	return NewMapper(m.client, m.dbName, name)
 }
 
 func (m *mapper) Aggregate(ctx context.Context, pipeline mongo.Pipeline, results any, opts ...*options.AggregateOptions) (any, error) {
@@ -147,13 +139,17 @@ func (m *mapper) FindOneAndUpdate(ctx context.Context, filter any, update any, r
 	return result, nil
 }
 
-func (m *mapper) FindOneByIdAndUpdate(ctx context.Context, id string, update any, result any, opts ...*options.FindOneAndUpdateOptions) (any, error) {
-	return m.FindOneAndUpdate(ctx, bson.D{{"id", id}}, update, result, opts...)
+func (m *mapper) InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+	res, err := m.collection.InsertOne(ctx, document, opts...)
+	return res, err
 }
 
-func (m *mapper) FindOneById(ctx context.Context, id string, result any, opts ...*options.FindOneOptions) (any, error) {
-	filter := bson.D{{"id", id}}
-	return m.FindOne(ctx, filter, result, opts...)
+func (m *mapper) UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	res, err := m.collection.UpdateOne(ctx, filter, update, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 type Sequence struct {
@@ -183,23 +179,6 @@ func (m *mapper) GetNextSequence(ctx context.Context, name string) (*Sequence, e
 	}
 
 	return seq, nil
-}
-
-func (m *mapper) InsertOne(ctx context.Context, document any, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	res, err := m.collection.InsertOne(ctx, document, opts...)
-	return res, err
-}
-
-func (m *mapper) UpdateOne(ctx context.Context, filter any, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	res, err := m.collection.UpdateOne(ctx, filter, update, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
-func (m *mapper) UpdateOneById(ctx context.Context, id string, update any, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	return m.UpdateOne(ctx, bson.D{{"id", id}}, bson.D{{"$set", update}}, opts...)
 }
 
 func (m *mapper) getSession() (mongo.Session, *options.TransactionOptions, error) {

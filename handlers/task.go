@@ -75,10 +75,6 @@ func (h *TaskHandler) create(c echo.Context) error {
 	return h.Validate(c, http.StatusOK, task.Response())
 }
 
-type ListTasksResponse struct {
-	Tasks []models.TaskResponse `json:"tasks"`
-}
-
 func (h *TaskHandler) list(c echo.Context) error {
 	page, perPage, limit, skip := util.ParsePaginationParams(c)
 
@@ -101,7 +97,7 @@ func (h *TaskHandler) list(c echo.Context) error {
 
 	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
-	return h.Validate(c, http.StatusOK, &ListTasksResponse{Tasks: tasks.Response()})
+	return h.Validate(c, http.StatusOK, tasks.Response())
 }
 
 func (h *TaskHandler) get(c echo.Context) error {
