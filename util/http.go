@@ -74,7 +74,3 @@ func SetPaginationHeaders(req *http.Request, header http.Header, count int, page
 func formatURL(uri string, perPage int, page int) string {
 	return fmt.Sprintf("%s?per_page=%d&page=%d", uri, perPage, page)
 }
-
-func GetFullURL(path string) string {
-	return fmt.Sprintf("%s%s", viper.GetString(config.BaseURL), path)
-}
