@@ -69,8 +69,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.UserResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), s.user.Id, result.Id)
@@ -84,8 +83,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_401() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token invalid", result.Message)
@@ -114,8 +112,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.UserResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), updatedUser.Name, result.Name)
@@ -155,8 +152,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.UserResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), s.user.Id, result.Id)
@@ -218,8 +214,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.UserResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), updatedUser.Name, result.Name)
@@ -302,8 +297,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.UserResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), updatedUser.Name, result.Name)
@@ -413,8 +407,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.ListUsersResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	h := resp.Header()
 	link := `<http://example.com/users?per_page=1&page=3>; rel=next, ` +

@@ -10,7 +10,7 @@ import (
 )
 
 type Task struct {
-	Model       `bson:",inline"`
+	*Model      `bson:",inline"`
 	Completed   bool       `json:"completed" bson:"completed"`
 	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
 	CompletedBy any        `json:"completed_by" bson:"completed_by"`
@@ -36,7 +36,7 @@ type TaskResponse struct {
 	CreatedAt   *time.Time `json:"created_at"`
 	CreatedBy   *Public    `json:"created_by"`
 	DeletedAt   *time.Time `json:"-"`
-	DeletedBy   string     `json:"-"`
+	DeletedBy   *Public    `json:"-"`
 	UpdatedAt   *time.Time `json:"updated_at"`
 	UpdatedBy   *Public    `json:"updated_by"`
 	Completed   bool       `json:"completed"`
@@ -80,16 +80,60 @@ func (t *Task) Incomplete() {
 	t.CompletedBy = nil
 }
 
-func (t *Task) UnmarshalBSON(b []byte) error {
+func (t *Task) MarshalBSON() ([]byte, error) {
 	type Alias Task
+	aux := &struct {
+		*Alias `bson:",inline"`
+	}{
+		Alias: (*Alias)(t),
+	}
 
-	if err := bson.Unmarshal(b, (*Alias)(t)); err != nil {
+	if t.CompletedBy != nil {
+		user, ok := t.CompletedBy.(*User)
+		if ok {
+			aux.CompletedBy = &Ref{Id: user.Id}
+		}
+	}
+
+	if t.CreatedBy != nil {
+		user, ok := t.CreatedBy.(*User)
+		if ok {
+			aux.CreatedBy = &Ref{Id: user.Id}
+		}
+	}
+
+	if t.DeletedBy != nil {
+		user, ok := t.DeletedBy.(*User)
+		if ok {
+			aux.DeletedBy = &Ref{Id: user.Id}
+		}
+	}
+
+	if t.UpdatedBy != nil {
+		user, ok := t.UpdatedBy.(*User)
+		if ok {
+			aux.UpdatedBy = &Ref{Id: user.Id}
+		}
+	}
+
+	return bson.Marshal(aux)
+}
+
+func (t *Task) UnmarshalBSON(data []byte) error {
+	type Alias Task
+	aux := &struct {
+		*Alias `bson:",inline"`
+	}{
+		Alias: (*Alias)(t),
+	}
+
+	if err := bson.Unmarshal(data, aux); err != nil {
 		return err
 	}
 
 	if t.CompletedBy != nil {
 		var u *User
-		err := util.DocToStruct(t.CompletedBy.(primitive.D), &u)
+		err := util.DocToStruct(aux.CompletedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -98,7 +142,7 @@ func (t *Task) UnmarshalBSON(b []byte) error {
 
 	if t.CreatedBy != nil {
 		var u *User
-		err := util.DocToStruct(t.CreatedBy.(primitive.D), &u)
+		err := util.DocToStruct(aux.CreatedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -107,7 +151,7 @@ func (t *Task) UnmarshalBSON(b []byte) error {
 
 	if t.DeletedBy != nil {
 		var u *User
-		err := util.DocToStruct(t.DeletedBy.(primitive.D), &u)
+		err := util.DocToStruct(aux.DeletedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -116,7 +160,7 @@ func (t *Task) UnmarshalBSON(b []byte) error {
 
 	if t.UpdatedBy != nil {
 		var u *User
-		err := util.DocToStruct(t.UpdatedBy.(primitive.D), &u)
+		err := util.DocToStruct(aux.UpdatedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}

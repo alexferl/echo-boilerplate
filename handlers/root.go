@@ -28,6 +28,6 @@ func (h *RootHandler) Register(s *server.Server) {
 
 // Root returns the welcome message.
 func (h *RootHandler) Root(c echo.Context) error {
-	m := fmt.Sprintf("Welcome to %server", viper.GetString(config.AppName))
+	m := fmt.Sprintf("Welcome to %s", viper.GetString(config.AppName))
 	return c.JSON(http.StatusOK, echo.Map{"message": m})
 }

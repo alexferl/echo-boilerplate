@@ -33,30 +33,27 @@ func TestNewCookie(t *testing.T) {
 
 func TestNewAccessTokenCookie(t *testing.T) {
 	value := "access"
-	c := NewAccessTokenCookie([]byte(value))
+	cookie := NewAccessTokenCookie([]byte(value))
 
-	assert.Equal(t, viper.GetString(config.JWTAccessTokenCookieName), c.Name)
-	assert.Equal(t, value, c.Value)
-	assert.Equal(t, "/", c.Path)
-	assert.Equal(t, http.SameSiteStrictMode, c.SameSite)
-	assert.Equal(t, viper.GetInt(config.JWTAccessTokenExpiry), c.MaxAge)
+	assert.Equal(t, viper.GetString(config.JWTAccessTokenCookieName), cookie.Name)
+	assert.Equal(t, value, cookie.Value)
+	assert.Equal(t, "/", cookie.Path)
+	assert.Equal(t, http.SameSiteStrictMode, cookie.SameSite)
+	assert.Equal(t, int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()), cookie.MaxAge)
 }
 
 func TestNewRefreshTokenCookie(t *testing.T) {
 	value := "refresh"
-	c := NewRefreshTokenCookie([]byte(value))
+	cookie := NewRefreshTokenCookie([]byte(value))
 
-	assert.Equal(t, viper.GetString(config.JWTRefreshTokenCookieName), c.Name)
-	assert.Equal(t, value, c.Value)
-	assert.Equal(t, "/auth", c.Path)
-	assert.Equal(t, http.SameSiteStrictMode, c.SameSite)
-	assert.Equal(t, viper.GetInt(config.JWTRefreshTokenExpiry), c.MaxAge)
+	assert.Equal(t, viper.GetString(config.JWTRefreshTokenCookieName), cookie.Name)
+	assert.Equal(t, value, cookie.Value)
+	assert.Equal(t, "/auth", cookie.Path)
+	assert.Equal(t, http.SameSiteStrictMode, cookie.SameSite)
+	assert.Equal(t, int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()), cookie.MaxAge)
 }
 
 func TestSetTokenCookies(t *testing.T) {
-	c := config.New()
-	c.BindFlags()
-
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 	ctx := echo.New().NewContext(req, resp)
@@ -77,9 +74,6 @@ func TestSetTokenCookies(t *testing.T) {
 }
 
 func TestSetExpiredTokenCookies(t *testing.T) {
-	c := config.New()
-	c.BindFlags()
-
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 	ctx := echo.New().NewContext(req, resp)

@@ -6,6 +6,8 @@ import (
 	"github.com/rs/xid"
 )
 
+// Model is the base model for all models.
+// NewModel should be used unless you know what you're doing.
 type Model struct {
 	Id        string     `json:"id" bson:"id"`
 	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
@@ -16,21 +18,7 @@ type Model struct {
 	UpdatedBy any        `json:"updated_by" bson:"updated_by"`
 }
 
-//func (m *Model) MarshalBSON() ([]byte, error) {
-//	log.Debug().Interface("MARSH", m).Send()
-//	var r Ref
-//	err := util.DocToStruct(m.CreatedBy.(primitive.D), &r)
-//	if err != nil {
-//		log.Error().Err(err).Msg("MARSH FAIL")
-//		return nil, err
-//	}
-//	m.CreatedBy = r
-//
-//	log.Debug().Interface("RRRRR", m).Send()
-//
-//	return bson.Marshal(r)
-//}
-
+// Ref is a reference to another document
 type Ref struct {
 	Id string `json:"id" bson:"id"`
 }
@@ -53,6 +41,6 @@ func (m *Model) Update(id string) {
 	m.UpdatedBy = &Ref{Id: id}
 }
 
-func NewModel() Model {
-	return Model{Id: xid.New().String()}
+func NewModel() *Model {
+	return &Model{Id: xid.New().String()}
 }

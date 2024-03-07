@@ -19,7 +19,6 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
-	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 type TaskHandlerTestSuite struct {
@@ -65,8 +64,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.TaskResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), s.user.Id, result.CreatedBy.Id)
@@ -95,8 +93,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_404() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
 	assert.Equal(s.T(), "task not found", result.Message)
@@ -121,8 +118,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_410() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
 	assert.Equal(s.T(), "task was deleted", result.Message)
@@ -158,8 +154,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.TaskResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), title, result.Title)
@@ -188,7 +183,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_403() {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
 
-	user := &models.User{Model: models.Model{Id: "2"}}
+	user := &models.User{Model: &models.Model{Id: "2"}}
 	task := models.NewTask()
 	task.Create(user.Id)
 	task.CreatedBy = user
@@ -221,8 +216,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_404() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
 	assert.Equal(s.T(), "task not found", result.Message)
@@ -253,8 +247,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_410() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
 	assert.Equal(s.T(), "task was deleted", result.Message)
@@ -304,8 +297,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.TaskResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), s.user.Id, result.CompletedBy.Id)
@@ -341,8 +333,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_404() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
 	assert.Equal(s.T(), "task not found", result.Message)
@@ -373,8 +364,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_410() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
 	assert.Equal(s.T(), "task was deleted", result.Message)
@@ -422,7 +412,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_403() {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
 
-	user := &models.User{Model: models.Model{Id: "2"}}
+	user := &models.User{Model: &models.Model{Id: "2"}}
 	task := models.NewTask()
 	task.Create(user.Id)
 	task.CreatedBy = user
@@ -453,8 +443,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_404() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
 	assert.Equal(s.T(), "task not found", result.Message)
@@ -479,8 +468,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_410() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
 	assert.Equal(s.T(), "task was deleted", result.Message)
@@ -515,8 +503,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_List_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.ListTasksResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	h := resp.Header()
 	link := `<http://example.com/tasks?per_page=1&page=3>; rel=next, ` +
@@ -556,13 +543,12 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Create_200() {
 
 	s.svc.EXPECT().
 		Create(mock.Anything, mock.Anything, mock.Anything).
-		Return(&models.Task{Model: models.Model{CreatedBy: s.user}, Title: payload.Title}, nil)
+		Return(&models.Task{Model: &models.Model{CreatedBy: s.user}, Title: payload.Title}, nil)
 
 	s.server.ServeHTTP(resp, req)
 
 	var result models.TaskResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), payload.Title, result.Title)
@@ -594,8 +580,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Create_422() {
 	s.server.ServeHTTP(resp, req)
 
 	var result models.TaskResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
 }

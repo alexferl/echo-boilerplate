@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/alexferl/echo-boilerplate/config"
-	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 func TestGenerateTokens(t *testing.T) {

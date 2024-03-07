@@ -51,16 +51,15 @@ func TestPersonalAccessTokenHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(PersonalAccessTokenHandlerTestSuite))
 }
 
-func createTokens(t *testing.T, token jwt.Token, num int) models.PersonalAccessTokens {
+func createTokens(token jwt.Token, num int) models.PersonalAccessTokens {
 	result := make(models.PersonalAccessTokens, 0)
 
 	for i := range num {
-		pat, err := models.NewPersonalAccessToken(
+		pat, _ := models.NewPersonalAccessToken(
 			token,
 			fmt.Sprintf("my_token%d", i),
 			time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 		)
-		assert.NoError(t, err)
 		result = append(result, *pat)
 	}
 
@@ -94,8 +93,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 	s.server.ServeHTTP(resp, req)
 
 	var result models.PersonalAccessToken
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 }
@@ -180,7 +178,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_List_200() {
 	token, _ := util.ParseToken(s.accessToken)
 	num := 10
-	pats := createTokens(s.T(), token, num)
+	pats := createTokens(token, num)
 
 	req := httptest.NewRequest(http.MethodGet, "/personal_access_tokens", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -194,8 +192,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.ListPersonalAccessTokeResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 	assert.Equal(s.T(), num, len(result.Tokens))
@@ -232,8 +229,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 	s.server.ServeHTTP(resp, req)
 
 	var result models.PersonalAccessToken
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
 }

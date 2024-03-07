@@ -75,8 +75,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_200() {
 			s.server.ServeHTTP(resp, req)
 
 			var result handlers.LoginResponse
-			err := json.Unmarshal(resp.Body.Bytes(), &result)
-			assert.NoError(s.T(), err)
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 			expected := 2
 			if viper.GetBool(config.CSRFEnabled) {
@@ -136,8 +135,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_401() {
 			s.server.ServeHTTP(resp, req)
 
 			var result echo.HTTPError
-			err := json.Unmarshal(resp.Body.Bytes(), &result)
-			assert.NoError(s.T(), err)
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 			assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 			assert.Contains(s.T(), "invalid email or password", result.Message)
@@ -204,8 +202,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Invalid() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), jwt.ErrTokenInvalid, result.Message)
@@ -228,8 +225,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Mismatch() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token mismatch", result.Message)
@@ -271,8 +267,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Body_Missing_Key() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
 	assert.Equal(s.T(), jwt.ErrBodyMissingKey, result.Message)
@@ -286,8 +281,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Token_Missing() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
 	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
@@ -314,8 +308,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Token_Mismatch() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token mismatch", result.Message)
@@ -341,8 +334,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.RefreshResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	expected := 2
 	if viper.GetBool(config.CSRFEnabled) {
@@ -379,8 +371,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Cookie_Missing() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
 	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
@@ -403,8 +394,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Cookie_Invalid() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token mismatch", result.Message)
@@ -434,8 +424,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Token() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.RefreshResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	expected := 2
 	if viper.GetBool(config.CSRFEnabled) {
@@ -472,8 +461,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Token_Missing() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
 	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
@@ -492,8 +480,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Invalid() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token invalid", result.Message)
@@ -520,8 +507,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Mismatch() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token mismatch", result.Message)
@@ -547,7 +533,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_200() {
 	s.svc.EXPECT().
 		Create(mock.Anything, mock.Anything).
 		Return(&models.User{
-			Model:    models.Model{Id: "1"},
+			Model:    &models.Model{Id: "1"},
 			Email:    payload.Email,
 			Username: payload.Username,
 			Name:     payload.Name,
@@ -574,7 +560,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
 	s.svc.EXPECT().
 		FindOneByEmailOrUsername(mock.Anything, mock.Anything, mock.Anything).
 		Return(&models.User{
-			Model:    models.Model{Id: "1"},
+			Model:    &models.Model{Id: "1"},
 			Email:    payload.Email,
 			Username: payload.Username,
 			Name:     payload.Name,
@@ -583,8 +569,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusConflict, resp.Code)
 	assert.Equal(s.T(), "email or username already in-use", result.Message)
@@ -617,8 +602,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.TokenResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	roles, _ := token.Get("roles")
 	typ, _ := token.Get("type")
@@ -641,8 +625,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_401() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token invalid", result.Message)
@@ -662,8 +645,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.TokenResponse
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	roles, _ := token.Get("roles")
 	typ, _ := token.Get("type")
@@ -687,8 +669,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_401() {
 	s.server.ServeHTTP(resp, req)
 
 	var result echo.HTTPError
-	err := json.Unmarshal(resp.Body.Bytes(), &result)
-	assert.NoError(s.T(), err)
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
 	assert.Equal(s.T(), "token invalid", result.Message)

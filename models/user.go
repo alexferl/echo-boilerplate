@@ -20,7 +20,7 @@ func (r Role) String() string {
 }
 
 type User struct {
-	Model         `bson:",inline"`
+	*Model        `bson:",inline"`
 	Bio           string     `json:"bio" bson:"bio"`
 	Email         string     `json:"email" bson:"email"`
 	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
