@@ -5,7 +5,7 @@ properties:
   is_banned:
     type: boolean
     description: Ban/unban user account
-    example: true
+    example: false
   is_locked:
     type: boolean
     description: Lock/unlock user account

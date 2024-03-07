@@ -22,20 +22,12 @@ type Config struct {
 
 	BaseURL string
 
-	Super   *Super
 	OAuth2  *OAuth2
 	JWT     *JWT
 	Cookies *Cookies
 	CSRF    *CSRF
 	Casbin  *Casbin
 	OpenAPI *OpenAPI
-}
-
-type Super struct {
-	Create   bool
-	Email    string
-	Username string
-	Password string
 }
 
 type OAuth2 struct {
@@ -82,12 +74,6 @@ func New() *Config {
 		Logging: libLog.DefaultConfig,
 		MongoDB: libMongo.DefaultConfig,
 		BaseURL: "http://localhost:1323",
-		Super: &Super{
-			Create:   false,
-			Email:    "super@example.com",
-			Username: "super",
-			Password: "",
-		},
 		OAuth2: &OAuth2{
 			ClientId:     "",
 			ClientSecret: "",
@@ -130,11 +116,6 @@ const (
 
 	BaseURL = "base-url"
 
-	SuperCreate   = "super-create"
-	SuperEmail    = "super-email"
-	SuperUsername = "super-username"
-	SuperPassword = "super-password"
-
 	OAuth2ClientId     = "oauth2-client-id"
 	OAuth2ClientSecret = "oauth2-client-secret"
 
@@ -163,11 +144,6 @@ const (
 // addFlags adds all the flags from the command line
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
-
-	fs.BoolVar(&c.Super.Create, SuperCreate, c.Super.Create, "Create superuser")
-	fs.StringVar(&c.Super.Email, SuperEmail, c.Super.Email, "Superuser email")
-	fs.StringVar(&c.Super.Username, SuperUsername, c.Super.Username, "Superuser username")
-	fs.StringVar(&c.Super.Password, SuperPassword, c.Super.Password, "Superuser password")
 
 	fs.StringVar(&c.OAuth2.ClientId, OAuth2ClientId, c.OAuth2.ClientId, "OAuth2 client id")
 	fs.StringVar(&c.OAuth2.ClientSecret, OAuth2ClientSecret, c.OAuth2.ClientSecret, "OAuth2 client secret")
@@ -224,10 +200,6 @@ func (c *Config) BindFlags() {
 
 	if viper.GetBool(CSRFEnabled) && viper.GetString(CSRFSecretKey) == "" {
 		log.Panic().Msg("CSRF: secret key is unset!")
-	}
-
-	if viper.GetBool(SuperCreate) && viper.GetString(SuperPassword) == "" {
-		log.Panic().Msg("Super create: password is unset!")
 	}
 
 	if viper.GetBool(libHttp.HTTPCORSEnabled) {

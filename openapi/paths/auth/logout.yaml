@@ -2,13 +2,14 @@ post:
   summary: Log out
   description: Revoke a refresh token.
   operationId: authLogout
+  security: []
   tags:
     - auth
   requestBody:
     content:
       application/json:
         schema:
-          $ref: '../../components/schemas/auth/RefreshToken.yaml'
+          $ref: '../../components/schemas/auth/Logout.yaml'
   responses:
     '204':
       description: Successfully revoked token

@@ -15,7 +15,7 @@
 .idea
 
 # binary
-app-bin
+server-bin
 
 private-key.pem
 cert.pem

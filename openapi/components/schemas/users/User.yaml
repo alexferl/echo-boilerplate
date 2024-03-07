@@ -27,7 +27,7 @@ properties:
   is_banned:
     type: boolean
     description: True if account is banned
-    example: true
+    example: false
   is_locked:
     type: boolean
     description: True if account is locked

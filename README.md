@@ -3,7 +3,7 @@
 A Go 1.22+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
 authentication, authorization and request/response validation.
 
-> Important: I use this as a starting point for personal projects, it can and will change without notice.
+> **Note**: I use this as a starting point for personal projects, it can and will change without notice.
 
 ## Features
 - [JWT](https://jwt.io/) for authentication with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
@@ -29,15 +29,11 @@ Setup the dev environment first:
 ```shell
 make dev
 ```
-**Note**: An RSA private key will be generated in the current folder to sign and verify the JSON web tokens.
+>**Note**: An RSA private key will be generated in the current folder to sign and verify the JSON web tokens.
 
-### Creating super user
-Launch the app with `--super-create` to create a superuser. You can change the default values with the following flags:
-`--super-email`, `--super-username` and `--super-password`.
-```shell
-make build
-./app-bin --super-create
-```
+### Creating the superuser
+Launch the superuser cmd with `go run ./cmd/superuser --password <your password>`. You can change the default values
+with the following flags: `--email`, `--name` and `--username`. You can view all the other settings with `--help`.
 
 ### Building & Running locally
 ```shell
@@ -52,11 +48,11 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
 	"email": "super@example.com",
-	"password": "changeme"
+	"password": "<your password>"
 }'
 ```
 Response:
-```shell
+```json
 {
 	"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
 	"expires_in": 3600,
@@ -88,7 +84,7 @@ curl --request GET \
 ```
 
 Response:
-```shell
+```json
 {
 	"id": "cdhgh0dfclscplnrcuag",
 	"username": "admin",
@@ -125,10 +121,10 @@ opening [assets/index.html](docs/index.html) in your web browser.
 
 ### Usage
 ```shell
-go build -o app-bin ./cmd/app && ./app-bin --help
+go run ./cmd/app --help
 ```
 
-```shell
+```
 Usage of ./echo-boilerplate:
       --app-name string                                The name of the application. (default "app")
       --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
@@ -175,10 +171,6 @@ Usage of ./echo-boilerplate:
       --oauth2-client-id string                        OAuth2 client id
       --oauth2-client-secret string                    OAuth2 client secret
       --openapi-schema string                          OpenAPI schema file (default "./openapi/openapi.yaml")
-      --super-create                                   Create superuser
-      --super-email string                             Superuser email (default "super@example.com")
-      --super-password string                          Superuser password
-      --super-username string                          Superuser username (default "super")
 ```
 
 ### Docker

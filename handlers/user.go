@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,9 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 
-	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/util"
@@ -36,33 +33,6 @@ type UserHandler struct {
 }
 
 func NewUserHandler(openapi *openapi.Handler, svc UserService) *UserHandler {
-	// TODO: move this to a cmd
-	if viper.GetBool(config.SuperCreate) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		_, err := svc.FindOneByEmailOrUsername(ctx, viper.GetString(config.SuperEmail), viper.GetString(config.SuperUsername))
-		if err != nil {
-			if errors.Is(err, data.ErrNoDocuments) {
-				log.Info().Msg("Creating super user")
-
-				user := models.NewUserWithRole(viper.GetString(config.SuperEmail), viper.GetString(config.SuperUsername), models.SuperRole)
-				user.Name = "Super User"
-				user.Bio = "I am super."
-				err = user.SetPassword(viper.GetString(config.SuperPassword))
-				if err != nil {
-					panic(fmt.Sprintf("failed setting super user password: %v", err))
-				}
-
-				_, err = svc.Create(ctx, user)
-				if err != nil {
-					panic(fmt.Sprintf("failed creating super user: %v", err))
-				}
-			} else {
-				panic(fmt.Sprintf("failed getting super user: %v", err))
-			}
-		}
-	}
-
 	return &UserHandler{
 		Handler: openapi,
 		svc:     svc,

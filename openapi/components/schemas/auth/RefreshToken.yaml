@@ -2,8 +2,14 @@ type: object
 description: Auth refresh token request
 additionalProperties: false
 required:
+  - grant_type
   - refresh_token
 properties:
+  grant_type:
+    type: string
+    description: Set it to `refresh_token`
+    example: refresh_token
+    enum: ['refresh_token']
   refresh_token:
     type: string
     description: Refresh token

@@ -79,7 +79,7 @@ type UserResponse struct {
 	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
 }
 
-type AdminResponse struct {
+type UserAdminResponse struct {
 	Id            string     `json:"id" bson:"id"`
 	Bio           string     `json:"bio" bson:"bio"`
 	Email         string     `json:"email" bson:"email"`
@@ -149,8 +149,8 @@ func (u *User) Response() *UserResponse {
 	}
 }
 
-func (u *User) AdminResponse() *AdminResponse {
-	return &AdminResponse{
+func (u *User) AdminResponse() *UserAdminResponse {
+	return &UserAdminResponse{
 		Id:        u.Id,
 		Username:  u.Username,
 		Email:     u.Email,
