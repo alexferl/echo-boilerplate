@@ -3,6 +3,8 @@
 A Go 1.22+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
 authentication, authorization and request/response validation.
 
+> Important: I use this as a starting point for personal projects, it can and will change without notice.
+
 ## Features
 - [JWT](https://jwt.io/) for authentication with access and [refresh](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) tokens.
  The access token can be sent in the [Authorization](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization) header or
@@ -101,6 +103,25 @@ Response:
 ### OpenAPI docs
 You can see the OpenAPI docs by running the app and navigating to `http://localhost:1323/docs` or by
 opening [assets/index.html](docs/index.html) in your web browser.
+
+### Repository layout
+```shell
+.
+├── casbin    <--- model and policy files for Casbin
+├── cmd       <--- entrypoints
+├── config    <--- config structs and defaults are specified here
+├── configs   <--- config files, for configs that rarely change, but should override the defaults
+├── data      <--- base mapper, database helpers
+├── docs      <--- generated documentation from OpenAPI schema
+├── handlers  <--- HTTP handlers (aka controllers, endpoints etc.) that interacts with the services
+├── mappers   <--- mapper layer that the services use to insert/retrieve models from the database
+├── models    <--- structs defining the various resources
+├── openapi   <--- OpenAPI schema files
+├── server.go <--- glues handlers/services/mappers
+├── services  <--- service layer that interacts with the mappers
+├── testing   <--- testing helpers
+└── util      <--- general helpers
+```
 
 ### Usage
 ```shell
