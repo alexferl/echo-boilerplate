@@ -54,10 +54,10 @@ curl --request POST \
 Response:
 ```json
 {
-	"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-	"expires_in": 3600,
-	"refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-	"token_type": "Bearer"
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600,
+  "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer"
 }
 ```
 **Note**: The `access_token` only lasts 60 minutes by default, this is as designed. A client
@@ -86,13 +86,13 @@ curl --request GET \
 Response:
 ```json
 {
-	"id": "cdhgh0dfclscplnrcuag",
-	"username": "super",
-	"email": "super@example.com",
-	"name": "Super",
-	"bio": "",
-	"created_at": "2022-11-03T00:17:05.837Z",
-	"updated_at": null
+  "id": "cdhgh0dfclscplnrcuag",
+  "username": "super",
+  "email": "super@example.com",
+  "name": "Super",
+  "bio": "",
+  "created_at": "2022-11-03T00:17:05.837Z",
+  "updated_at": null
 }
 ```
 
