@@ -1,4 +1,4 @@
-ARG GOLANG_VERSION=1.19-alpine
+ARG GOLANG_VERSION=1.21-alpine
 FROM golang:${GOLANG_VERSION} AS builder
 MAINTAINER Alexandre Ferland <me@alexferl.com>
 

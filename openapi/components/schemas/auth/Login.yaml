@@ -1,0 +1,23 @@
+type: object
+description: Auth login request
+additionalProperties: false
+required:
+  - password
+properties:
+  email:
+    type: string
+    description: The email of the user
+    example: test@example.com
+  password:
+    type: string
+    description: The password of the user
+    example: correct-horse-staple-battery
+  username:
+    type: string
+    description: Username of the user
+    example: test
+oneOf:
+  - required:
+    - email
+  - required:
+    - username

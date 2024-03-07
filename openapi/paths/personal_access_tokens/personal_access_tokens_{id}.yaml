@@ -1,0 +1,44 @@
+get:
+  summary: Get a personal access token
+  description: Returns a personal access token for the authenticated user.
+  operationId: getPersonalAccessToken
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - personal access tokens
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully returned a personal access token
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/personal_access_tokens/Token.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+delete:
+  summary: Revoke a personal access token
+  description: Revokes a personal access token for the authenticated user.
+  operationId: revokePersonalAccessToken
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - personal access tokens
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully revoked a personal access token
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'

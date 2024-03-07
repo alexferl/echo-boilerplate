@@ -1,0 +1,43 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+    description: Unique identifier for this object
+    example: '1'
+    readOnly: true
+  title:
+    type: string
+    description: The title of the task
+    example: My Task
+  completed:
+    type: boolean
+    example: true
+  completed_at:
+    type: string
+    format: date-time
+    description: Task completion date time
+    example: '2022-11-13T07:12:33.017Z'
+    nullable: true
+  completed_by:
+    nullable: true
+    allOf:
+      - $ref: '../users/PublicUser.yaml'
+  created_at:
+    type: string
+    format: date-time
+    description: Task creation date time
+    example: '2022-11-12T14:54:18.103Z'
+    nullable: true
+  created_by:
+    $ref: '../users/PublicUser.yaml'
+  updated_at:
+    type: string
+    format: date-time
+    description: Task update date time
+    example: '2022-11-12T14:58:33.409Z'
+    nullable: true
+  updated_by:
+    nullable: true
+    allOf:
+      - $ref: '../users/PublicUser.yaml'

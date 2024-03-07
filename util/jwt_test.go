@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/alexferl/echo-boilerplate/config"
-	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 func TestGenerateTokens(t *testing.T) {
@@ -65,7 +64,7 @@ func TestHasRole(t *testing.T) {
 			token, err := ParseToken(access)
 			assert.NoError(t, err)
 
-			assert.Equal(t, tc.hasRole, HasRole(token, tc.role))
+			assert.Equal(t, tc.hasRole, HasRoles(token, tc.role))
 		})
 	}
 }

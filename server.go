@@ -22,36 +22,39 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
-	"github.com/alexferl/echo-boilerplate/handlers/tasks"
-	"github.com/alexferl/echo-boilerplate/handlers/users"
+	"github.com/alexferl/echo-boilerplate/mappers"
+	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util"
 )
 
-func Handlers() []handlers.IHandler {
-	client, err := mongodb.New()
+func NewServer() *server.Server {
+	client, err := data.MewMongoClient()
 	if err != nil {
-		panic(err)
-	}
-
-	err = data.CreateIndexes(client)
-	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed creating mongo client")
 	}
 
 	openapi := openapiMw.NewHandler()
 
-	return []handlers.IHandler{
-		handlers.NewHandler(),
-		tasks.NewHandler(client, openapi, nil),
-		users.NewHandler(client, openapi, nil),
-	}
+	patMapper := mappers.NewPersonalAccessToken(client)
+	patSvc := services.NewPersonalAccessToken(patMapper)
+
+	taskMapper := mappers.NewTask(client)
+	taskSvc := services.NewTask(taskMapper)
+
+	userMapper := mappers.NewUser(client)
+	userSvc := services.NewUser(userMapper)
+
+	return newServer([]handlers.Handler{
+		handlers.NewRootHandler(openapi),
+		handlers.NewAuthHandler(openapi, userSvc),
+		handlers.NewPersonalAccessTokenHandler(openapi, patSvc),
+		handlers.NewTaskHandler(openapi, taskSvc),
+		handlers.NewUserHandler(openapi, userSvc),
+	}...)
 }
 
-func NewServer() *server.Server {
-	return newServer(Handlers()...)
-}
-
-func NewTestServer(handler ...handlers.IHandler) *server.Server {
+func NewTestServer(handler ...handlers.Handler) *server.Server {
 	c := config.New()
 	c.BindFlags()
 
@@ -61,18 +64,17 @@ func NewTestServer(handler ...handlers.IHandler) *server.Server {
 	return newServer(handler...)
 }
 
-func newServer(handler ...handlers.IHandler) *server.Server {
+func newServer(handler ...handlers.Handler) *server.Server {
 	key, err := util.LoadPrivateKey()
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed loading private key")
 	}
 
-	// TODO: already called in Handlers, use it?
 	client, err := mongodb.New()
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed creating mongo client")
 	}
-	mapper := data.NewMapper(client, viper.GetString(config.AppName), users.PATCollection)
+	mapper := data.NewMapper(client, viper.GetString(config.AppName), "personal_access_tokens")
 
 	jwtConfig := jwtMw.Config{
 		Key:             key,
@@ -88,13 +90,23 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			"/oauth2/callback": {http.MethodGet},
 			"/oauth2/login":    {http.MethodGet},
 		},
-		OptionalRoutes: map[string][]string{
-			"/users/:id_or_username": {http.MethodGet},
-		},
 		AfterParseFunc: func(c echo.Context, t jwt.Token, encodedToken string, src jwtMw.TokenSource) *echo.HTTPError {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
+			isBanned := claims["is_banned"]
+			isLocked := claims["is_locked"]
+
+			if val, ok := isBanned.(bool); ok {
+				if val {
+					return echo.NewHTTPError(http.StatusForbidden, "account banned")
+				}
+			}
+			if val, ok := isLocked.(bool); ok {
+				if val {
+					return echo.NewHTTPError(http.StatusForbidden, "account locked")
+				}
+			}
 
 			// CSRF
 			if viper.GetBool(config.CookiesEnabled) && viper.GetBool(config.CSRFEnabled) {
@@ -122,10 +134,11 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 			// Personal Access Tokens
 			typ := claims["type"]
 			if typ == util.PersonalToken.String() {
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 				defer cancel()
+
 				filter := bson.D{{"user_id", t.Subject()}}
-				result, err := mapper.WithCollection(users.PATCollection).FindOne(ctx, filter, &users.PersonalAccessToken{})
+				result, err := mapper.FindOne(ctx, filter, &models.PersonalAccessToken{})
 				if err != nil {
 					if errors.Is(err, data.ErrNoDocuments) {
 						return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")
@@ -133,7 +146,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 				}
 
-				pat := result.(*users.PersonalAccessToken)
+				pat := result.(*models.PersonalAccessToken)
 				if err = pat.Validate(encodedToken); err != nil {
 					return echo.NewHTTPError(http.StatusUnauthorized, "token mismatch")
 				}
@@ -143,7 +156,7 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 				}
 			}
 
-			c.Set("logger", log.With().Str("token_id", t.Subject()).Logger())
+			log.Logger = log.Logger.With().Str("token_id", t.Subject()).Logger()
 
 			return nil
 		},
@@ -176,10 +189,10 @@ func newServer(handler ...handlers.IHandler) *server.Server {
 	)
 
 	for _, h := range handler {
-		h.AddRoutes(s)
+		h.Register(s)
 	}
 
-	s.File("/docs", "./assets/index.html")
+	s.File("/docs", "./docs/index.html")
 	s.Static("/openapi/", "./openapi")
 
 	return s

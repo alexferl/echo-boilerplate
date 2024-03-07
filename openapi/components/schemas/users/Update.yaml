@@ -1,0 +1,16 @@
+type: object
+description: User update request
+additionalProperties: false
+properties:
+  name:
+    type: string
+    description: Name of the user
+    minLength: 0
+    maxLength: 100
+    example: Test Updated
+  bio:
+    type: string
+    description: Biography of the user
+    minLength: 0
+    maxLength: 1000
+    example: This is my updated example bio.

@@ -33,6 +33,6 @@ openapi/paths/auth_refresh.yaml:
 openapi/paths/auth_signup.yaml:
   security-defined:
     - '#/post'
-openapi/paths/users_{id_or_username}.yaml:
+openapi/paths/users_{id}.yaml:
   security-defined:
     - '#/get'

@@ -1,0 +1,18 @@
+get:
+  summary: Get token
+  description: Returns access token.
+  operationId: getAccessToken
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - auth
+  responses:
+    '200':
+      description: Access token
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth/Token.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'

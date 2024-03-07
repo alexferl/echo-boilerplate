@@ -1,0 +1,29 @@
+post:
+  summary: Refresh token
+  description: Returns new tokens.
+  operationId: authRefresh
+  tags:
+    - auth
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/auth/RefreshToken.yaml'
+  responses:
+    '200':
+      description: Successfully returned tokens
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth/TokenResponse.yaml'
+      headers:
+        Set-Cookie:
+          schema:
+            $ref: '../../components/headers/SetCookie.yaml'
+        "\0Set-Cookie":
+          schema:
+            $ref: '../../components/headers/SetCookieRefresh.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

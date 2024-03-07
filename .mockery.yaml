@@ -1,10 +1,13 @@
-quiet: False
 with-expecter: True
-mockname: "{{.InterfaceName}}"
-filename: "{{.MockName}}.go"
-outpkg: mocks
-dir: mocks/
+filename: "mock_{{.InterfaceName}}.go"
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+inpackage: True
 packages:
-  github.com/alexferl/echo-boilerplate/data:
+  github.com/alexferl/echo-boilerplate/handlers:
     interfaces:
-      IMapper:
+      PersonalAccessTokenService:
+      RootService:
+      TaskService:
+      UserService:

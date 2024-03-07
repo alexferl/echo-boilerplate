@@ -1,7 +1,0 @@
-type: object
-additionalProperties: false
-properties:
-  personal_access_tokens:
-    type: array
-    items:
-      $ref: './PersonalAccessToken.yaml'

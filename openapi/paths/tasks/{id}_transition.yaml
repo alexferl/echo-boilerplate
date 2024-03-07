@@ -1,0 +1,36 @@
+put:
+  summary: Transition a task
+  description: Returns the transitioned task.
+  operationId: transitionTask
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - tasks
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/tasks/Transition.yaml'
+  responses:
+    '200':
+      description: Successfully transitioned a task
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/tasks/Task.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

@@ -1,0 +1,62 @@
+get:
+  summary: Get a user
+  description: Returns a single user.
+  operationId: getUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successfully returned a user
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/User.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+put:
+  summary: Update user
+  description: Returns the updated user.
+  operationId: updateUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/Update.yaml'
+  responses:
+    '200':
+      description: Successfully returned user modifications
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/User.yaml'
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -114,18 +115,19 @@ func GetRoles(token jwt.Token) []string {
 	return res
 }
 
-func HasRole(token jwt.Token, role string) bool {
+func HasRoles(token jwt.Token, roles ...string) bool {
 	if val, ok := token.Get("roles"); !ok {
 		log.Error().Msgf("failed getting roles for token: %s", token.Subject())
 		return false
 	} else {
-		roles, ok := val.([]interface{})
+		jwtRoles, ok := val.([]interface{})
 		if !ok {
 			log.Error().Msgf("failed converting roles to slice for token: %s", token.Subject())
 			return false
 		}
-		for _, r := range roles {
-			if r == role {
+
+		for _, r := range jwtRoles {
+			if slices.Contains(roles, r.(string)) {
 				return true
 			}
 		}
