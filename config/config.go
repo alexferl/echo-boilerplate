@@ -93,7 +93,7 @@ func New() *Config {
 			ClientSecret: "",
 		},
 		JWT: &JWT{
-			AccessTokenExpiry:      10 * time.Minute,
+			AccessTokenExpiry:      60 * time.Minute,
 			AccessTokenCookieName:  "access_token",
 			RefreshTokenExpiry:     (30 * 24) * time.Hour,
 			RefreshTokenCookieName: "refresh_token",
@@ -164,10 +164,10 @@ const (
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
 
-	fs.BoolVar(&c.Super.Create, SuperCreate, c.Super.Create, "create admin")
-	fs.StringVar(&c.Super.Email, SuperEmail, c.Super.Email, "Super email")
-	fs.StringVar(&c.Super.Username, SuperUsername, c.Super.Username, "Super username")
-	fs.StringVar(&c.Super.Password, SuperPassword, c.Super.Password, "Super password")
+	fs.BoolVar(&c.Super.Create, SuperCreate, c.Super.Create, "Create superuser")
+	fs.StringVar(&c.Super.Email, SuperEmail, c.Super.Email, "Superuser email")
+	fs.StringVar(&c.Super.Username, SuperUsername, c.Super.Username, "Superuser username")
+	fs.StringVar(&c.Super.Password, SuperPassword, c.Super.Password, "Superuser password")
 
 	fs.StringVar(&c.OAuth2.ClientId, OAuth2ClientId, c.OAuth2.ClientId, "OAuth2 client id")
 	fs.StringVar(&c.OAuth2.ClientSecret, OAuth2ClientSecret, c.OAuth2.ClientSecret, "OAuth2 client secret")

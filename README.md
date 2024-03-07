@@ -1,6 +1,6 @@
 # echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate) [![codecov](https://codecov.io/gh/alexferl/echo-boilerplate/branch/master/graph/badge.svg)](https://codecov.io/gh/alexferl/echo-boilerplate)
 
-A Go 1.21+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
+A Go 1.22+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
 authentication, authorization and request/response validation.
 
 ## Features
@@ -29,12 +29,12 @@ make dev
 ```
 **Note**: An RSA private key will be generated in the current folder to sign and verify the JSON web tokens.
 
-### Creating admin user
-Launch the app with `--admin-create` to create an admin user. You can change the default values with the following flags:
-`--admin-email`, `--admin-username` and `--admin-password`.
+### Creating super user
+Launch the app with `--super-create` to create a superuser. You can change the default values with the following flags:
+`--super-email`, `--super-username` and `--super-password`.
 ```shell
 make build
-./app-bin --admin-create
+./app-bin --super-create
 ```
 
 ### Building & Running locally
@@ -49,7 +49,7 @@ curl --request POST \
   --url http://localhost:1323/auth/login \
   --header 'Content-Type: application/json' \
   --data '{
-	"email": "admin@example.com",
+	"email": "super@example.com",
 	"password": "changeme"
 }'
 ```
@@ -57,12 +57,12 @@ Response:
 ```shell
 {
 	"access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-	"expires_in": 600,
+	"expires_in": 3600,
 	"refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
 	"token_type": "Bearer"
 }
 ```
-**Note**: The `access_token` only lasts 10 minutes by default, this is as designed. A client
+**Note**: The `access_token` only lasts 60 minutes by default, this is as designed. A client
 (like an [SPA](https://en.wikipedia.org/wiki/Single-page_application) or a mobile application) would have an interceptor
 to catch the 401 responses, send the `refresh_token` to the `/auth/refresh` endpoint to get new access and refresh tokens and
 then retry the previous request with the new `access_token` which should then succeed. The duration of the `access_token`
@@ -109,10 +109,6 @@ go build -o app-bin ./cmd/app && ./app-bin --help
 
 ```shell
 Usage of ./echo-boilerplate:
-      --admin-create                                   Create admin
-      --admin-email string                             Admin email (default "admin@example.com")
-      --admin-password string                          Admin password
-      --admin-username string                          Admin username (default "admin")
       --app-name string                                The name of the application. (default "app")
       --base-url string                                Base URL where the app will be served (default "http://localhost:1323")
       --casbin-model string                            Casbin model file (default "./casbin/model.conf")
@@ -136,8 +132,10 @@ Usage of ./echo-boilerplate:
       --http-cors-max-age int                          Indicates how long the results of a preflight request can be cached.
       --http-graceful-timeout duration                 Timeout for graceful shutdown. (default 30s)
       --http-log-requests                              Controls the logging of HTTP requests (default true)
+      --http-tls-cert-file string                      TLS certificate file
+      --http-tls-key-file string                       TLS key file
       --jwt-access-token-cookie-name string            JWT access token cookie name (default "access_token")
-      --jwt-access-token-expiry duration               JWT access token expiry (default 10m0s)
+      --jwt-access-token-expiry duration               JWT access token expiry (default 1h0m0s)
       --jwt-issuer string                              JWT issuer (default "http://localhost:1323")
       --jwt-private-key string                         JWT private key file path (default "./private-key.pem")
       --jwt-refresh-token-cookie-name string           JWT refresh token cookie name (default "refresh_token")
@@ -145,16 +143,21 @@ Usage of ./echo-boilerplate:
       --log-level string                               The granularity of log outputs. Valid levels: 'PANIC', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'DISABLED' (default "INFO")
       --log-output string                              The output to write to. 'stdout' means log to stdout, 'stderr' means log to stderr. (default "stdout")
       --log-writer string                              The log writer. Valid writers are: 'console' and 'json'. (default "console")
-      --mongodb-connect-timeout-ms duration            MongoDB connect timeout ms (default 5s)
+      --mongodb-app-name string                        MongoDB app name
+      --mongodb-connect-timeout-ms duration            MongoDB connect timeout ms (default 10s)
       --mongodb-password string                        MongoDB password
       --mongodb-replica-set string                     MongoDB replica set
-      --mongodb-server-selection-timeout-ms duration   MongoDB server selection timeout ms (default 5s)
+      --mongodb-server-selection-timeout-ms duration   MongoDB server selection timeout ms (default 10s)
       --mongodb-socket-timeout-ms duration             MongoDB socket timeout ms (default 30s)
       --mongodb-uri string                             MongoDB URI (default "mongodb://localhost:27017")
       --mongodb-username string                        MongoDB username
       --oauth2-client-id string                        OAuth2 client id
       --oauth2-client-secret string                    OAuth2 client secret
       --openapi-schema string                          OpenAPI schema file (default "./openapi/openapi.yaml")
+      --super-create                                   Create superuser
+      --super-email string                             Superuser email (default "super@example.com")
+      --super-password string                          Superuser password
+      --super-username string                          Superuser username (default "super")
 ```
 
 ### Docker
