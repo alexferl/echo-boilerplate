@@ -105,7 +105,7 @@ You can see the OpenAPI docs by running the app and navigating to `http://localh
 opening [assets/index.html](docs/index.html) in your web browser.
 
 ### Repository layout
-```shell
+```
 .
 ├── casbin    <--- model and policy files for Casbin
 ├── cmd       <--- entrypoints
