@@ -87,9 +87,9 @@ Response:
 ```json
 {
 	"id": "cdhgh0dfclscplnrcuag",
-	"username": "admin",
-	"email": "admin@example.com",
-	"name": "",
+	"username": "super",
+	"email": "super@example.com",
+	"name": "Super",
 	"bio": "",
 	"created_at": "2022-11-03T00:17:05.837Z",
 	"updated_at": null
@@ -121,7 +121,7 @@ opening [assets/index.html](docs/index.html) in your web browser.
 
 ### Usage
 ```shell
-go run ./cmd/app --help
+go run ./cmd/server --help
 ```
 
 ```
@@ -187,10 +187,10 @@ make docker-run
 #### Passing args
 CLI:
 ```shell
-docker run -p 1323:1323 --rm app --env-name prod
+docker run -p 1323:1323 --rm echo-boilerplate --env-name prod
 ```
 
 Environment variables:
 ```shell
-docker run -p 1323:1323 -e "APP_ENV_NAME=prod" --rm app
+docker run -p 1323:1323 -e "APP_ENV_NAME=prod" --rm echo-boilerplate
 ```
