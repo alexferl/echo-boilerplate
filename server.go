@@ -13,7 +13,7 @@ import (
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson"
@@ -25,7 +25,8 @@ import (
 	"github.com/alexferl/echo-boilerplate/mappers"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/services"
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/hash"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
 func NewServer() *server.Server {
@@ -65,7 +66,7 @@ func NewTestServer(handler ...handlers.Handler) *server.Server {
 }
 
 func newServer(handler ...handlers.Handler) *server.Server {
-	key, err := util.LoadPrivateKey()
+	key, err := jwt.LoadPrivateKey()
 	if err != nil {
 		log.Panic().Err(err).Msg("failed loading private key")
 	}
@@ -80,17 +81,18 @@ func newServer(handler ...handlers.Handler) *server.Server {
 		Key:             key,
 		UseRefreshToken: true,
 		ExemptRoutes: map[string][]string{
-			"/":                {http.MethodGet},
-			"/readyz":          {http.MethodGet},
-			"/livez":           {http.MethodGet},
-			"/docs":            {http.MethodGet},
-			"/openapi/*":       {http.MethodGet},
-			"/auth/login":      {http.MethodPost},
-			"/auth/signup":     {http.MethodPost},
-			"/oauth2/callback": {http.MethodGet},
-			"/oauth2/login":    {http.MethodGet},
+			"/":                       {http.MethodGet},
+			"/readyz":                 {http.MethodGet},
+			"/livez":                  {http.MethodGet},
+			"/docs":                   {http.MethodGet},
+			"/openapi/*":              {http.MethodGet},
+			"/auth/login":             {http.MethodPost},
+			"/auth/signup":            {http.MethodPost},
+			"/google":                 {http.MethodGet},
+			"/oauth2/google/callback": {http.MethodGet},
+			"/oauth2/google/login":    {http.MethodGet},
 		},
-		AfterParseFunc: func(c echo.Context, t jwt.Token, encodedToken string, src jwtMw.TokenSource) *echo.HTTPError {
+		AfterParseFunc: func(c echo.Context, t jwx.Token, encodedToken string, src jwtMw.TokenSource) *echo.HTTPError {
 			// set roles for casbin
 			claims := t.PrivateClaims()
 			c.Set("roles", claims["roles"])
@@ -124,7 +126,7 @@ func newServer(handler ...handlers.Handler) *server.Server {
 							return echo.NewHTTPError(http.StatusBadRequest, "missing CSRF token header")
 						}
 
-						if !util.ValidMAC([]byte(cookie.Value), []byte(h), []byte(viper.GetString(config.CSRFSecretKey))) {
+						if !hash.ValidMAC([]byte(cookie.Value), []byte(h), []byte(viper.GetString(config.CSRFSecretKey))) {
 							return echo.NewHTTPError(http.StatusForbidden, "invalid CSRF token")
 						}
 					}
@@ -133,7 +135,7 @@ func newServer(handler ...handlers.Handler) *server.Server {
 
 			// Personal Access Tokens
 			typ := claims["type"]
-			if typ == util.PersonalToken.String() {
+			if typ == jwt.PersonalToken.String() {
 				ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 				defer cancel()
 
@@ -151,7 +153,7 @@ func newServer(handler ...handlers.Handler) *server.Server {
 					return echo.NewHTTPError(http.StatusUnauthorized, "token mismatch")
 				}
 
-				if pat.Revoked {
+				if pat.IsRevoked {
 					return echo.NewHTTPError(http.StatusUnauthorized, "token is revoked")
 				}
 			}
@@ -170,13 +172,14 @@ func newServer(handler ...handlers.Handler) *server.Server {
 	openAPIConfig := openapiMw.Config{
 		Schema: viper.GetString(config.OpenAPISchema),
 		ExemptRoutes: map[string][]string{
-			"/":                {http.MethodGet},
-			"/readyz":          {http.MethodGet},
-			"/livez":           {http.MethodGet},
-			"/docs":            {http.MethodGet},
-			"/openapi/*":       {http.MethodGet},
-			"/oauth2/callback": {http.MethodGet},
-			"/oauth2/login":    {http.MethodGet},
+			"/":                       {http.MethodGet},
+			"/readyz":                 {http.MethodGet},
+			"/livez":                  {http.MethodGet},
+			"/docs":                   {http.MethodGet},
+			"/openapi/*":              {http.MethodGet},
+			"/google":                 {http.MethodGet},
+			"/oauth2/google/callback": {http.MethodGet},
+			"/oauth2/google/login":    {http.MethodGet},
 		},
 	}
 

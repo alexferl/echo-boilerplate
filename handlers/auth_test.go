@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexferl/echo-jwt"
+	jwtMw "github.com/alexferl/echo-jwt"
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
@@ -22,7 +22,8 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/cookie"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
 type AuthHandlerTestSuite struct {
@@ -174,7 +175,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Cookie() {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie(refresh))
+	req.AddCookie(cookie.NewRefreshToken(refresh))
 	resp := httptest.NewRecorder()
 
 	s.svc.EXPECT().
@@ -196,7 +197,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Invalid() {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie([]byte("invalid")))
+	req.AddCookie(cookie.NewRefreshToken([]byte("invalid")))
 	resp := httptest.NewRecorder()
 
 	s.server.ServeHTTP(resp, req)
@@ -205,7 +206,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Invalid() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), jwt.ErrTokenInvalid, result.Message)
+	assert.Equal(s.T(), jwtMw.ErrTokenInvalid, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Mismatch() {
@@ -215,7 +216,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Mismatch() {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie(refresh))
+	req.AddCookie(cookie.NewRefreshToken(refresh))
 	resp := httptest.NewRecorder()
 
 	s.svc.EXPECT().
@@ -270,7 +271,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Body_Missing_Key() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
-	assert.Equal(s.T(), jwt.ErrBodyMissingKey, result.Message)
+	assert.Equal(s.T(), jwtMw.ErrBodyMissingKey, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Token_Missing() {
@@ -284,7 +285,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Token_Missing() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
+	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Token_Mismatch() {
@@ -325,7 +326,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie(refresh))
+	req.AddCookie(cookie.NewRefreshToken(refresh))
 	resp := httptest.NewRecorder()
 
 	s.svc.EXPECT().
@@ -379,7 +380,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Cookie_Missing() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
+	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Cookie_Invalid() {
@@ -389,7 +390,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Cookie_Invalid() {
 
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewRefreshTokenCookie(refresh))
+	req.AddCookie(cookie.NewRefreshToken(refresh))
 	resp := httptest.NewRecorder()
 
 	s.svc.EXPECT().
@@ -470,7 +471,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Token_Missing() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwt.ErrRequestMalformed, result.Message)
+	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Invalid() {
@@ -600,7 +601,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 	user := models.NewUser("test@example.com", "test")
 	access, _, _ := user.Login()
 
-	token, _ := util.ParseToken(access)
+	token, _ := jwt.ParseEncoded(access)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/token", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -643,11 +644,11 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 	user := models.NewUser("test@example.com", "test")
 	access, _, _ := user.Login()
 
-	token, _ := util.ParseToken(access)
+	token, _ := jwt.ParseEncoded(access)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/token", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewAccessTokenCookie(access))
+	req.AddCookie(cookie.NewAccessToken(access))
 	resp := httptest.NewRecorder()
 
 	s.server.ServeHTTP(resp, req)
@@ -671,7 +672,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_401() {
 	req := httptest.NewRequest(http.MethodGet, "/auth/token", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(util.NewAccessTokenCookie([]byte("wrong")))
+	req.AddCookie(cookie.NewAccessToken([]byte("wrong")))
 	resp := httptest.NewRecorder()
 
 	s.server.ServeHTTP(resp, req)

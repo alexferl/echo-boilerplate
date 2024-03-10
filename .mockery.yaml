@@ -11,3 +11,8 @@ packages:
       RootService:
       TaskService:
       UserService:
+  github.com/alexferl/echo-boilerplate/services:
+    interfaces:
+      PersonalAccessTokenMapper:
+      TaskMapper:
+      UserMapper:

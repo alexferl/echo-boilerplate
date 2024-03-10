@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
 func TestPersonalAccessToken(t *testing.T) {
@@ -14,7 +14,7 @@ func TestPersonalAccessToken(t *testing.T) {
 	access, _, err := user.Login()
 	assert.NoError(t, err)
 
-	token, err := util.ParseToken(access)
+	token, err := jwt.ParseEncoded(access)
 	assert.NoError(t, err)
 
 	// expires_at not in future

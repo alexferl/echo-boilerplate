@@ -9,12 +9,12 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/pagination"
 )
 
 type UserService interface {
@@ -49,7 +49,7 @@ func (h *UserHandler) Register(s *server.Server) {
 }
 
 func (h *UserHandler) getCurrentUser(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
@@ -69,7 +69,7 @@ type UpdateCurrentUserRequest struct {
 }
 
 func (h *UserHandler) updateCurrentUser(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	body := &UpdateCurrentUserRequest{}
 	if err := c.Bind(body); err != nil {
@@ -132,7 +132,7 @@ type UpdateUserRequest struct {
 
 func (h *UserHandler) update(c echo.Context) error {
 	id := c.Param("id")
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	body := &UpdateUserRequest{}
 	if err := c.Bind(body); err != nil {
@@ -180,7 +180,7 @@ type UpdateUserStatusRequest struct {
 
 func (h *UserHandler) updateStatus(c echo.Context) error {
 	id := c.Param("id")
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	body := &UpdateUserStatusRequest{}
 	if err := c.Bind(body); err != nil {
@@ -236,7 +236,7 @@ func (h *UserHandler) updateStatus(c echo.Context) error {
 }
 
 func (h *UserHandler) list(c echo.Context) error {
-	page, perPage, limit, skip := util.ParsePaginationParams(c)
+	page, perPage, limit, skip := pagination.ParseParams(c)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
@@ -251,7 +251,7 @@ func (h *UserHandler) list(c echo.Context) error {
 		return err
 	}
 
-	util.SetPaginationHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
+	pagination.SetHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
 	return h.Validate(c, http.StatusOK, users.Public())
 }

@@ -44,8 +44,8 @@ func (t *PersonalAccessToken) Read(ctx context.Context, id string) (*models.Pers
 	return token, nil
 }
 
-func (t *PersonalAccessToken) Delete(ctx context.Context, model *models.PersonalAccessToken) error {
-	model.Revoked = true
+func (t *PersonalAccessToken) Revoke(ctx context.Context, model *models.PersonalAccessToken) error {
+	model.IsRevoked = true
 	_, err := t.mapper.Update(ctx, model)
 	if err != nil {
 		return err

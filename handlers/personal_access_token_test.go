@@ -11,7 +11,7 @@ import (
 
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -20,7 +20,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
 type PersonalAccessTokenHandlerTestSuite struct {
@@ -51,7 +51,7 @@ func TestPersonalAccessTokenHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(PersonalAccessTokenHandlerTestSuite))
 }
 
-func createTokens(token jwt.Token, num int) models.PersonalAccessTokens {
+func createTokens(token jwx.Token, num int) models.PersonalAccessTokens {
 	result := make(models.PersonalAccessTokens, 0)
 
 	for i := range num {
@@ -67,7 +67,7 @@ func createTokens(token jwt.Token, num int) models.PersonalAccessTokens {
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_200() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	payload := &handlers.CreatePersonalAccessTokenRequest{
 		Name:      "My Token",
@@ -109,7 +109,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_409() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	payload := &handlers.CreatePersonalAccessTokenRequest{
 		Name:      "My Token",
@@ -151,7 +151,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_422_Exp() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	payload := &handlers.CreatePersonalAccessTokenRequest{
 		Name:      "My Token",
@@ -176,7 +176,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_List_200() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 	num := 10
 	pats := createTokens(token, num)
 
@@ -209,7 +209,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get_200() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	newPAT, _ := models.NewPersonalAccessToken(
 		token,
@@ -250,7 +250,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_204() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	newPAT, _ := models.NewPersonalAccessToken(
 		token,
@@ -268,7 +268,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 		Return(newPAT, nil)
 
 	s.svc.EXPECT().
-		Delete(mock.Anything, mock.Anything).
+		Revoke(mock.Anything, mock.Anything).
 		Return(nil)
 
 	s.server.ServeHTTP(resp, req)
@@ -302,14 +302,14 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_409() {
-	token, _ := util.ParseToken(s.accessToken)
+	token, _ := jwt.ParseEncoded(s.accessToken)
 
 	newPAT, _ := models.NewPersonalAccessToken(
 		token,
 		fmt.Sprintf("my_token"),
 		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
 	)
-	newPAT.Revoked = true
+	newPAT.IsRevoked = true
 
 	req := httptest.NewRequest(http.MethodDelete, "/me/personal_access_tokens/id", nil)
 	req.Header.Set("Content-Type", "application/json")

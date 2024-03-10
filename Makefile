@@ -71,7 +71,7 @@ tidy:
 fmt: check-gofumpt
 	gofumpt -l -w .
 
-mocks:
+mock:
 	mockery
 
 openapi-lint: check-redocly

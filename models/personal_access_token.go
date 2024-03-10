@@ -4,10 +4,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/xid"
 
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
+	"github.com/alexferl/echo-boilerplate/util/password"
 )
 
 var ErrExpiresAtPast = errors.New("expires_at cannot be in the past")
@@ -16,14 +17,14 @@ type PersonalAccessToken struct {
 	Id        string     `json:"id" bson:"id"`
 	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
 	ExpiresAt *time.Time `json:"expires_at" bson:"expires_at"`
+	IsRevoked bool       `json:"is_revoked" bson:"is_revoked"`
 	Name      string     `json:"name" bson:"name"`
 	Token     string     `json:"token" bson:"token"`
-	Revoked   bool       `json:"revoked" bson:"revoked"`
 	UserId    string     `json:"user_id" bson:"user_id"`
 }
 
 func (pat *PersonalAccessToken) Encrypt() error {
-	b, err := util.HashPassword([]byte(pat.Token))
+	b, err := password.Hash([]byte(pat.Token))
 	if err != nil {
 		return err
 	}
@@ -34,7 +35,7 @@ func (pat *PersonalAccessToken) Encrypt() error {
 }
 
 func (pat *PersonalAccessToken) Validate(s string) error {
-	return util.VerifyPassword([]byte(pat.Token), []byte(s))
+	return password.Verify([]byte(pat.Token), []byte(s))
 }
 
 func (pat *PersonalAccessToken) Response() *PersonalAccessTokenResponse {
@@ -43,7 +44,7 @@ func (pat *PersonalAccessToken) Response() *PersonalAccessTokenResponse {
 		CreatedAt: pat.CreatedAt,
 		ExpiresAt: pat.ExpiresAt,
 		Name:      pat.Name,
-		Revoked:   pat.Revoked,
+		Revoked:   pat.IsRevoked,
 		UserId:    pat.UserId,
 	}
 }
@@ -71,7 +72,7 @@ type PersonalAccessTokenResponse struct {
 	UserId    string     `json:"user_id" bson:"user_id"`
 }
 
-func NewPersonalAccessToken(token jwt.Token, name string, expiresAt string) (*PersonalAccessToken, error) {
+func NewPersonalAccessToken(token jwx.Token, name string, expiresAt string) (*PersonalAccessToken, error) {
 	t, err := time.Parse("2006-01-02", expiresAt)
 	if err != nil {
 		return nil, err
@@ -82,8 +83,8 @@ func NewPersonalAccessToken(token jwt.Token, name string, expiresAt string) (*Pe
 		return nil, ErrExpiresAtPast
 	}
 
-	roles := util.GetRoles(token)
-	pat, err := util.GeneratePersonalToken(token.Subject(), t.Sub(now), map[string]any{"roles": roles})
+	roles := jwt.GetRoles(token)
+	pat, err := jwt.GeneratePersonalToken(token.Subject(), t.Sub(now), map[string]any{"roles": roles})
 	if err != nil {
 		return nil, err
 	}

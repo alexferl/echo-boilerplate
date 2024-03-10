@@ -4,7 +4,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
+	"github.com/alexferl/echo-boilerplate/util/password"
 )
 
 type Role int
@@ -129,7 +130,7 @@ func NewUserWithRole(email string, username string, role Role) *User {
 }
 
 func (u *User) SetPassword(s string) error {
-	b, err := util.HashPassword([]byte(s))
+	b, err := password.Hash([]byte(s))
 	if err != nil {
 		return err
 	}
@@ -172,7 +173,7 @@ func (u *User) Public() *UserPublic {
 }
 
 func (u *User) ValidatePassword(s string) error {
-	return util.VerifyPassword([]byte(u.Password), []byte(s))
+	return password.Verify([]byte(u.Password), []byte(s))
 }
 
 func (u *User) AddRole(role Role) {
@@ -258,7 +259,7 @@ func (u *User) Refresh() ([]byte, []byte, error) {
 }
 
 func (u *User) ValidateRefreshToken(s string) error {
-	return util.VerifyPassword([]byte(u.RefreshToken), []byte(s))
+	return password.Verify([]byte(u.RefreshToken), []byte(s))
 }
 
 func (u *User) getTokens() ([]byte, []byte, error) {
@@ -267,7 +268,7 @@ func (u *User) getTokens() ([]byte, []byte, error) {
 		"is_banned": u.IsBanned,
 		"is_locked": u.IsLocked,
 	}
-	access, refresh, err := util.GenerateTokens(u.Id, claims)
+	access, refresh, err := jwt.GenerateTokens(u.Id, claims)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -276,7 +277,7 @@ func (u *User) getTokens() ([]byte, []byte, error) {
 }
 
 func (u *User) encryptRefreshToken(token []byte) error {
-	b, err := util.HashPassword(token)
+	b, err := password.Hash(token)
 	if err != nil {
 		return err
 	}

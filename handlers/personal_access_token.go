@@ -9,7 +9,7 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
 	"github.com/alexferl/echo-boilerplate/data"
@@ -19,7 +19,7 @@ import (
 type PersonalAccessTokenService interface {
 	Create(ctx context.Context, model *models.PersonalAccessToken) (*models.PersonalAccessToken, error)
 	Read(ctx context.Context, id string) (*models.PersonalAccessToken, error)
-	Delete(ctx context.Context, model *models.PersonalAccessToken) error
+	Revoke(ctx context.Context, model *models.PersonalAccessToken) error
 
 	Find(ctx context.Context, userId string) (models.PersonalAccessTokens, error)
 	FindOne(ctx context.Context, userId string, name string) (*models.PersonalAccessToken, error)
@@ -50,7 +50,7 @@ type CreatePersonalAccessTokenRequest struct {
 }
 
 func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	body := &CreatePersonalAccessTokenRequest{}
 	if err := c.Bind(body); err != nil {
@@ -104,7 +104,7 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 }
 
 func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
@@ -151,11 +151,11 @@ func (h *PersonalAccessTokenHandler) revoke(c echo.Context) error {
 		return err
 	}
 
-	if pat.Revoked == true {
+	if pat.IsRevoked == true {
 		return h.Validate(c, http.StatusConflict, echo.Map{"message": "personal access token already revoked"})
 	}
 
-	err = h.svc.Delete(ctx, pat)
+	err = h.svc.Revoke(ctx, pat)
 	if err != nil {
 		log.Error().Err(err).Msg("failed deleting personal access token")
 		return err

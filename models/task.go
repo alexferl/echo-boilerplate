@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/alexferl/echo-boilerplate/util"
+	utilBSON "github.com/alexferl/echo-boilerplate/util/bson"
 )
 
 type Task struct {
@@ -137,7 +137,7 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 
 	if t.CompletedBy != nil {
 		var u *User
-		err := util.DocToStruct(aux.CompletedBy.(primitive.D), &u)
+		err := utilBSON.DocToStruct(aux.CompletedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -146,7 +146,7 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 
 	if t.CreatedBy != nil {
 		var u *User
-		err := util.DocToStruct(aux.CreatedBy.(primitive.D), &u)
+		err := utilBSON.DocToStruct(aux.CreatedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -155,7 +155,7 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 
 	if t.DeletedBy != nil {
 		var u *User
-		err := util.DocToStruct(aux.DeletedBy.(primitive.D), &u)
+		err := utilBSON.DocToStruct(aux.DeletedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 
 	if t.UpdatedBy != nil {
 		var u *User
-		err := util.DocToStruct(aux.UpdatedBy.(primitive.D), &u)
+		err := utilBSON.DocToStruct(aux.UpdatedBy.(primitive.D), &u)
 		if err != nil {
 			return err
 		}

@@ -22,26 +22,18 @@ type Config struct {
 
 	BaseURL string
 
-	OAuth2  *OAuth2
-	JWT     *JWT
-	Cookies *Cookies
-	CSRF    *CSRF
-	Casbin  *Casbin
-	OpenAPI *OpenAPI
+	Casbin       *Casbin
+	Cookies      *Cookies
+	CSRF         *CSRF
+	JWT          *JWT
+	OAuth2       *OAuth2
+	OAuth2Google *OAuth2Google
+	OpenAPI      *OpenAPI
 }
 
-type OAuth2 struct {
-	ClientId     string
-	ClientSecret string
-}
-
-type JWT struct {
-	AccessTokenExpiry      time.Duration
-	AccessTokenCookieName  string
-	RefreshTokenExpiry     time.Duration
-	RefreshTokenCookieName string
-	PrivateKey             string
-	Issuer                 string
+type Casbin struct {
+	Model  string
+	Policy string
 }
 
 type Cookies struct {
@@ -57,9 +49,22 @@ type CSRF struct {
 	HeaderName   string
 }
 
-type Casbin struct {
-	Model  string
-	Policy string
+type JWT struct {
+	AccessTokenExpiry      time.Duration
+	AccessTokenCookieName  string
+	RefreshTokenExpiry     time.Duration
+	RefreshTokenCookieName string
+	PrivateKey             string
+	Issuer                 string
+}
+
+type OAuth2 struct {
+	Providers []string
+}
+
+type OAuth2Google struct {
+	ClientId     string
+	ClientSecret string
 }
 
 type OpenAPI struct {
@@ -68,23 +73,15 @@ type OpenAPI struct {
 
 // New creates a Config instance
 func New() *Config {
-	return &Config{
+	c := &Config{
 		Config:  libConfig.New("APP"),
 		HTTP:    libHttp.DefaultConfig,
 		Logging: libLog.DefaultConfig,
 		MongoDB: libMongo.DefaultConfig,
 		BaseURL: "http://localhost:1323",
-		OAuth2: &OAuth2{
-			ClientId:     "",
-			ClientSecret: "",
-		},
-		JWT: &JWT{
-			AccessTokenExpiry:      60 * time.Minute,
-			AccessTokenCookieName:  "access_token",
-			RefreshTokenExpiry:     (30 * 24) * time.Hour,
-			RefreshTokenCookieName: "refresh_token",
-			PrivateKey:             "./private-key.pem",
-			Issuer:                 "http://localhost:1323",
+		Casbin: &Casbin{
+			Model:  "./casbin/model.conf",
+			Policy: "./casbin/policy.csv",
 		},
 		Cookies: &Cookies{
 			Enabled: false,
@@ -92,19 +89,31 @@ func New() *Config {
 		},
 		CSRF: &CSRF{
 			Enabled:      false,
-			SecretKey:    "",
-			CookieName:   "csrf_token",
 			CookieDomain: "",
+			CookieName:   "csrf_token",
 			HeaderName:   "X-CSRF-Token",
+			SecretKey:    "",
 		},
-		Casbin: &Casbin{
-			Model:  "./casbin/model.conf",
-			Policy: "./casbin/policy.csv",
+		JWT: &JWT{
+			AccessTokenCookieName:  "access_token",
+			AccessTokenExpiry:      60 * time.Minute,
+			PrivateKey:             "./private-key.pem",
+			RefreshTokenCookieName: "refresh_token",
+			RefreshTokenExpiry:     (30 * 24) * time.Hour,
+		},
+		OAuth2: &OAuth2{
+			Providers: []string{""},
+		},
+		OAuth2Google: &OAuth2Google{
+			ClientId:     "",
+			ClientSecret: "",
 		},
 		OpenAPI: &OpenAPI{
 			Schema: "./openapi/openapi.yaml",
 		},
 	}
+	c.JWT.Issuer = c.BaseURL
+	return c
 }
 
 const (
@@ -116,27 +125,29 @@ const (
 
 	BaseURL = "base-url"
 
-	OAuth2ClientId     = "oauth2-client-id"
-	OAuth2ClientSecret = "oauth2-client-secret"
-
-	JWTAccessTokenExpiry      = "jwt-access-token-expiry"
-	JWTAccessTokenCookieName  = "jwt-access-token-cookie-name"
-	JWTRefreshTokenExpiry     = "jwt-refresh-token-expiry"
-	JWTRefreshTokenCookieName = "jwt-refresh-token-cookie-name"
-	JWTPrivateKey             = "jwt-private-key"
-	JWTIssuer                 = "jwt-issuer"
+	CasbinModel  = "casbin-model"
+	CasbinPolicy = "casbin-policy"
 
 	CookiesEnabled = "cookies-enabled"
 	CookiesDomain  = "cookies-domain"
 
 	CSRFEnabled      = "csrf-enabled"
-	CSRFSecretKey    = "csrf-secret-key"
-	CSRFCookieName   = "csrf-cookie-name"
 	CSRFCookieDomain = "csrf-cookie-domain"
+	CSRFCookieName   = "csrf-cookie-name"
 	CSRFHeaderName   = "csrf-header-name"
+	CSRFSecretKey    = "csrf-secret-key"
 
-	CasbinModel  = "casbin-model"
-	CasbinPolicy = "casbin-policy"
+	JWTAccessTokenCookieName  = "jwt-access-token-cookie-name"
+	JWTAccessTokenExpiry      = "jwt-access-token-expiry"
+	JWTIssuer                 = "jwt-issuer"
+	JWTPrivateKey             = "jwt-private-key"
+	JWTRefreshTokenCookieName = "jwt-refresh-token-cookie-name"
+	JWTRefreshTokenExpiry     = "jwt-refresh-token-expiry"
+
+	OAuth2Providers = "oauth-providers"
+
+	OAuth2GoogleClientId     = "oauth2-google-client-id"
+	OAuth2GoogleClientSecret = "oauth2-google-client-secret"
 
 	OpenAPISchema = "openapi-schema"
 )
@@ -145,19 +156,8 @@ const (
 func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.BaseURL, BaseURL, c.BaseURL, "Base URL where the app will be served")
 
-	fs.StringVar(&c.OAuth2.ClientId, OAuth2ClientId, c.OAuth2.ClientId, "OAuth2 client id")
-	fs.StringVar(&c.OAuth2.ClientSecret, OAuth2ClientSecret, c.OAuth2.ClientSecret, "OAuth2 client secret")
-
-	fs.DurationVar(&c.JWT.AccessTokenExpiry, JWTAccessTokenExpiry, c.JWT.AccessTokenExpiry,
-		"JWT access token expiry")
-	fs.StringVar(&c.JWT.AccessTokenCookieName, JWTAccessTokenCookieName, c.JWT.AccessTokenCookieName,
-		"JWT access token cookie name")
-	fs.DurationVar(&c.JWT.RefreshTokenExpiry, JWTRefreshTokenExpiry, c.JWT.RefreshTokenExpiry,
-		"JWT refresh token expiry")
-	fs.StringVar(&c.JWT.RefreshTokenCookieName, JWTRefreshTokenCookieName, c.JWT.RefreshTokenCookieName,
-		"JWT refresh token cookie name")
-	fs.StringVar(&c.JWT.PrivateKey, JWTPrivateKey, c.JWT.PrivateKey, "JWT private key file path")
-	fs.StringVar(&c.JWT.Issuer, JWTIssuer, c.JWT.Issuer, "JWT issuer")
+	fs.StringVar(&c.Casbin.Model, CasbinModel, c.Casbin.Model, "Casbin model file")
+	fs.StringVar(&c.Casbin.Policy, CasbinPolicy, c.Casbin.Policy, "Casbin policy file")
 
 	fs.BoolVar(&c.Cookies.Enabled, CookiesEnabled, c.Cookies.Enabled, "Send cookies with authentication requests")
 	fs.StringVar(&c.Cookies.Domain, CookiesDomain, c.Cookies.Domain, "Cookies domain")
@@ -168,8 +168,21 @@ func (c *Config) addFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.CSRF.CookieDomain, CSRFCookieDomain, c.CSRF.CookieDomain, "CSRF cookie domain")
 	fs.StringVar(&c.CSRF.HeaderName, CSRFHeaderName, c.CSRF.HeaderName, "CSRF header name")
 
-	fs.StringVar(&c.Casbin.Model, CasbinModel, c.Casbin.Model, "Casbin model file")
-	fs.StringVar(&c.Casbin.Policy, CasbinPolicy, c.Casbin.Policy, "Casbin policy file")
+	fs.StringVar(&c.JWT.AccessTokenCookieName, JWTAccessTokenCookieName, c.JWT.AccessTokenCookieName,
+		"JWT access token cookie name")
+	fs.DurationVar(&c.JWT.AccessTokenExpiry, JWTAccessTokenExpiry, c.JWT.AccessTokenExpiry,
+		"JWT access token expiry")
+	fs.StringVar(&c.JWT.Issuer, JWTIssuer, c.JWT.Issuer, "JWT issuer")
+	fs.StringVar(&c.JWT.PrivateKey, JWTPrivateKey, c.JWT.PrivateKey, "JWT private key file path")
+	fs.StringVar(&c.JWT.RefreshTokenCookieName, JWTRefreshTokenCookieName, c.JWT.RefreshTokenCookieName,
+		"JWT refresh token cookie name")
+	fs.DurationVar(&c.JWT.RefreshTokenExpiry, JWTRefreshTokenExpiry, c.JWT.RefreshTokenExpiry,
+		"JWT refresh token expiry")
+
+	fs.StringSliceVar(&c.OAuth2.Providers, OAuth2Providers, c.OAuth2.Providers, "OAuth2 providers")
+
+	fs.StringVar(&c.OAuth2Google.ClientId, OAuth2GoogleClientId, c.OAuth2Google.ClientId, "OAuth2 Google client id")
+	fs.StringVar(&c.OAuth2Google.ClientSecret, OAuth2GoogleClientSecret, c.OAuth2Google.ClientSecret, "OAuth2 Google client secret")
 
 	fs.StringVar(&c.OpenAPI.Schema, OpenAPISchema, c.OpenAPI.Schema, "OpenAPI schema file")
 }

@@ -1,4 +1,4 @@
-package util
+package cookie
 
 import (
 	"net/http"
@@ -8,9 +8,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/util/hash"
 )
 
-type CookieOptions struct {
+type Options struct {
 	Name     string
 	Value    string
 	Path     string
@@ -20,7 +21,7 @@ type CookieOptions struct {
 	MaxAge   int
 }
 
-func NewCookie(opts *CookieOptions) *http.Cookie {
+func New(opts *Options) *http.Cookie {
 	return &http.Cookie{
 		Name:     opts.Name,
 		Value:    opts.Value,
@@ -33,8 +34,8 @@ func NewCookie(opts *CookieOptions) *http.Cookie {
 	}
 }
 
-func NewAccessTokenCookie(access []byte) *http.Cookie {
-	opts := &CookieOptions{
+func NewAccessToken(access []byte) *http.Cookie {
+	opts := &Options{
 		Name:     viper.GetString(config.JWTAccessTokenCookieName),
 		Value:    string(access),
 		Path:     "/",
@@ -43,11 +44,11 @@ func NewAccessTokenCookie(access []byte) *http.Cookie {
 		MaxAge:   int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()),
 	}
 
-	return NewCookie(opts)
+	return New(opts)
 }
 
-func NewRefreshTokenCookie(refresh []byte) *http.Cookie {
-	opts := &CookieOptions{
+func NewRefreshToken(refresh []byte) *http.Cookie {
+	opts := &Options{
 		Name:     viper.GetString(config.JWTRefreshTokenCookieName),
 		Value:    string(refresh),
 		Path:     "/auth",
@@ -57,11 +58,11 @@ func NewRefreshTokenCookie(refresh []byte) *http.Cookie {
 		MaxAge:   int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()),
 	}
 
-	return NewCookie(opts)
+	return New(opts)
 }
 
-func NewCSRFCookie(access []byte) *http.Cookie {
-	opts := &CookieOptions{
+func NewCSRF(access []byte) *http.Cookie {
+	opts := &Options{
 		Name:     viper.GetString(config.CSRFCookieName),
 		Value:    string(access),
 		Path:     "/",
@@ -70,22 +71,21 @@ func NewCSRFCookie(access []byte) *http.Cookie {
 		MaxAge:   int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()),
 	}
 
-	return NewCookie(opts)
+	return New(opts)
 }
 
-func SetTokenCookies(c echo.Context, access []byte, refresh []byte) {
-	c.SetCookie(NewAccessTokenCookie(access))
-	c.SetCookie(NewRefreshTokenCookie(refresh))
+func SetToken(c echo.Context, access []byte, refresh []byte) {
+	c.SetCookie(NewAccessToken(access))
+	c.SetCookie(NewRefreshToken(refresh))
 
 	if viper.GetBool(config.CSRFEnabled) {
-		s := NewHMAC(access, []byte(viper.GetString(config.CSRFSecretKey)))
-
-		c.SetCookie(NewCSRFCookie([]byte(s)))
+		s := hash.NewHMAC(access, []byte(viper.GetString(config.CSRFSecretKey)))
+		c.SetCookie(NewCSRF([]byte(s)))
 	}
 }
 
-func SetExpiredTokenCookies(c echo.Context) {
-	accessOpts := &CookieOptions{
+func SetExpiredToken(c echo.Context) {
+	accessOpts := &Options{
 		Name:     viper.GetString(config.JWTAccessTokenCookieName),
 		Value:    "",
 		Path:     "/",
@@ -94,7 +94,7 @@ func SetExpiredTokenCookies(c echo.Context) {
 		MaxAge:   -1,
 	}
 
-	refreshOpts := &CookieOptions{
+	refreshOpts := &Options{
 		Name:     viper.GetString(config.JWTRefreshTokenCookieName),
 		Value:    "",
 		Path:     "/auth",
@@ -104,11 +104,11 @@ func SetExpiredTokenCookies(c echo.Context) {
 		MaxAge:   -1,
 	}
 
-	c.SetCookie(NewCookie(accessOpts))
-	c.SetCookie(NewCookie(refreshOpts))
+	c.SetCookie(New(accessOpts))
+	c.SetCookie(New(refreshOpts))
 
 	if viper.GetBool(config.CSRFEnabled) {
-		csrfOpts := &CookieOptions{
+		csrfOpts := &Options{
 			Name:     viper.GetString(config.CSRFCookieName),
 			Value:    "",
 			Path:     "/",
@@ -116,6 +116,6 @@ func SetExpiredTokenCookies(c echo.Context) {
 			SameSite: http.SameSiteStrictMode,
 			MaxAge:   -1,
 		}
-		c.SetCookie(NewCookie(csrfOpts))
+		c.SetCookie(New(csrfOpts))
 	}
 }

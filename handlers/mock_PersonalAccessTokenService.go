@@ -81,53 +81,6 @@ func (_c *MockPersonalAccessTokenService_Create_Call) RunAndReturn(run func(cont
 	return _c
 }
 
-// Delete provides a mock function with given fields: ctx, model
-func (_m *MockPersonalAccessTokenService) Delete(ctx context.Context, model *models.PersonalAccessToken) error {
-	ret := _m.Called(ctx, model)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Delete")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.PersonalAccessToken) error); ok {
-		r0 = rf(ctx, model)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// MockPersonalAccessTokenService_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
-type MockPersonalAccessTokenService_Delete_Call struct {
-	*mock.Call
-}
-
-// Delete is a helper method to define mock.On call
-//   - ctx context.Context
-//   - model *models.PersonalAccessToken
-func (_e *MockPersonalAccessTokenService_Expecter) Delete(ctx interface{}, model interface{}) *MockPersonalAccessTokenService_Delete_Call {
-	return &MockPersonalAccessTokenService_Delete_Call{Call: _e.mock.On("Delete", ctx, model)}
-}
-
-func (_c *MockPersonalAccessTokenService_Delete_Call) Run(run func(ctx context.Context, model *models.PersonalAccessToken)) *MockPersonalAccessTokenService_Delete_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*models.PersonalAccessToken))
-	})
-	return _c
-}
-
-func (_c *MockPersonalAccessTokenService_Delete_Call) Return(_a0 error) *MockPersonalAccessTokenService_Delete_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MockPersonalAccessTokenService_Delete_Call) RunAndReturn(run func(context.Context, *models.PersonalAccessToken) error) *MockPersonalAccessTokenService_Delete_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Find provides a mock function with given fields: ctx, userId
 func (_m *MockPersonalAccessTokenService) Find(ctx context.Context, userId string) (models.PersonalAccessTokens, error) {
 	ret := _m.Called(ctx, userId)
@@ -306,61 +259,49 @@ func (_c *MockPersonalAccessTokenService_Read_Call) RunAndReturn(run func(contex
 	return _c
 }
 
-// Update provides a mock function with given fields: ctx, model
-func (_m *MockPersonalAccessTokenService) Update(ctx context.Context, model *models.PersonalAccessToken) (*models.PersonalAccessToken, error) {
+// Revoke provides a mock function with given fields: ctx, model
+func (_m *MockPersonalAccessTokenService) Revoke(ctx context.Context, model *models.PersonalAccessToken) error {
 	ret := _m.Called(ctx, model)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Update")
+		panic("no return value specified for Revoke")
 	}
 
-	var r0 *models.PersonalAccessToken
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.PersonalAccessToken) (*models.PersonalAccessToken, error)); ok {
-		return rf(ctx, model)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *models.PersonalAccessToken) *models.PersonalAccessToken); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.PersonalAccessToken) error); ok {
 		r0 = rf(ctx, model)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.PersonalAccessToken)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *models.PersonalAccessToken) error); ok {
-		r1 = rf(ctx, model)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
-// MockPersonalAccessTokenService_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
-type MockPersonalAccessTokenService_Update_Call struct {
+// MockPersonalAccessTokenService_Revoke_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Revoke'
+type MockPersonalAccessTokenService_Revoke_Call struct {
 	*mock.Call
 }
 
-// Update is a helper method to define mock.On call
+// Revoke is a helper method to define mock.On call
 //   - ctx context.Context
 //   - model *models.PersonalAccessToken
-func (_e *MockPersonalAccessTokenService_Expecter) Update(ctx interface{}, model interface{}) *MockPersonalAccessTokenService_Update_Call {
-	return &MockPersonalAccessTokenService_Update_Call{Call: _e.mock.On("Update", ctx, model)}
+func (_e *MockPersonalAccessTokenService_Expecter) Revoke(ctx interface{}, model interface{}) *MockPersonalAccessTokenService_Revoke_Call {
+	return &MockPersonalAccessTokenService_Revoke_Call{Call: _e.mock.On("Revoke", ctx, model)}
 }
 
-func (_c *MockPersonalAccessTokenService_Update_Call) Run(run func(ctx context.Context, model *models.PersonalAccessToken)) *MockPersonalAccessTokenService_Update_Call {
+func (_c *MockPersonalAccessTokenService_Revoke_Call) Run(run func(ctx context.Context, model *models.PersonalAccessToken)) *MockPersonalAccessTokenService_Revoke_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*models.PersonalAccessToken))
 	})
 	return _c
 }
 
-func (_c *MockPersonalAccessTokenService_Update_Call) Return(_a0 *models.PersonalAccessToken, _a1 error) *MockPersonalAccessTokenService_Update_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *MockPersonalAccessTokenService_Revoke_Call) Return(_a0 error) *MockPersonalAccessTokenService_Revoke_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockPersonalAccessTokenService_Update_Call) RunAndReturn(run func(context.Context, *models.PersonalAccessToken) (*models.PersonalAccessToken, error)) *MockPersonalAccessTokenService_Update_Call {
+func (_c *MockPersonalAccessTokenService_Revoke_Call) RunAndReturn(run func(context.Context, *models.PersonalAccessToken) error) *MockPersonalAccessTokenService_Revoke_Call {
 	_c.Call.Return(run)
 	return _c
 }

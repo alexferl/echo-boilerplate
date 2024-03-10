@@ -1,4 +1,4 @@
-package util
+package pagination
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 )
 
-func ParsePaginationParams(c echo.Context) (int, int, int, int) {
+func ParseParams(c echo.Context) (int, int, int, int) {
 	var page int
 	pageQuery := c.QueryParam("page")
 	page, _ = strconv.Atoi(pageQuery)
@@ -32,7 +32,7 @@ func ParsePaginationParams(c echo.Context) (int, int, int, int) {
 	return page, perPage, limit, skip
 }
 
-func SetPaginationHeaders(req *http.Request, header http.Header, count int, page int, perPage int) {
+func SetHeaders(req *http.Request, header http.Header, count int, page int, perPage int) {
 	prefix := "http"
 	if strings.HasPrefix(viper.GetString(config.BaseURL), "https") {
 		prefix = "https"

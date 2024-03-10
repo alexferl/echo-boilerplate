@@ -1,4 +1,4 @@
-package util
+package pagination
 
 import (
 	"net/http"
@@ -7,10 +7,31 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPaginate(t *testing.T) {
+func TestParseParams(t *testing.T) {
+	c := echo.New()
+	c.GET("/", func(c echo.Context) error {
+		page, perPage, limit, skip := ParseParams(c)
+
+		assert.Equal(t, 10, page)
+		assert.Equal(t, 5, perPage)
+		assert.Equal(t, 5, limit)
+		assert.Equal(t, 45, skip)
+
+		return c.NoContent(http.StatusOK)
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/?page=10&per_page=5", nil)
+	resp := httptest.NewRecorder()
+
+	c.ServeHTTP(resp, req)
+}
+
+func TestSetHeaders(t *testing.T) {
 	testCases := []struct {
 		query       string
 		link        string
@@ -82,7 +103,7 @@ func TestPaginate(t *testing.T) {
 				URL:  &url.URL{Path: "/users"},
 				Host: "example.com",
 			}
-			SetPaginationHeaders(req, resp.Header(), total, page, perPage)
+			SetHeaders(req, resp.Header(), total, page, perPage)
 
 			h := resp.Header()
 

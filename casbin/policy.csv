@@ -9,8 +9,9 @@ p, any, /auth/logout, POST
 p, any, /auth/refresh, POST
 p, any, /auth/signup, POST
 p, any, /auth/token, GET
-p, any, /oauth2/login, GET
-p, any, /oauth2/callback, GET
+p, any, /google, GET
+p, any, /oauth2/*/login, GET
+p, any, /oauth2/*/callback, GET
 
 p, user, /me, (GET)|(PUT)
 p, user, /me/personal_access_tokens, (GET)|(POST)

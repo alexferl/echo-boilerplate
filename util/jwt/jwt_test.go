@@ -1,4 +1,4 @@
-package util
+package jwt
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestGenerateTokens(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestParseToken(t *testing.T) {
+func TestParseEncoded(t *testing.T) {
 	c := config.New()
 	c.BindFlags()
 
@@ -26,21 +26,21 @@ func TestParseToken(t *testing.T) {
 	access, refresh, err := GenerateTokens(sub, map[string]any{"claim": claim})
 	assert.NoError(t, err)
 
-	accessToken, err := ParseToken(access)
+	accessToken, err := ParseEncoded(access)
 	assert.NoError(t, err)
 	assert.Equal(t, sub, accessToken.Subject())
 	accessClaim, ok := accessToken.Get("claim")
 	assert.True(t, ok)
 	assert.Equal(t, claim, accessClaim)
 
-	refreshToken, err := ParseToken(refresh)
+	refreshToken, err := ParseEncoded(refresh)
 	assert.NoError(t, err)
 	assert.Equal(t, sub, refreshToken.Subject())
 	_, ok = refreshToken.Get("claim")
 	assert.False(t, ok)
 }
 
-func TestHasRole(t *testing.T) {
+func TestHasRoles(t *testing.T) {
 	c := config.New()
 	c.BindFlags()
 
@@ -61,10 +61,36 @@ func TestHasRole(t *testing.T) {
 			access, _, err := GenerateTokens("123", tc.claims)
 			assert.NoError(t, err)
 
-			token, err := ParseToken(access)
+			token, err := ParseEncoded(access)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.hasRole, HasRoles(token, tc.role))
+		})
+	}
+}
+
+func TestGetRoles(t *testing.T) {
+	c := config.New()
+	c.BindFlags()
+
+	testCases := []struct {
+		name  string
+		roles []string
+	}{
+		{"no role", []string{""}},
+		{"user role", []string{"user"}},
+		{"many roles", []string{"user", "admin", "super"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			access, _, err := GenerateTokens("123", map[string]any{"roles": tc.roles})
+			assert.NoError(t, err)
+
+			token, err := ParseEncoded(access)
+			assert.NoError(t, err)
+
+			assert.Equal(t, tc.roles, GetRoles(token))
 		})
 	}
 }

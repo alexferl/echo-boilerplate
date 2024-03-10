@@ -1,4 +1,4 @@
-package util
+package cookie
 
 import (
 	"net/http"
@@ -10,10 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/alexferl/echo-boilerplate/config"
+	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
-func TestNewCookie(t *testing.T) {
-	opts := &CookieOptions{
+func TestNew(t *testing.T) {
+	opts := &Options{
 		Name:     "name",
 		Value:    "value",
 		Path:     "/path",
@@ -21,7 +22,7 @@ func TestNewCookie(t *testing.T) {
 		HttpOnly: true,
 		MaxAge:   10,
 	}
-	c := NewCookie(opts)
+	c := New(opts)
 
 	assert.Equal(t, opts.Name, c.Name)
 	assert.Equal(t, opts.Value, c.Value)
@@ -31,9 +32,9 @@ func TestNewCookie(t *testing.T) {
 	assert.Equal(t, opts.MaxAge, c.MaxAge)
 }
 
-func TestNewAccessTokenCookie(t *testing.T) {
+func TestNewAccessToken(t *testing.T) {
 	value := "access"
-	cookie := NewAccessTokenCookie([]byte(value))
+	cookie := NewAccessToken([]byte(value))
 
 	assert.Equal(t, viper.GetString(config.JWTAccessTokenCookieName), cookie.Name)
 	assert.Equal(t, value, cookie.Value)
@@ -42,9 +43,9 @@ func TestNewAccessTokenCookie(t *testing.T) {
 	assert.Equal(t, int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()), cookie.MaxAge)
 }
 
-func TestNewRefreshTokenCookie(t *testing.T) {
+func TestNewRefreshToken(t *testing.T) {
 	value := "refresh"
-	cookie := NewRefreshTokenCookie([]byte(value))
+	cookie := NewRefreshToken([]byte(value))
 
 	assert.Equal(t, viper.GetString(config.JWTRefreshTokenCookieName), cookie.Name)
 	assert.Equal(t, value, cookie.Value)
@@ -53,15 +54,26 @@ func TestNewRefreshTokenCookie(t *testing.T) {
 	assert.Equal(t, int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()), cookie.MaxAge)
 }
 
-func TestSetTokenCookies(t *testing.T) {
+func TestNewCSRF(t *testing.T) {
+	value := "csrf"
+	cookie := NewCSRF([]byte(value))
+
+	assert.Equal(t, viper.GetString(config.CSRFCookieName), cookie.Name)
+	assert.Equal(t, value, cookie.Value)
+	assert.Equal(t, "/", cookie.Path)
+	assert.Equal(t, http.SameSiteStrictMode, cookie.SameSite)
+	assert.Equal(t, int(viper.GetDuration(config.JWTAccessTokenExpiry).Seconds()), cookie.MaxAge)
+}
+
+func TestSetToken(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 	ctx := echo.New().NewContext(req, resp)
 
-	access, refresh, err := GenerateTokens("123", nil)
+	access, refresh, err := jwt.GenerateTokens("123", nil)
 	assert.NoError(t, err)
 
-	SetTokenCookies(ctx, access, refresh)
+	SetToken(ctx, access, refresh)
 
 	accessCookie := resp.Result().Cookies()[0]
 	refreshCookie := resp.Result().Cookies()[1]
@@ -73,12 +85,12 @@ func TestSetTokenCookies(t *testing.T) {
 	assert.Equal(t, int(viper.GetDuration(config.JWTRefreshTokenExpiry).Seconds()), refreshCookie.MaxAge)
 }
 
-func TestSetExpiredTokenCookies(t *testing.T) {
+func TestSetExpiredToken(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 	ctx := echo.New().NewContext(req, resp)
 
-	SetExpiredTokenCookies(ctx)
+	SetExpiredToken(ctx)
 
 	accessCookie := resp.Result().Cookies()[0]
 	refreshCookie := resp.Result().Cookies()[1]

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,7 +18,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/util"
+	"github.com/alexferl/echo-boilerplate/util/cookie"
 )
 
 type AuthHandler struct {
@@ -38,8 +39,11 @@ func (h *AuthHandler) Register(s *server.Server) {
 	s.Add(http.MethodPost, "/auth/refresh", h.refresh)
 	s.Add(http.MethodPost, "/auth/signup", h.signup)
 	s.Add(http.MethodGet, "/auth/token", h.token)
-	// s.Add(http.MethodGet, "/oauth2/callback", h.OAuth2Callback)
-	// s.Add(http.MethodGet, "/oauth2/login", h.OAuth2LogIn)
+
+	if slices.Contains(viper.GetStringSlice(config.OAuth2Providers), "google") {
+		s.Add(http.MethodGet, "/oauth2/google/callback", h.oauth2GoogleCallback)
+		s.Add(http.MethodGet, "/oauth2/google/login", h.oauth2GoogleLogin)
+	}
 }
 
 type LoginRequest struct {
@@ -92,7 +96,7 @@ func (h *AuthHandler) login(c echo.Context) error {
 	}
 
 	if viper.GetBool(config.CookiesEnabled) {
-		util.SetTokenCookies(c, access, refresh)
+		cookie.SetToken(c, access, refresh)
 	}
 
 	resp := &LoginResponse{
@@ -110,7 +114,7 @@ type LogoutRequest struct {
 }
 
 func (h *AuthHandler) logout(c echo.Context) error {
-	token := c.Get("refresh_token").(jwt.Token)
+	token := c.Get("refresh_token").(jwx.Token)
 	encodedToken := c.Get("refresh_token_encoded").(string)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -137,7 +141,7 @@ func (h *AuthHandler) logout(c echo.Context) error {
 		return err
 	}
 
-	util.SetExpiredTokenCookies(c)
+	cookie.SetExpiredToken(c)
 
 	return h.Validate(c, http.StatusNoContent, nil)
 }
@@ -155,7 +159,7 @@ type RefreshResponse struct {
 }
 
 func (h *AuthHandler) refresh(c echo.Context) error {
-	token := c.Get("refresh_token").(jwt.Token)
+	token := c.Get("refresh_token").(jwx.Token)
 	encodedToken := c.Get("refresh_token_encoded").(string)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -187,7 +191,7 @@ func (h *AuthHandler) refresh(c echo.Context) error {
 	}
 
 	if viper.GetBool(config.CookiesEnabled) {
-		util.SetTokenCookies(c, access, refresh)
+		cookie.SetToken(c, access, refresh)
 	}
 
 	resp := &RefreshResponse{
@@ -264,7 +268,7 @@ type TokenResponse struct {
 }
 
 func (h *AuthHandler) token(c echo.Context) error {
-	token := c.Get("token").(jwt.Token)
+	token := c.Get("token").(jwx.Token)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()

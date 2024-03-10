@@ -1,4 +1,4 @@
-package util
+package password
 
 import (
 	"testing"
@@ -8,18 +8,18 @@ import (
 
 func TestPassword(t *testing.T) {
 	pwd := "s3cret"
-	enc, err := HashPassword([]byte(pwd))
+	enc, err := Hash([]byte(pwd))
 	assert.NoError(t, err)
 
-	err = VerifyPassword([]byte(enc), []byte(pwd))
+	err = Verify([]byte(enc), []byte(pwd))
 	assert.NoError(t, err)
 }
 
 func TestWrongPassword(t *testing.T) {
 	pwd := "s3cret"
-	enc, err := HashPassword([]byte(pwd))
+	enc, err := Hash([]byte(pwd))
 	assert.NoError(t, err)
 
-	err = VerifyPassword([]byte(enc), []byte("wrong"))
+	err = Verify([]byte(enc), []byte("wrong"))
 	assert.Error(t, err)
 }

@@ -1,4 +1,4 @@
-package util
+package jwt
 
 import (
 	"crypto/rsa"
@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
@@ -64,7 +64,7 @@ func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[s
 		return nil, err
 	}
 
-	builder := jwt.NewBuilder().
+	builder := jwx.NewBuilder().
 		Subject(sub).
 		Issuer(viper.GetString(config.JWTIssuer)).
 		IssuedAt(time.Now()).
@@ -81,7 +81,7 @@ func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[s
 		return nil, fmt.Errorf("failed to build %s token: %v\n", typ.String(), err)
 	}
 
-	signed, err := jwt.Sign(token, jwt.WithKey(jwa.RS256, key))
+	signed, err := jwx.Sign(token, jwx.WithKey(jwa.RS256, key))
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign %s token: %v\n", typ.String(), err)
 	}
@@ -89,13 +89,13 @@ func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[s
 	return signed, nil
 }
 
-func ParseToken(encodedToken []byte) (jwt.Token, error) {
+func ParseEncoded(encodedToken []byte) (jwx.Token, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := jwt.Parse(encodedToken, jwt.WithValidate(true), jwt.WithKey(jwa.RS256, key))
+	token, err := jwx.Parse(encodedToken, jwx.WithValidate(true), jwx.WithKey(jwa.RS256, key))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func ParseToken(encodedToken []byte) (jwt.Token, error) {
 	return token, nil
 }
 
-func GetRoles(token jwt.Token) []string {
+func GetRoles(token jwx.Token) []string {
 	val, _ := token.Get("roles")
 	roles := val.([]interface{})
 
@@ -115,7 +115,7 @@ func GetRoles(token jwt.Token) []string {
 	return res
 }
 
-func HasRoles(token jwt.Token, roles ...string) bool {
+func HasRoles(token jwx.Token, roles ...string) bool {
 	if val, ok := token.Get("roles"); !ok {
 		log.Error().Msgf("failed getting roles for token: %s", token.Subject())
 		return false
