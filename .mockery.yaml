@@ -1,5 +1,5 @@
 with-expecter: True
-filename: "mock_{{.InterfaceName}}.go"
+filename: "mock_{{.InterfaceName}}_test.go"
 dir: "{{.InterfaceDir}}"
 mockname: "Mock{{.InterfaceName}}"
 outpkg: "{{.PackageName}}"
@@ -8,7 +8,6 @@ packages:
   github.com/alexferl/echo-boilerplate/handlers:
     interfaces:
       PersonalAccessTokenService:
-      RootService:
       TaskService:
       UserService:
   github.com/alexferl/echo-boilerplate/services:
