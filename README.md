@@ -168,8 +168,9 @@ Usage of ./echo-boilerplate:
       --mongodb-socket-timeout-ms duration             MongoDB socket timeout ms (default 30s)
       --mongodb-uri string                             MongoDB URI (default "mongodb://localhost:27017")
       --mongodb-username string                        MongoDB username
-      --oauth2-client-id string                        OAuth2 client id
-      --oauth2-client-secret string                    OAuth2 client secret
+      --oauth2-google-client-id string                 OAuth2 Google client id
+      --oauth2-google-client-secret string             OAuth2 Google client secret
+      --oauth2-providers strings                       OAuth2 providers
       --openapi-schema string                          OpenAPI schema file (default "./openapi/openapi.yaml")
 ```
 

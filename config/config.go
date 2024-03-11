@@ -144,7 +144,7 @@ const (
 	JWTRefreshTokenCookieName = "jwt-refresh-token-cookie-name"
 	JWTRefreshTokenExpiry     = "jwt-refresh-token-expiry"
 
-	OAuth2Providers = "oauth-providers"
+	OAuth2Providers = "oauth2-providers"
 
 	OAuth2GoogleClientId     = "oauth2-google-client-id"
 	OAuth2GoogleClientSecret = "oauth2-google-client-secret"
