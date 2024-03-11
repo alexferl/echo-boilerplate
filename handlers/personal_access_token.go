@@ -12,17 +12,16 @@ import (
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 )
 
 type PersonalAccessTokenService interface {
 	Create(ctx context.Context, model *models.PersonalAccessToken) (*models.PersonalAccessToken, error)
 	Read(ctx context.Context, id string) (*models.PersonalAccessToken, error)
-	Revoke(ctx context.Context, model *models.PersonalAccessToken) error
-
 	Find(ctx context.Context, userId string) (models.PersonalAccessTokens, error)
 	FindOne(ctx context.Context, userId string, name string) (*models.PersonalAccessToken, error)
+	Revoke(ctx context.Context, model *models.PersonalAccessToken) error
 }
 
 type PersonalAccessTokenHandler struct {
@@ -63,7 +62,8 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 
 	res, err := h.svc.FindOne(ctx, token.Subject(), body.Name)
 	if err != nil {
-		if !errors.Is(err, data.ErrNoDocuments) {
+		var se *services.Error
+		if !errors.As(err, &se) {
 			log.Error().Err(err).Msg("failed getting personal access token")
 			return err
 		}
@@ -77,7 +77,7 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, models.ErrExpiresAtPast) {
 			m := echo.Map{
-				"message": "Validation error",
+				"message": "validation error",
 				"errors":  []string{models.ErrExpiresAtPast.Error()},
 			}
 			return h.Validate(c, http.StatusUnprocessableEntity, m)
@@ -126,10 +126,13 @@ func (h *PersonalAccessTokenHandler) get(c echo.Context) error {
 
 	pat, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			}
 		}
-		log.Error().Err(err).Msg("failed getting user")
+		log.Error().Err(err).Msg("failed getting personal access token")
 		return err
 	}
 
@@ -144,10 +147,13 @@ func (h *PersonalAccessTokenHandler) revoke(c echo.Context) error {
 
 	pat, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "personal access token not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			}
 		}
-		log.Error().Err(err).Msg("failed getting user")
+		log.Error().Err(err).Msg("failed getting personal access token")
 		return err
 	}
 

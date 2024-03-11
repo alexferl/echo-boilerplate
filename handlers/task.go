@@ -14,6 +14,7 @@ import (
 
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 	"github.com/alexferl/echo-boilerplate/util/pagination"
 )
@@ -23,7 +24,6 @@ type TaskService interface {
 	Read(ctx context.Context, id string) (*models.Task, error)
 	Update(ctx context.Context, id string, data *models.Task) (*models.Task, error)
 	Delete(ctx context.Context, id string, data *models.Task) error
-
 	Find(ctx context.Context, params *models.TaskSearchParams) (int64, models.Tasks, error)
 }
 
@@ -109,15 +109,16 @@ func (h *TaskHandler) get(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
-		log.Error().Err(err).Msg("failed getting user")
+		log.Error().Err(err).Msg("failed getting task")
 		return err
-	}
-
-	if task.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"})
 	}
 
 	return h.Validate(c, http.StatusOK, task.Response())
@@ -142,15 +143,16 @@ func (h *TaskHandler) update(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting task")
 		return err
-	}
-
-	if task.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"})
 	}
 
 	if token.Subject() != task.CreatedBy.(*models.User).Id && !jwt.HasRoles(token, models.AdminRole.String(), models.SuperRole.String()) {
@@ -189,15 +191,16 @@ func (h *TaskHandler) transition(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting task")
 		return err
-	}
-
-	if task.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"})
 	}
 
 	if *body.Completed != task.Completed {

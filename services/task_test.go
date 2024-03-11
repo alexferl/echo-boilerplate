@@ -2,12 +2,14 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/services"
 )
@@ -38,7 +40,6 @@ func (s *TaskTestSuite) TestTask_Create() {
 
 	task, err := s.svc.Create(context.Background(), id, m)
 	assert.NoError(s.T(), err)
-
 	assert.NotNil(s.T(), task.CreatedBy)
 }
 
@@ -53,8 +54,25 @@ func (s *TaskTestSuite) TestTask_Read() {
 
 	task, err := s.svc.Read(context.Background(), id)
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), id, task.Id)
+}
+
+func (s *TaskTestSuite) TestTask_Read_Err() {
+	m := models.NewTask()
+	id := "123"
+	m.Id = id
+
+	s.mapper.EXPECT().
+		FindOneById(mock.Anything, mock.Anything).
+		Return(nil, data.ErrNoDocuments)
+
+	_, err := s.svc.Read(context.Background(), id)
+	assert.Error(s.T(), err)
+	var se *services.Error
+	assert.ErrorAs(s.T(), err, &se)
+	if errors.As(err, &se) {
+		assert.Equal(s.T(), services.NotExist, se.Kind)
+	}
 }
 
 func (s *TaskTestSuite) TestTask_Update() {
@@ -68,7 +86,6 @@ func (s *TaskTestSuite) TestTask_Update() {
 
 	task, err := s.svc.Update(context.Background(), id, m)
 	assert.NoError(s.T(), err)
-
 	assert.NotNil(s.T(), task.UpdatedBy)
 }
 
@@ -88,10 +105,13 @@ func (s *TaskTestSuite) TestTask_Delete() {
 		FindOneById(mock.Anything, mock.Anything).
 		Return(m, nil)
 
-	task, err := s.svc.Read(context.Background(), id)
-	assert.NoError(s.T(), err)
-
-	assert.NotNil(s.T(), task.DeletedBy)
+	_, err = s.svc.Read(context.Background(), id)
+	assert.Error(s.T(), err)
+	var se *services.Error
+	assert.ErrorAs(s.T(), err, &se)
+	if errors.As(err, &se) {
+		assert.Equal(s.T(), services.Deleted, se.Kind)
+	}
 }
 
 func (s *TaskTestSuite) TestTask_Find() {
@@ -107,7 +127,6 @@ func (s *TaskTestSuite) TestTask_Find() {
 		Skip:      0,
 	})
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), int64(1), count)
 	assert.Equal(s.T(), models.Tasks{}, tasks)
 }

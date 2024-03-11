@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
@@ -47,7 +49,6 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessToken_Create() {
 
 	pat, err := s.svc.Create(context.Background(), m)
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), name, pat.Name)
 	assert.Equal(s.T(), expiresAt, pat.ExpiresAt.Format("2006-01-02"))
 }
@@ -66,10 +67,30 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read() {
 
 	pat, err := s.svc.Read(context.Background(), id)
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), id, pat.Id)
 	assert.Equal(s.T(), name, pat.Name)
 	assert.Equal(s.T(), expiresAt, pat.ExpiresAt.Format("2006-01-02"))
+}
+
+func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read_Err() {
+	name := "my_token"
+	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
+	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	assert.NoError(s.T(), err)
+	id := "123"
+	m.Id = id
+
+	s.mapper.EXPECT().
+		FindOne(mock.Anything, mock.Anything).
+		Return(nil, data.ErrNoDocuments)
+
+	_, err = s.svc.Read(context.Background(), id)
+	assert.Error(s.T(), err)
+	var se *services.Error
+	assert.ErrorAs(s.T(), err, &se)
+	if errors.As(err, &se) {
+		assert.Equal(s.T(), services.NotExist, se.Kind)
+	}
 }
 
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Revoke() {
@@ -93,7 +114,6 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Revoke()
 
 	pat, err := s.svc.Read(context.Background(), id)
 	assert.NoError(s.T(), err)
-
 	assert.True(s.T(), pat.IsRevoked)
 	assert.Equal(s.T(), id, pat.Id)
 	assert.Equal(s.T(), name, pat.Name)
@@ -107,7 +127,6 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Find() {
 
 	pats, err := s.svc.Find(context.Background(), "123")
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), models.PersonalAccessTokens{}, pats)
 }
 
@@ -127,9 +146,31 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_FindOne(
 
 	pat, err := s.svc.FindOne(context.Background(), userId, name)
 	assert.NoError(s.T(), err)
-
 	assert.Equal(s.T(), id, pat.Id)
 	assert.Equal(s.T(), userId, pat.UserId)
 	assert.Equal(s.T(), name, pat.Name)
 	assert.Equal(s.T(), expiresAt, pat.ExpiresAt.Format("2006-01-02"))
+}
+
+func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_FindOne_Err() {
+	name := "my_token"
+	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
+	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	assert.NoError(s.T(), err)
+	id := "123"
+	userId := "456"
+	m.Id = id
+	m.UserId = userId
+
+	s.mapper.EXPECT().
+		FindOne(mock.Anything, mock.Anything).
+		Return(nil, data.ErrNoDocuments)
+
+	_, err = s.svc.FindOne(context.Background(), id, "")
+	assert.Error(s.T(), err)
+	var se *services.Error
+	assert.ErrorAs(s.T(), err, &se)
+	if errors.As(err, &se) {
+		assert.Equal(s.T(), services.NotExist, se.Kind)
+	}
 }

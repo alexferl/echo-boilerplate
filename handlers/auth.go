@@ -13,11 +13,10 @@ import (
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/alexferl/echo-boilerplate/config"
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/cookie"
 )
 
@@ -71,8 +70,11 @@ func (h *AuthHandler) login(c echo.Context) error {
 
 	user, err := h.svc.FindOneByEmailOrUsername(ctx, body.Email, body.Username)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "invalid email or password"})
+			}
 		}
 		log.Error().Err(err).Msg("failed finding user")
 		return err
@@ -122,8 +124,11 @@ func (h *AuthHandler) logout(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, token.Subject())
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token not found"})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting user")
 		return err
@@ -167,8 +172,11 @@ func (h *AuthHandler) refresh(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, token.Subject())
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusUnauthorized, echo.Map{"message": "token not found"})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting user")
 		return err
@@ -224,14 +232,13 @@ func (h *AuthHandler) signup(c echo.Context) error {
 
 	res, err := h.svc.FindOneByEmailOrUsername(ctx, body.Email, body.Username)
 	if err != nil {
-		if !errors.Is(err, data.ErrNoDocuments) {
-			log.Error().Err(err).Msg("failed getting user")
-			return err
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.Exist {
+				return h.Validate(c, http.StatusConflict, echo.Map{"message": se.Message})
+			}
 		}
-	}
-
-	if res != nil {
-		return h.Validate(c, http.StatusConflict, echo.Map{"message": "email or username already in-use"})
+		log.Error().Err(err).Msg("failed getting user")
 	}
 
 	user := models.NewUser(body.Email, body.Username)
@@ -247,8 +254,11 @@ func (h *AuthHandler) signup(c echo.Context) error {
 
 	res, err = h.svc.Create(ctx, user)
 	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			return h.Validate(c, http.StatusConflict, echo.Map{"message": "email or username already in-use"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.Exist {
+				return h.Validate(c, http.StatusConflict, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed inserting new user")
 		return err

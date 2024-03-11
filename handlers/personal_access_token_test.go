@@ -11,15 +11,16 @@ import (
 
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
+	"github.com/labstack/echo/v4"
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	app "github.com/alexferl/echo-boilerplate"
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
@@ -242,11 +243,18 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrPersonalAccessTokenNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
+	assert.Equal(s.T(), services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_204() {
@@ -294,11 +302,18 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrPersonalAccessTokenNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
+	assert.Equal(s.T(), services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_409() {
