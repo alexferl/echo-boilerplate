@@ -1,5 +1,5 @@
 with-expecter: True
-filename: "mock_{{.InterfaceName}}_test.go"
+filename: "mock_{{.InterfaceName}}.go"
 dir: "{{.InterfaceDir}}"
 mockname: "Mock{{.InterfaceName}}"
 outpkg: "{{.PackageName}}"
