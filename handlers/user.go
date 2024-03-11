@@ -12,8 +12,8 @@ import (
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/pagination"
 )
 
@@ -22,7 +22,6 @@ type UserService interface {
 	Read(ctx context.Context, id string) (*models.User, error)
 	Update(ctx context.Context, id string, model *models.User) (*models.User, error)
 	Delete(ctx context.Context, id string, model *models.User) error
-
 	Find(ctx context.Context, params *models.UserSearchParams) (int64, models.Users, error)
 	FindOneByEmailOrUsername(ctx context.Context, email string, username string) (*models.User, error)
 }
@@ -111,15 +110,16 @@ func (h *UserHandler) get(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting user")
 		return err
-	}
-
-	if user.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "user was deleted"})
 	}
 
 	return h.Validate(c, http.StatusOK, user.Response())
@@ -145,15 +145,16 @@ func (h *UserHandler) update(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting user")
 		return err
-	}
-
-	if user.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "user was deleted"})
 	}
 
 	if body.Name != nil {
@@ -193,15 +194,16 @@ func (h *UserHandler) updateStatus(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "user not found"})
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
+			} else if se.Kind == services.Deleted {
+				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
+			}
 		}
 		log.Error().Err(err).Msg("failed getting user")
 		return err
-	}
-
-	if user.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "user was deleted"})
 	}
 
 	if user.Id == token.Subject() {

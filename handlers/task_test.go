@@ -19,6 +19,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 )
 
 type TaskHandlerTestSuite struct {
@@ -88,7 +89,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -96,7 +100,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_404() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), "task not found", result.Message)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Get_410() {
@@ -113,7 +117,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_410() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(task, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrTaskDeleted.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -121,7 +128,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_410() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), "task was deleted", result.Message)
+	assert.Equal(s.T(), services.ErrTaskDeleted.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Update_200() {
@@ -211,7 +218,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -219,7 +229,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_404() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), "task not found", result.Message)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Update_410() {
@@ -242,7 +252,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_410() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(task, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrTaskDeleted.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -250,7 +263,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_410() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), "task was deleted", result.Message)
+	assert.Equal(s.T(), services.ErrTaskDeleted.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Update_422() {
@@ -328,7 +341,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -336,7 +352,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_404() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), "task not found", result.Message)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_410() {
@@ -359,7 +375,10 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_410() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(task, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrTaskDeleted.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -367,7 +386,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_410() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), "task was deleted", result.Message)
+	assert.Equal(s.T(), services.ErrTaskDeleted.Error(), result.Message)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_422() {

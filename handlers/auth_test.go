@@ -19,9 +19,9 @@ import (
 
 	app "github.com/alexferl/echo-boilerplate"
 	"github.com/alexferl/echo-boilerplate/config"
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/cookie"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
@@ -131,7 +131,9 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_401() {
 
 			s.svc.EXPECT().
 				FindOneByEmailOrUsername(mock.Anything, mock.Anything, mock.Anything).
-				Return(nil, data.ErrNoDocuments)
+				Return(nil, &services.Error{
+					Kind: services.NotExist,
+				})
 
 			s.server.ServeHTTP(resp, req)
 
@@ -568,12 +570,10 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
 
 	s.svc.EXPECT().
 		FindOneByEmailOrUsername(mock.Anything, mock.Anything, mock.Anything).
-		Return(&models.User{
-			Model:    &models.Model{Id: "1"},
-			Email:    payload.Email,
-			Username: payload.Username,
-			Name:     payload.Name,
-		}, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Exist,
+			Message: services.ErrUserExist.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
@@ -581,7 +581,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusConflict, resp.Code)
-	assert.Equal(s.T(), "email or username already in-use", result.Message)
+	assert.Equal(s.T(), services.ErrUserExist.Error(), result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_422() {

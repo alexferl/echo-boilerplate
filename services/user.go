@@ -2,9 +2,12 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 )
 
@@ -15,6 +18,12 @@ type UserMapper interface {
 	FindOne(ctx context.Context, filter any) (*models.User, error)
 	Update(ctx context.Context, model *models.User) (*models.User, error)
 }
+
+var (
+	ErrUserDeleted  = errors.New("user was deleted")
+	ErrUserExist    = errors.New("email or username already in-use")
+	ErrUserNotFound = errors.New("user not found")
+)
 
 // User defines the application service in charge of interacting with Users.
 type User struct {
@@ -29,7 +38,10 @@ func (u *User) Create(ctx context.Context, model *models.User) (*models.User, er
 	model.Create(model.Id)
 	res, err := u.mapper.Create(ctx, model)
 	if err != nil {
-		return nil, err
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, NewError(err, Exist, ErrUserExist.Error())
+		}
+		return nil, NewError(err, Other, "other")
 	}
 
 	return res, nil
@@ -39,7 +51,14 @@ func (u *User) Read(ctx context.Context, id string) (*models.User, error) {
 	filter := bson.D{{"id", id}}
 	user, err := u.mapper.FindOne(ctx, filter)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, data.ErrNoDocuments) {
+			return nil, NewError(err, NotExist, ErrUserNotFound.Error())
+		}
+		return nil, NewError(err, Other, "other")
+	}
+
+	if user.DeletedBy != nil {
+		return nil, NewError(err, Deleted, ErrUserDeleted.Error())
 	}
 
 	return user, nil
@@ -53,17 +72,17 @@ func (u *User) Update(ctx context.Context, id string, model *models.User) (*mode
 	}
 	res, err := u.mapper.Update(ctx, model)
 	if err != nil {
-		return nil, err
+		return nil, NewError(err, Other, "other")
 	}
 
-	return res, err
+	return res, nil
 }
 
 func (u *User) Delete(ctx context.Context, id string, model *models.User) error {
 	model.Delete(id)
 	_, err := u.mapper.Update(ctx, model)
 	if err != nil {
-		return err
+		return NewError(err, Other, "other")
 	}
 
 	return nil
@@ -73,10 +92,10 @@ func (u *User) Find(ctx context.Context, params *models.UserSearchParams) (int64
 	filter := bson.M{"deleted_at": bson.M{"$eq": nil}}
 	count, users, err := u.mapper.Find(ctx, filter, params.Limit, params.Skip)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, NewError(err, Other, "other")
 	}
 
-	return count, users, err
+	return count, users, nil
 }
 
 func (u *User) FindOneByEmailOrUsername(ctx context.Context, email string, username string) (*models.User, error) {
@@ -86,7 +105,10 @@ func (u *User) FindOneByEmailOrUsername(ctx context.Context, email string, usern
 	}}}
 	user, err := u.mapper.FindOne(ctx, filter)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, data.ErrNoDocuments) {
+			return nil, NewError(err, NotExist, ErrUserNotFound.Error())
+		}
+		return nil, NewError(err, Other, "other")
 	}
 
 	return user, nil

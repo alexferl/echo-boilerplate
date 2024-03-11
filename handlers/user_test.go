@@ -16,9 +16,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	app "github.com/alexferl/echo-boilerplate"
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 )
 
 type UserHandlerTestSuite struct {
@@ -166,11 +166,18 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Get_410() {
@@ -184,11 +191,18 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_410() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(user, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrUserDeleted.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
+	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
@@ -244,11 +258,18 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
@@ -266,11 +287,18 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrUserDeleted.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
 
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
 	assert.Equal(s.T(), http.StatusGone, resp.Code)
+	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_200() {
@@ -328,34 +356,18 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_404() {
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(nil, data.ErrNoDocuments)
+		Return(nil, &services.Error{
+			Kind:    services.NotExist,
+			Message: services.ErrTaskNotFound.Error(),
+		})
 
 	s.server.ServeHTTP(resp, req)
+
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-}
-
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_410() {
-	updatedUser := s.user
-	updatedUser.Name = "updated name"
-	t := true
-	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
-		IsLocked: &t,
-	})
-	updatedUser.Delete(s.admin.Id)
-
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
-	resp := httptest.NewRecorder()
-
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
-
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusGone, resp.Code)
+	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_409() {
@@ -378,6 +390,36 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_409() {
 	s.server.ServeHTTP(resp, req)
 
 	assert.Equal(s.T(), http.StatusConflict, resp.Code)
+}
+
+func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_410() {
+	updatedUser := s.user
+	updatedUser.Name = "updated name"
+	t := true
+	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
+		IsLocked: &t,
+	})
+	updatedUser.Delete(s.admin.Id)
+
+	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+	resp := httptest.NewRecorder()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(nil, &services.Error{
+			Kind:    services.Deleted,
+			Message: services.ErrUserDeleted.Error(),
+		})
+
+	s.server.ServeHTTP(resp, req)
+
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+	assert.Equal(s.T(), http.StatusGone, resp.Code)
+	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
 }
 
 func createUsers(num int) models.Users {

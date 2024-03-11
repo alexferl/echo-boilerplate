@@ -16,8 +16,8 @@ import (
 	"golang.org/x/oauth2/google"
 
 	"github.com/alexferl/echo-boilerplate/config"
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/cookie"
 	"github.com/alexferl/echo-boilerplate/util/rand"
 )
@@ -100,11 +100,14 @@ func (h *AuthHandler) oauth2GoogleCallback(c echo.Context) error {
 
 	res, err := h.svc.FindOneByEmailOrUsername(ctx, googleUser.Email, "")
 	if err != nil {
-		if !errors.Is(err, data.ErrNoDocuments) {
-			log.Error().Err(err).Msg("google: failed getting user")
-			return err
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind != services.NotExist {
+				log.Error().Err(err).Msg("failed getting user")
+			}
 		}
 	}
+
 	var access, refresh []byte
 
 	if res == nil {
