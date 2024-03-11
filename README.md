@@ -113,7 +113,7 @@ opening [assets/index.html](docs/index.html) in your web browser.
 ├── mappers   <--- mapper layer that the services use to insert/retrieve models from the database
 ├── models    <--- structs defining the various resources
 ├── openapi   <--- OpenAPI schema files
-├── server.go <--- glues handlers/services/mappers
+├── server    <--- glues handlers/services/mappers
 ├── services  <--- service layer that interacts with the mappers
 ├── testing   <--- testing helpers
 └── util      <--- general helpers
