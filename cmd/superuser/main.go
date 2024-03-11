@@ -95,33 +95,36 @@ func main() {
 		log.Fatal().Msg("username or email already in-use")
 	}
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			email := viper.GetString(SuperEmail)
-			name := viper.GetString(SuperName)
-			username := viper.GetString(SuperUsername)
+		var se *services.Error
+		if errors.As(err, &se) {
+			if se.Kind == services.NotExist {
+				email := viper.GetString(SuperEmail)
+				name := viper.GetString(SuperName)
+				username := viper.GetString(SuperUsername)
 
-			log.Info().
-				Str("name", name).
-				Str("username", username).
-				Str("email", email).
-				Msg("creating superuser")
+				log.Info().
+					Str("name", name).
+					Str("username", username).
+					Str("email", email).
+					Msg("creating superuser")
 
-			user := models.NewUserWithRole(email, username, models.SuperRole)
-			user.Name = name
+				user := models.NewUserWithRole(email, username, models.SuperRole)
+				user.Name = name
 
-			err = user.SetPassword(viper.GetString(SuperPassword))
-			if err != nil {
-				log.Fatal().Err(err).Msg("failed setting superuser password")
+				err = user.SetPassword(viper.GetString(SuperPassword))
+				if err != nil {
+					log.Fatal().Err(err).Msg("failed setting superuser password")
+				}
+
+				_, err = svc.Create(ctx, user)
+				if err != nil {
+					log.Fatal().Err(err).Msg("failed creating superuser")
+				}
+
+				log.Info().Msg("done")
+				return
 			}
-
-			_, err = svc.Create(ctx, user)
-			if err != nil {
-				log.Fatal().Err(err).Msg("failed creating superuser")
-			}
-
-			log.Info().Msg("done")
-		} else {
-			log.Fatal().Err(err).Msg("failed getting superuser")
 		}
+		log.Fatal().Err(err).Msg("failed getting superuser")
 	}
 }
