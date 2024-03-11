@@ -1,4 +1,4 @@
-package app
+package server
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
-func NewServer() *server.Server {
+func New() *server.Server {
 	client, err := data.MewMongoClient()
 	if err != nil {
 		log.Panic().Err(err).Msg("failed creating mongo client")

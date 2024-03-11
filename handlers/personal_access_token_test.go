@@ -10,16 +10,16 @@ import (
 	"time"
 
 	"github.com/alexferl/echo-openapi"
-	"github.com/alexferl/golib/http/api/server"
+	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	app "github.com/alexferl/echo-boilerplate"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/server"
 	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
@@ -27,7 +27,7 @@ import (
 type PersonalAccessTokenHandlerTestSuite struct {
 	suite.Suite
 	svc              *handlers.MockPersonalAccessTokenService
-	server           *server.Server
+	server           *api.Server
 	user             *models.User
 	accessToken      []byte
 	admin            *models.User
@@ -43,7 +43,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) SetupTest() {
 	access, _, _ := user.Login()
 
 	s.svc = svc
-	s.server = app.NewTestServer(h)
+	s.server = server.NewTestServer(h)
 	s.user = user
 	s.accessToken = access
 }

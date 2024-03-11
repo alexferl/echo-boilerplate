@@ -10,17 +10,17 @@ import (
 
 	jwtMw "github.com/alexferl/echo-jwt"
 	"github.com/alexferl/echo-openapi"
-	"github.com/alexferl/golib/http/api/server"
+	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	app "github.com/alexferl/echo-boilerplate"
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/server"
 	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/cookie"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
@@ -29,14 +29,14 @@ import (
 type AuthHandlerTestSuite struct {
 	suite.Suite
 	svc    *handlers.MockUserService
-	server *server.Server
+	server *api.Server
 }
 
 func (s *AuthHandlerTestSuite) SetupTest() {
 	svc := handlers.NewMockUserService(s.T())
 	h := handlers.NewAuthHandler(openapi.NewHandler(), svc)
 	s.svc = svc
-	s.server = app.NewTestServer(h)
+	s.server = server.NewTestServer(h)
 }
 
 func TestAuthHandlerTestSuite(t *testing.T) {

@@ -8,14 +8,14 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/stretchr/testify/assert"
 
-	app "github.com/alexferl/echo-boilerplate"
 	"github.com/alexferl/echo-boilerplate/handlers"
+	"github.com/alexferl/echo-boilerplate/server"
 	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 func TestHandler_Root(t *testing.T) {
 	h := handlers.NewRootHandler(openapi.NewHandler())
-	s := app.NewTestServer(h)
+	s := server.NewTestServer(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
