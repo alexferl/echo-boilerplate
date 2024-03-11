@@ -42,7 +42,7 @@ func getOAuth2GoogleConfig() *oauth2.Config {
 func (h *AuthHandler) oauth2GoogleLogin(c echo.Context) error {
 	state, err := rand.GenerateRandomString(80)
 	if err != nil {
-		return fmt.Errorf("google: failed generating state: %v", err)
+		return fmt.Errorf("failed generating state: %v", err)
 	}
 
 	url := getOAuth2GoogleConfig().AuthCodeURL(state)
@@ -69,19 +69,19 @@ type OAuth2GoogleCallbackResponse struct {
 func (h *AuthHandler) oauth2GoogleCallback(c echo.Context) error {
 	response, err := callback(c)
 	if err != nil {
-		log.Error().Err(err).Msg("google: failed callback")
+		log.Error().Err(err).Msg("failed callback")
 		return err
 	}
 
 	defer response.Body.Close()
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Error().Err(err).Msg("google: failed reading body")
+		log.Error().Err(err).Msg("failed reading body")
 		return err
 	}
 
 	if response.StatusCode != http.StatusOK {
-		log.Error().Msgf("google: response code was: %d body: %s", response.StatusCode, b)
+		log.Error().Msgf("response code was: %d body: %s", response.StatusCode, b)
 		return c.JSON(http.StatusUnauthorized, echo.HTTPError{
 			Code:    http.StatusUnauthorized,
 			Message: "failed to log in",
@@ -91,7 +91,7 @@ func (h *AuthHandler) oauth2GoogleCallback(c echo.Context) error {
 	googleUser := &GoogleUser{}
 	err = json.Unmarshal(b, googleUser)
 	if err != nil {
-		log.Error().Err(err).Msg("google: failed unmarshalling body")
+		log.Error().Err(err).Msg("failed unmarshalling body")
 		return err
 	}
 
@@ -114,26 +114,26 @@ func (h *AuthHandler) oauth2GoogleCallback(c echo.Context) error {
 		newUser := models.NewUser(googleUser.Email, "")
 		access, refresh, err = newUser.Login()
 		if err != nil {
-			log.Error().Err(err).Msg("google: failed generating tokens")
+			log.Error().Err(err).Msg("failed generating tokens")
 			return err
 		}
 
 		_, err = h.svc.Create(ctx, newUser)
 		if err != nil {
-			log.Error().Err(err).Msg("google: failed inserting user")
+			log.Error().Err(err).Msg("failed inserting user")
 			return err
 		}
 	} else {
 		user := res
 		access, refresh, err = user.Login()
 		if err != nil {
-			log.Error().Err(err).Msg("google: failed generating tokens")
+			log.Error().Err(err).Msg("failed generating tokens")
 			return err
 		}
 
 		_, err = h.svc.Update(ctx, user.Id, user)
 		if err != nil {
-			log.Error().Err(err).Msg("google: failed updating user")
+			log.Error().Err(err).Msg("failed updating user")
 			return err
 		}
 	}
@@ -141,7 +141,7 @@ func (h *AuthHandler) oauth2GoogleCallback(c echo.Context) error {
 	stateOpts := &cookie.Options{
 		Name:     "state",
 		Value:    "",
-		Path:     "/oauth2/callback",
+		Path:     "/oauth2/google/callback",
 		SameSite: http.SameSiteLaxMode, // needs to be Lax since it's across domains
 		HttpOnly: true,
 		MaxAge:   -1,
