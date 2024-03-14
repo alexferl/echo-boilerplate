@@ -74,13 +74,8 @@ func NewTestServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessT
 }
 
 func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessTokenService, handler ...handlers.Handler) *server.Server {
-	key, err := jwt.LoadPrivateKey()
-	if err != nil {
-		log.Panic().Err(err).Msg("failed loading private key")
-	}
-
 	jwtConfig := jwtMw.Config{
-		Key:             key,
+		Key:             jwt.PrivateKey,
 		UseRefreshToken: true,
 		ExemptRoutes: map[string][]string{
 			"/":                       {http.MethodGet},
@@ -90,7 +85,6 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 			"/openapi/*":              {http.MethodGet},
 			"/auth/login":             {http.MethodPost},
 			"/auth/signup":            {http.MethodPost},
-			"/google":                 {http.MethodGet},
 			"/oauth2/google/callback": {http.MethodGet},
 			"/oauth2/google/login":    {http.MethodGet},
 		},
@@ -161,6 +155,7 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 				}
 			}
 
+			// set token_id globally
 			log.Logger = log.Logger.With().Str("token_id", t.Subject()).Logger()
 
 			return nil
@@ -169,7 +164,7 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 
 	enforcer, err := casbin.NewEnforcer(viper.GetString(config.CasbinModel), viper.GetString(config.CasbinPolicy))
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("failed creating enforcer")
 	}
 
 	openAPIConfig := openapiMw.Config{
@@ -180,7 +175,6 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 			"/livez":                  {http.MethodGet},
 			"/docs":                   {http.MethodGet},
 			"/openapi/*":              {http.MethodGet},
-			"/google":                 {http.MethodGet},
 			"/oauth2/google/callback": {http.MethodGet},
 			"/oauth2/google/login":    {http.MethodGet},
 		},

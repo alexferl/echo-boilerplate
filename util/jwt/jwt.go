@@ -16,6 +16,19 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 )
 
+var PrivateKey *rsa.PrivateKey = nil
+
+func init() {
+	c := config.New()
+	c.BindFlags()
+
+	key, err := loadPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+	PrivateKey = key
+}
+
 type Type int8
 
 const (
@@ -57,11 +70,6 @@ func GeneratePersonalToken(sub string, expiry time.Duration, claims map[string]a
 }
 
 func generateToken(typ Type, expiry time.Duration, sub string, claims map[string]any) ([]byte, error) {
-	key, err := LoadPrivateKey()
-	if err != nil {
-		return nil, err
-	}
-
 	builder := jwx.NewBuilder().
 		Subject(sub).
 		Issuer(viper.GetString(config.JWTIssuer)).
@@ -81,7 +89,7 @@ func generateToken(typ Type, expiry time.Duration, sub string, claims map[string
 		return nil, fmt.Errorf("failed to build %s token: %v\n", typ.String(), err)
 	}
 
-	signed, err := jwx.Sign(token, jwx.WithKey(jwa.RS256, key))
+	signed, err := jwx.Sign(token, jwx.WithKey(jwa.RS256, PrivateKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign %s token: %v\n", typ.String(), err)
 	}
@@ -90,12 +98,7 @@ func generateToken(typ Type, expiry time.Duration, sub string, claims map[string
 }
 
 func ParseEncoded(encodedToken []byte) (jwx.Token, error) {
-	key, err := LoadPrivateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	token, err := jwx.Parse(encodedToken, jwx.WithValidate(true), jwx.WithKey(jwa.RS256, key))
+	token, err := jwx.Parse(encodedToken, jwx.WithValidate(true), jwx.WithKey(jwa.RS256, PrivateKey))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +106,7 @@ func ParseEncoded(encodedToken []byte) (jwx.Token, error) {
 	return token, nil
 }
 
-func LoadPrivateKey() (*rsa.PrivateKey, error) {
+func loadPrivateKey() (*rsa.PrivateKey, error) {
 	f, err := os.Open(viper.GetString(config.JWTPrivateKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open private key: %v", err)
