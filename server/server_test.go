@@ -9,19 +9,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexferl/echo-boilerplate/services"
-
-	"github.com/alexferl/echo-boilerplate/util/cookie"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/mock"
-
 	"github.com/alexferl/echo-openapi"
 	api "github.com/alexferl/golib/http/api/server"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
+	"github.com/alexferl/echo-boilerplate/services"
 	_ "github.com/alexferl/echo-boilerplate/testing"
+	"github.com/alexferl/echo-boilerplate/util/cookie"
 )
 
 type ServerTestSuite struct {
