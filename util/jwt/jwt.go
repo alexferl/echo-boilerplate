@@ -7,26 +7,24 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"slices"
 	"time"
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	jwx "github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 
 	"github.com/alexferl/echo-boilerplate/config"
 )
 
-type TokenType int64
+type Type int8
 
 const (
-	AccessToken TokenType = iota + 1
+	AccessToken Type = iota + 1
 	RefreshToken
 	PersonalToken
 )
 
-func (t TokenType) String() string {
+func (t Type) String() string {
 	return [...]string{"access", "refresh", "personal"}[t-1]
 }
 
@@ -58,7 +56,7 @@ func GeneratePersonalToken(sub string, expiry time.Duration, claims map[string]a
 	return generateToken(PersonalToken, expiry, sub, claims)
 }
 
-func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[string]any) ([]byte, error) {
+func generateToken(typ Type, expiry time.Duration, sub string, claims map[string]any) ([]byte, error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
 		return nil, err
@@ -72,8 +70,10 @@ func generateToken(typ TokenType, expiry time.Duration, sub string, claims map[s
 		Expiration(time.Now().Add(expiry)).
 		Claim("type", typ.String())
 
-	for k, v := range claims {
-		builder.Claim(k, v)
+	if claims != nil {
+		for k, v := range claims {
+			builder.Claim(k, v)
+		}
 	}
 
 	token, err := builder.Build()
@@ -101,39 +101,6 @@ func ParseEncoded(encodedToken []byte) (jwx.Token, error) {
 	}
 
 	return token, nil
-}
-
-func GetRoles(token jwx.Token) []string {
-	val, _ := token.Get("roles")
-	roles := val.([]interface{})
-
-	var res []string
-	for _, role := range roles {
-		res = append(res, role.(string))
-	}
-
-	return res
-}
-
-func HasRoles(token jwx.Token, roles ...string) bool {
-	if val, ok := token.Get("roles"); !ok {
-		log.Error().Msgf("failed getting roles for token: %s", token.Subject())
-		return false
-	} else {
-		jwtRoles, ok := val.([]interface{})
-		if !ok {
-			log.Error().Msgf("failed converting roles to slice for token: %s", token.Subject())
-			return false
-		}
-
-		for _, r := range jwtRoles {
-			if slices.Contains(roles, r.(string)) {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 func LoadPrivateKey() (*rsa.PrivateKey, error) {

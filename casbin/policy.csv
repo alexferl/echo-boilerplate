@@ -13,17 +13,19 @@ p, any, /google, GET
 p, any, /oauth2/*/login, GET
 p, any, /oauth2/*/callback, GET
 
-p, user, /me, (GET)|(PUT)
+p, user, /me, (GET)|(PATCH)
 p, user, /me/personal_access_tokens, (GET)|(POST)
 p, user, /me/personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)
-p, user, /tasks/:id, (GET)|(PUT)|(DELETE)
+p, user, /tasks/:id, (GET)|(PATCH)|(DELETE)
 p, user, /tasks/:id/transition, PUT
-p, user, /users/:id, GET
+p, user, /users/:id_or_username, GET
 
 p, admin, /users, GET
-p, admin, /users/:id, PUT
-p, admin, /users/:id/status, PUT
+p, admin, /users/:id_or_username, PATCH
+p, admin, /users/:id_or_username/ban, (PUT)|(DELETE)
+p, admin, /users/:id_or_username/lock, (PUT)|(DELETE)
+p, admin, /users/:id_or_username/roles/:role, (PUT)|(DELETE)
 
 g, *, any
 g, user, any

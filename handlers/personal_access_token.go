@@ -9,7 +9,6 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
 	"github.com/alexferl/echo-boilerplate/models"
@@ -49,7 +48,7 @@ type CreatePersonalAccessTokenRequest struct {
 }
 
 func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	body := &CreatePersonalAccessTokenRequest{}
 	if err := c.Bind(body); err != nil {
@@ -60,7 +59,7 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	res, err := h.svc.FindOne(ctx, token.Subject(), body.Name)
+	res, err := h.svc.FindOne(ctx, currentUser.Id, body.Name)
 	if err != nil {
 		var se *services.Error
 		if !errors.As(err, &se) {
@@ -73,7 +72,7 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 		return h.Validate(c, http.StatusConflict, echo.Map{"message": "token name already in-use"})
 	}
 
-	newPAT, err := models.NewPersonalAccessToken(token, body.Name, body.ExpiresAt)
+	newPAT, err := models.NewPersonalAccessToken(currentUser.Id, body.Name, body.ExpiresAt)
 	if err != nil {
 		if errors.Is(err, models.ErrExpiresAtPast) {
 			m := echo.Map{
@@ -104,12 +103,12 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 }
 
 func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	pats, err := h.svc.Find(ctx, token.Subject())
+	pats, err := h.svc.Find(ctx, currentUser.Id)
 	if err != nil {
 		log.Error().Err(err).Msg("failed getting personal access token")
 		return err

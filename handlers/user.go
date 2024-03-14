@@ -9,7 +9,6 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
 	"github.com/alexferl/echo-boilerplate/models"
@@ -40,20 +39,25 @@ func NewUserHandler(openapi *openapi.Handler, svc UserService) *UserHandler {
 
 func (h *UserHandler) Register(s *server.Server) {
 	s.Add(http.MethodGet, "/me", h.getCurrentUser)
-	s.Add(http.MethodPut, "/me", h.updateCurrentUser)
-	s.Add(http.MethodGet, "/users/:id", h.get)
-	s.Add(http.MethodPut, "/users/:id", h.update)
-	s.Add(http.MethodPut, "/users/:id/status", h.updateStatus)
+	s.Add(http.MethodPatch, "/me", h.updateCurrentUser)
+	s.Add(http.MethodGet, "/users/:id_or_username", h.get)
+	s.Add(http.MethodPatch, "/users/:id_or_username", h.update)
+	s.Add(http.MethodPut, "/users/:id_or_username/ban", h.ban)
+	s.Add(http.MethodDelete, "/users/:id_or_username/ban", h.unban)
+	s.Add(http.MethodPut, "/users/:id_or_username/lock", h.lock)
+	s.Add(http.MethodDelete, "/users/:id_or_username/lock", h.unlock)
+	s.Add(http.MethodPut, "/users/:id_or_username/roles/:role", h.addRole)
+	s.Add(http.MethodDelete, "/users/:id_or_username/roles/:role", h.removeRole)
 	s.Add(http.MethodGet, "/users", h.list)
 }
 
 func (h *UserHandler) getCurrentUser(c echo.Context) error {
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	user, err := h.svc.Read(ctx, token.Subject())
+	user, err := h.svc.Read(ctx, currentUser.Id)
 	if err != nil {
 		log.Error().Err(err).Msg("failed getting user")
 		return err
@@ -68,7 +72,7 @@ type UpdateCurrentUserRequest struct {
 }
 
 func (h *UserHandler) updateCurrentUser(c echo.Context) error {
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	body := &UpdateCurrentUserRequest{}
 	if err := c.Bind(body); err != nil {
@@ -79,7 +83,7 @@ func (h *UserHandler) updateCurrentUser(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	user, err := h.svc.Read(ctx, token.Subject())
+	user, err := h.svc.Read(ctx, currentUser.Id)
 	if err != nil {
 		log.Error().Err(err).Msg("failed getting user")
 		return err
@@ -93,7 +97,7 @@ func (h *UserHandler) updateCurrentUser(c echo.Context) error {
 		user.Bio = *body.Bio
 	}
 
-	res, err := h.svc.Update(ctx, token.Subject(), user)
+	res, err := h.svc.Update(ctx, currentUser.Id, user)
 	if err != nil {
 		log.Error().Err(err).Msg("failed updating user")
 		return err
@@ -103,23 +107,17 @@ func (h *UserHandler) updateCurrentUser(c echo.Context) error {
 }
 
 func (h *UserHandler) get(c echo.Context) error {
-	id := c.Param("id")
+	id := c.Param("id_or_username")
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting user")
-		return err
 	}
 
 	return h.Validate(c, http.StatusOK, user.Response())
@@ -131,8 +129,8 @@ type UpdateUserRequest struct {
 }
 
 func (h *UserHandler) update(c echo.Context) error {
-	id := c.Param("id")
-	token := c.Get("token").(jwx.Token)
+	id := c.Param("id_or_username")
+	currentUser := c.Get("user").(*models.User)
 
 	body := &UpdateUserRequest{}
 	if err := c.Bind(body); err != nil {
@@ -145,16 +143,10 @@ func (h *UserHandler) update(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting user")
-		return err
 	}
 
 	if body.Name != nil {
@@ -165,7 +157,7 @@ func (h *UserHandler) update(c echo.Context) error {
 		user.Bio = *body.Bio
 	}
 
-	res, err := h.svc.Update(ctx, token.Subject(), user)
+	res, err := h.svc.Update(ctx, currentUser.Id, user)
 	if err != nil {
 		log.Error().Err(err).Msg("failed updating user")
 		return err
@@ -174,67 +166,198 @@ func (h *UserHandler) update(c echo.Context) error {
 	return h.Validate(c, http.StatusOK, res.Response())
 }
 
-type UpdateUserStatusRequest struct {
-	IsBanned *bool `json:"is_banned,omitempty"`
-	IsLocked *bool `json:"is_locked,omitempty"`
-}
-
-func (h *UserHandler) updateStatus(c echo.Context) error {
-	id := c.Param("id")
-	token := c.Get("token").(jwx.Token)
-
-	body := &UpdateUserStatusRequest{}
-	if err := c.Bind(body); err != nil {
-		log.Error().Err(err).Msg("failed binding body")
-		return err
-	}
+func (h *UserHandler) ban(c echo.Context) error {
+	id := c.Param("id_or_username")
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
-		}
-		log.Error().Err(err).Msg("failed getting user")
-		return err
-	}
-
-	if user.Id == token.Subject() {
-		return c.JSON(http.StatusConflict, echo.Map{"message": "you cannot update your own status"})
-	}
-
-	if body.IsBanned != nil {
-		banned := *body.IsBanned
-		if banned {
-			user.Ban(token.Subject())
-		} else {
-			user.Unban(token.Subject())
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
 		}
 	}
 
-	if body.IsLocked != nil {
-		locked := *body.IsLocked
-		if locked {
-			user.Lock(token.Subject())
-		} else {
-			user.Unlock(token.Subject())
+	err = user.Ban(currentUser)
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "banning")
+		if mErr != nil {
+			return mErr()
 		}
 	}
 
-	res, err := h.svc.Update(ctx, token.Subject(), user)
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
 	if err != nil {
 		log.Error().Err(err).Msg("failed updating user")
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, res.Response())
+	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *UserHandler) unban(c echo.Context) error {
+	id := c.Param("id_or_username")
+	currentUser := c.Get("user").(*models.User)
+
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
+	defer cancel()
+
+	user, err := h.svc.Read(ctx, id)
+	if err != nil {
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
+		}
+	}
+
+	err = user.Unban(currentUser)
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "unbanning")
+		if mErr != nil {
+			return mErr()
+		}
+	}
+
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
+	if err != nil {
+		log.Error().Err(err).Msg("failed updating user")
+		return err
+	}
+
+	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *UserHandler) lock(c echo.Context) error {
+	id := c.Param("id_or_username")
+	currentUser := c.Get("user").(*models.User)
+
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
+	defer cancel()
+
+	user, err := h.svc.Read(ctx, id)
+	if err != nil {
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
+		}
+	}
+
+	err = user.Lock(currentUser)
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "locking")
+		if mErr != nil {
+			return mErr()
+		}
+	}
+
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
+	if err != nil {
+		log.Error().Err(err).Msg("failed updating user")
+		return err
+	}
+
+	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *UserHandler) unlock(c echo.Context) error {
+	id := c.Param("id_or_username")
+	currentUser := c.Get("user").(*models.User)
+
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
+	defer cancel()
+
+	user, err := h.svc.Read(ctx, id)
+	if err != nil {
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
+		}
+	}
+
+	err = user.Unlock(currentUser)
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "locking")
+		if mErr != nil {
+			return mErr()
+		}
+	}
+
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
+	if err != nil {
+		log.Error().Err(err).Msg("failed updating user")
+		return err
+	}
+
+	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *UserHandler) addRole(c echo.Context) error {
+	id := c.Param("id_or_username")
+	role := c.Param("role")
+	currentUser := c.Get("user").(*models.User)
+
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
+	defer cancel()
+
+	user, err := h.svc.Read(ctx, id)
+	if err != nil {
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
+		}
+	}
+
+	err = user.AddRole(currentUser, models.RolesMap[role])
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "locking")
+		if mErr != nil {
+			return mErr()
+		}
+	}
+
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
+	if err != nil {
+		log.Error().Err(err).Msg("failed updating user")
+		return err
+	}
+
+	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *UserHandler) removeRole(c echo.Context) error {
+	id := c.Param("id_or_username")
+	role := c.Param("role")
+	currentUser := c.Get("user").(*models.User)
+
+	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
+	defer cancel()
+
+	user, err := h.svc.Read(ctx, id)
+	if err != nil {
+		sErr := h.readUser(c, err)
+		if sErr != nil {
+			return sErr()
+		}
+	}
+
+	err = user.RemoveRole(currentUser, models.RolesMap[role])
+	if err != nil {
+		mErr := h.checkModelErr(c, err, "locking")
+		if mErr != nil {
+			return mErr()
+		}
+	}
+
+	_, err = h.svc.Update(ctx, currentUser.Id, user)
+	if err != nil {
+		log.Error().Err(err).Msg("failed updating user")
+		return err
+	}
+
+	return h.Validate(c, http.StatusNoContent, nil)
 }
 
 func (h *UserHandler) list(c echo.Context) error {
@@ -256,4 +379,32 @@ func (h *UserHandler) list(c echo.Context) error {
 	pagination.SetHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
 	return h.Validate(c, http.StatusOK, users.Public())
+}
+
+func (h *UserHandler) readUser(c echo.Context, err error) func() error {
+	var se *services.Error
+	if errors.As(err, &se) {
+		msg := echo.Map{"message": se.Message}
+		if se.Kind == services.NotExist {
+			return func() error { return h.Validate(c, http.StatusNotFound, msg) }
+		} else if se.Kind == services.Deleted {
+			return func() error { return h.Validate(c, http.StatusGone, msg) }
+		}
+	}
+	log.Error().Err(err).Msg("failed getting user")
+	return func() error { return err }
+}
+
+func (h *UserHandler) checkModelErr(c echo.Context, err error, action string) func() error {
+	var me *models.Error
+	if errors.As(err, &me) {
+		msg := echo.Map{"message": me.Message}
+		if me.Kind == models.Conflict {
+			return func() error { return h.Validate(c, http.StatusConflict, msg) }
+		} else if me.Kind == models.Permission {
+			return func() error { return h.Validate(c, http.StatusForbidden, msg) }
+		}
+	}
+	log.Error().Err(err).Msgf("failed %s user", action)
+	return func() error { return err }
 }

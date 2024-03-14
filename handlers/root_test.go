@@ -9,13 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/alexferl/echo-boilerplate/handlers"
-	"github.com/alexferl/echo-boilerplate/server"
 	_ "github.com/alexferl/echo-boilerplate/testing"
 )
 
 func TestHandler_Root(t *testing.T) {
 	h := handlers.NewRootHandler(openapi.NewHandler())
-	s := server.NewTestServer(h)
+	userSvc := handlers.NewMockUserService(t)
+	patSvc := handlers.NewMockPersonalAccessTokenService(t)
+	s := getServer(userSvc, patSvc, h)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()

@@ -17,7 +17,6 @@ import (
 
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/server"
 	"github.com/alexferl/echo-boilerplate/services"
 )
 
@@ -29,27 +28,29 @@ type UserHandlerTestSuite struct {
 	accessToken      []byte
 	admin            *models.User
 	adminAccessToken []byte
+	super            *models.User
 }
 
 func (s *UserHandlerTestSuite) SetupTest() {
 	svc := handlers.NewMockUserService(s.T())
+	patSvc := handlers.NewMockPersonalAccessTokenService(s.T())
 	h := handlers.NewUserHandler(openapi.NewHandler(), svc)
-	user := models.NewUser("test@example.com", "test")
-	user.Id = "100"
-	user.Create(user.Id)
+
+	user := getUser()
 	access, _, _ := user.Login()
 
-	admin := models.NewUserWithRole("admin@example.com", "admin", models.AdminRole)
-	admin.Id = "200"
-	admin.Create(admin.Id)
+	admin := getAdmin()
 	adminAccess, _, _ := admin.Login()
 
+	super := getSuper()
+
 	s.svc = svc
-	s.server = server.NewTestServer(h)
+	s.server = getServer(svc, patSvc, h)
 	s.user = user
 	s.accessToken = access
 	s.admin = admin
 	s.adminAccessToken = adminAccess
+	s.super = super
 }
 
 func TestUserHandlerTestSuite(t *testing.T) {
@@ -62,9 +63,14 @@ func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_200() {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
 
+	// middleware
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(s.user, nil)
+		Return(s.user, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -75,20 +81,6 @@ func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_200() {
 	assert.Equal(s.T(), s.user.Id, result.Id)
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_401() {
-	req := httptest.NewRequest(http.MethodGet, "/me", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.server.ServeHTTP(resp, req)
-
-	var result echo.HTTPError
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
-
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token invalid", result.Message)
-}
-
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
 	updatedUser := s.user
 	updatedUser.Name = "updated name"
@@ -96,18 +88,23 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
 		Name: &updatedUser.Name,
 	})
 
-	req := httptest.NewRequest(http.MethodPut, "/me", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPatch, "/me", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
 
+	// middleware
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(s.user, nil)
+		Return(s.user, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
 		Update(mock.Anything, mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
+		Return(updatedUser, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -118,21 +115,20 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
 	assert.Equal(s.T(), updatedUser.Name, result.Name)
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_401() {
-	req := httptest.NewRequest(http.MethodPut, "/me", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-}
-
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_422() {
-	req := httptest.NewRequest(http.MethodPut, "/me", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
+	req := httptest.NewRequest(http.MethodPatch, "/me", bytes.NewBuffer([]byte(`{"invalid": "key"}`)))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
+
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil)
 
 	s.server.ServeHTTP(resp, req)
 
@@ -145,9 +141,14 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
 
+	// middleware
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(s.user, nil)
+		Return(s.user, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -158,53 +159,6 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
 	assert.Equal(s.T(), s.user.Id, result.Id)
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_Get_404() {
-	req := httptest.NewRequest(http.MethodGet, "/users/404", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
-	resp := httptest.NewRecorder()
-
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(nil, &services.Error{
-			Kind:    services.NotExist,
-			Message: services.ErrTaskNotFound.Error(),
-		})
-
-	s.server.ServeHTTP(resp, req)
-
-	var result echo.HTTPError
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
-
-	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
-}
-
-func (s *UserHandlerTestSuite) TestUserHandler_Get_410() {
-	user := models.NewUser("deleted@example.com", "deleted")
-	user.Delete(user.Id)
-
-	req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
-	resp := httptest.NewRecorder()
-
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(nil, &services.Error{
-			Kind:    services.Deleted,
-			Message: services.ErrUserDeleted.Error(),
-		})
-
-	s.server.ServeHTTP(resp, req)
-
-	var result echo.HTTPError
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
-
-	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
-}
-
 func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 	updatedUser := s.user
 	updatedUser.Name = "updated name"
@@ -212,18 +166,23 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 		Name: &updatedUser.Name,
 	})
 
-	req := httptest.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPatch, "/users/1", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
 	resp := httptest.NewRecorder()
 
+	// middleware
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
-		Return(s.user, nil)
+		Return(s.admin, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
 		Update(mock.Anything, mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
+		Return(updatedUser, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -234,16 +193,6 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 	assert.Equal(s.T(), updatedUser.Name, result.Name)
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_Update_401() {
-	req := httptest.NewRequest(http.MethodPut, "/users/1", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-}
-
 func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
 	updatedUser := s.user
 	updatedUser.Name = "updated name"
@@ -251,17 +200,22 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
 		Name: &updatedUser.Name,
 	})
 
-	req := httptest.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPatch, "/users/1", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
 	resp := httptest.NewRecorder()
+
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.admin, nil).Once()
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
 		Return(nil, &services.Error{
 			Kind:    services.NotExist,
-			Message: services.ErrTaskNotFound.Error(),
-		})
+			Message: services.ErrUserNotFound.Error(),
+		}).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -269,7 +223,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
+	assert.Equal(s.T(), services.ErrUserNotFound.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
@@ -280,17 +234,22 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
 	})
 	updatedUser.Delete(s.admin.Id)
 
-	req := httptest.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(b))
+	req := httptest.NewRequest(http.MethodPatch, "/users/1", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
 	resp := httptest.NewRecorder()
+
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.admin, nil).Once()
 
 	s.svc.EXPECT().
 		Read(mock.Anything, mock.Anything).
 		Return(nil, &services.Error{
 			Kind:    services.Deleted,
 			Message: services.ErrUserDeleted.Error(),
-		})
+		}).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -301,125 +260,276 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
 	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_200() {
-	updatedUser := s.user
-	updatedUser.Name = "updated name"
-	t := true
-	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
-		IsLocked: &t,
-	})
+func (s *UserHandlerTestSuite) TestUserHandler_204() {
+	bannedUser := models.NewUser("banned@example.com", "banned")
+	_ = bannedUser.Ban(s.admin)
 
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
-	resp := httptest.NewRecorder()
+	lockedUser := models.NewUser("locked@example.com", "locked")
+	_ = lockedUser.Lock(s.admin)
 
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(s.user, nil)
+	testCases := []struct {
+		method   string
+		endpoint string
+		target   *models.User
+	}{
+		{http.MethodPut, "/users/1/ban", s.user},
+		{http.MethodDelete, "/users/1/ban", bannedUser},
+		{http.MethodPut, "/users/1/lock", s.user},
+		{http.MethodDelete, "/users/1/lock", lockedUser},
+		{http.MethodPut, "/users/1/roles/admin", s.user},
+		{http.MethodDelete, "/users/1/roles/user", s.user},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
 
-	s.svc.EXPECT().
-		Update(mock.Anything, mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
 
-	s.server.ServeHTTP(resp, req)
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(tc.target, nil).Once()
 
-	var result models.UserResponse
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+			s.svc.EXPECT().
+				Update(mock.Anything, mock.Anything, mock.Anything).
+				Return(nil, nil).Once()
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), updatedUser.Name, result.Name)
-}
+			s.server.ServeHTTP(resp, req)
 
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_401() {
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-}
-
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_404() {
-	updatedUser := s.user
-	updatedUser.Name = "updated name"
-	t := true
-	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
-		IsLocked: &t,
-	})
-
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
-	resp := httptest.NewRecorder()
-
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(nil, &services.Error{
-			Kind:    services.NotExist,
-			Message: services.ErrTaskNotFound.Error(),
+			assert.Equal(s.T(), http.StatusNoContent, resp.Code)
 		})
-
-	s.server.ServeHTTP(resp, req)
-
-	var result echo.HTTPError
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
-
-	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
+	}
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_409() {
-	updatedUser := s.admin
-	updatedUser.Name = "updated name"
-	t := true
-	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
-		IsLocked: &t,
-	})
+func (s *UserHandlerTestSuite) TestUserHandler_401() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodGet, "/me"},
+		{http.MethodPatch, "/me"},
+		{http.MethodGet, "/users/1"},
+		{http.MethodPatch, "/users/1"},
+		{http.MethodPut, "/users/1/ban"},
+		{http.MethodDelete, "/users/1/ban"},
+		{http.MethodPut, "/users/1/lock"},
+		{http.MethodDelete, "/users/1/lock"},
+		{http.MethodPut, "/users/1/roles/user"},
+		{http.MethodDelete, "/users/1/roles/user"},
+		{http.MethodGet, "/users"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			resp := httptest.NewRecorder()
 
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
-	resp := httptest.NewRecorder()
+			s.server.ServeHTTP(resp, req)
 
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(updatedUser, nil)
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusConflict, resp.Code)
-}
-
-func (s *UserHandlerTestSuite) TestUserHandler_UpdateStatus_410() {
-	updatedUser := s.user
-	updatedUser.Name = "updated name"
-	t := true
-	b, _ := json.Marshal(&handlers.UpdateUserStatusRequest{
-		IsLocked: &t,
-	})
-	updatedUser.Delete(s.admin.Id)
-
-	req := httptest.NewRequest(http.MethodPut, "/users/1/status", bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
-	resp := httptest.NewRecorder()
-
-	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
-		Return(nil, &services.Error{
-			Kind:    services.Deleted,
-			Message: services.ErrUserDeleted.Error(),
+			assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
+			assert.Equal(s.T(), "token invalid", result.Message)
 		})
+	}
+}
 
-	s.server.ServeHTTP(resp, req)
+func (s *UserHandlerTestSuite) TestUserHandler_403() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodPut, "/users/1/ban"},
+		{http.MethodDelete, "/users/1/ban"},
+		{http.MethodPut, "/users/1/lock"},
+		{http.MethodDelete, "/users/1/lock"},
+		{http.MethodPut, "/users/1/roles/super"},
+		{http.MethodDelete, "/users/1/roles/super"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
 
-	var result echo.HTTPError
-	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
 
-	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.super, nil).Once()
+
+			s.server.ServeHTTP(resp, req)
+
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+			assert.Equal(s.T(), http.StatusForbidden, resp.Code)
+		})
+	}
+}
+
+func (s *UserHandlerTestSuite) TestUserHandler_404() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodGet, "/users/1"},
+		{http.MethodPut, "/users/1/ban"},
+		{http.MethodDelete, "/users/1/ban"},
+		{http.MethodPut, "/users/1/lock"},
+		{http.MethodDelete, "/users/1/lock"},
+		{http.MethodPut, "/users/1/roles/user"},
+		{http.MethodDelete, "/users/1/roles/user"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
+
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
+
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(nil, &services.Error{
+					Kind:    services.NotExist,
+					Message: services.ErrUserNotFound.Error(),
+				}).Once()
+
+			s.server.ServeHTTP(resp, req)
+
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+			assert.Equal(s.T(), http.StatusNotFound, resp.Code)
+			assert.Equal(s.T(), services.ErrUserNotFound.Error(), result.Message)
+		})
+	}
+}
+
+func (s *UserHandlerTestSuite) TestUserHandler_409() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodPut, "/users/1/ban"},
+		{http.MethodDelete, "/users/1/ban"},
+		{http.MethodPut, "/users/1/lock"},
+		{http.MethodDelete, "/users/1/lock"},
+		{http.MethodPut, "/users/1/roles/user"},
+		{http.MethodDelete, "/users/1/roles/user"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
+
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
+
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
+
+			s.server.ServeHTTP(resp, req)
+
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+			assert.Equal(s.T(), http.StatusConflict, resp.Code)
+		})
+	}
+}
+
+func (s *UserHandlerTestSuite) TestUserHandler_410() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodGet, "/users/1"},
+		{http.MethodPut, "/users/1/ban"},
+		{http.MethodDelete, "/users/1/ban"},
+		{http.MethodPut, "/users/1/lock"},
+		{http.MethodDelete, "/users/1/lock"},
+		{http.MethodPut, "/users/1/roles/user"},
+		{http.MethodDelete, "/users/1/roles/user"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
+
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
+
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(nil, &services.Error{
+					Kind:    services.Deleted,
+					Message: services.ErrUserDeleted.Error(),
+				}).Once()
+
+			s.server.ServeHTTP(resp, req)
+
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+			assert.Equal(s.T(), http.StatusGone, resp.Code)
+			assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
+		})
+	}
+}
+
+func (s *UserHandlerTestSuite) TestUserHandler_Roles_422() {
+	testCases := []struct {
+		method   string
+		endpoint string
+	}{
+		{http.MethodPut, "/users/1/roles/wrong"},
+		{http.MethodDelete, "/users/1/roles/wrong"},
+	}
+	for _, tc := range testCases {
+		s.T().Run(fmt.Sprintf("%s_%s", tc.method, tc.endpoint), func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.endpoint, nil)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+			resp := httptest.NewRecorder()
+
+			// middleware
+			s.svc.EXPECT().
+				Read(mock.Anything, mock.Anything).
+				Return(s.admin, nil).Once()
+
+			s.server.ServeHTTP(resp, req)
+
+			var result echo.HTTPError
+			_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+			assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+		})
+	}
 }
 
 func createUsers(num int) models.Users {
@@ -442,9 +552,14 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 	num := 10
 	users := createUsers(num)
 
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.admin, nil).Once()
+
 	s.svc.EXPECT().
 		Find(mock.Anything, mock.Anything).
-		Return(int64(num), users, nil)
+		Return(int64(num), users, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 
@@ -468,21 +583,16 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 	assert.Equal(s.T(), link, h.Get("Link"))
 }
 
-func (s *UserHandlerTestSuite) TestUserHandler_List_401() {
-	req := httptest.NewRequest(http.MethodGet, "/users", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp := httptest.NewRecorder()
-
-	s.server.ServeHTTP(resp, req)
-
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-}
-
 func (s *UserHandlerTestSuite) TestUserHandler_List_403() {
 	req := httptest.NewRequest(http.MethodGet, "/users", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.accessToken))
 	resp := httptest.NewRecorder()
+
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
 
 	s.server.ServeHTTP(resp, req)
 

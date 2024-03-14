@@ -20,7 +20,6 @@ import (
 	"github.com/alexferl/echo-boilerplate/config"
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
-	"github.com/alexferl/echo-boilerplate/server"
 	"github.com/alexferl/echo-boilerplate/services"
 	"github.com/alexferl/echo-boilerplate/util/cookie"
 	"github.com/alexferl/echo-boilerplate/util/jwt"
@@ -34,9 +33,10 @@ type AuthHandlerTestSuite struct {
 
 func (s *AuthHandlerTestSuite) SetupTest() {
 	svc := handlers.NewMockUserService(s.T())
+	patSvc := handlers.NewMockPersonalAccessTokenService(s.T())
 	h := handlers.NewAuthHandler(openapi.NewHandler(), svc)
 	s.svc = svc
-	s.server = server.NewTestServer(h)
+	s.server = getServer(svc, patSvc, h)
 }
 
 func TestAuthHandlerTestSuite(t *testing.T) {
@@ -157,19 +157,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_400() {
 
 	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
 }
-
-// TODO: fix
-//func (s *AuthHandlerTestSuite) TestAuthHandler_Login_422() {
-//	b, _ := json.Marshal(`{"username":"foo","password":"bar","derp":"dep"}`)
-//
-//	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(b))
-//	req.Header.Set("Content-Type", "application/json")
-//	resp := httptest.NewRecorder()
-//
-//	s.server.ServeHTTP(resp, req)
-//
-//	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
-//}
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Cookie() {
 	user := models.NewUser("test@example.com", "test")
@@ -600,7 +587,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_422() {
 func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 	user := models.NewUser("test@example.com", "test")
 	access, _, _ := user.Login()
-
 	token, _ := jwt.ParseEncoded(access)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/token", nil)
@@ -608,12 +594,16 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access))
 	resp := httptest.NewRecorder()
 
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(user, nil).Once()
+
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.TokenResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	roles, _ := token.Get("roles")
 	typ, _ := token.Get("type")
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
@@ -621,7 +611,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 	assert.Equal(s.T(), token.IssuedAt(), result.Iat)
 	assert.Equal(s.T(), token.Issuer(), result.Iss)
 	assert.Equal(s.T(), token.NotBefore(), result.Nbf)
-	assert.ElementsMatch(s.T(), roles, user.Roles)
 	assert.Equal(s.T(), token.Subject(), result.Sub)
 	assert.Equal(s.T(), typ, result.Type)
 }
@@ -643,7 +632,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_401() {
 func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 	user := models.NewUser("test@example.com", "test")
 	access, _, _ := user.Login()
-
 	token, _ := jwt.ParseEncoded(access)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/token", nil)
@@ -651,12 +639,16 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 	req.AddCookie(cookie.NewAccessToken(access))
 	resp := httptest.NewRecorder()
 
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(user, nil).Once()
+
 	s.server.ServeHTTP(resp, req)
 
 	var result handlers.TokenResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	roles, _ := token.Get("roles")
 	typ, _ := token.Get("type")
 
 	assert.Equal(s.T(), http.StatusOK, resp.Code)
@@ -664,7 +656,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 	assert.Equal(s.T(), token.IssuedAt(), result.Iat)
 	assert.Equal(s.T(), token.Issuer(), result.Iss)
 	assert.Equal(s.T(), token.NotBefore(), result.Nbf)
-	assert.ElementsMatch(s.T(), roles, user.Roles)
 	assert.Equal(s.T(), token.Subject(), result.Sub)
 	assert.Equal(s.T(), typ, result.Type)
 }

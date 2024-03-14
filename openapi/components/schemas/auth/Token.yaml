@@ -6,11 +6,8 @@ required:
   - iat
   - iss
   - nbf
-  - roles
   - sub
   - type
-  - is_banned
-  - is_locked
 properties:
   exp:
     type: string
@@ -28,26 +25,11 @@ properties:
     type: string
     description: Token not before date
     example: '2024-01-23T19:35:48Z'
-  roles:
-    type: array
-    items:
-      type: string
-      minItems: 1
-    description: Token roles
-    example: ['user']
   sub:
     type: string
     description: Token subject
     example: cmfh5i4i016kiqso7gr0
   type:
     type: string
-    description: Token type
+    description: Token kind
     example: access
-  is_banned:
-    type: boolean
-    description: True if account is banned
-    example: true
-  is_locked:
-    type: boolean
-    description: True if account is locked
-    example: false

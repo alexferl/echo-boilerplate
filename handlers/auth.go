@@ -116,13 +116,13 @@ type LogoutRequest struct {
 }
 
 func (h *AuthHandler) logout(c echo.Context) error {
-	token := c.Get("refresh_token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 	encodedToken := c.Get("refresh_token_encoded").(string)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	user, err := h.svc.Read(ctx, token.Subject())
+	user, err := h.svc.Read(ctx, currentUser.Id)
 	if err != nil {
 		var se *services.Error
 		if errors.As(err, &se) {
@@ -237,8 +237,9 @@ func (h *AuthHandler) signup(c echo.Context) error {
 			if se.Kind == services.Exist {
 				return h.Validate(c, http.StatusConflict, echo.Map{"message": se.Message})
 			}
+		} else {
+			log.Error().Err(err).Msg("failed getting user")
 		}
-		log.Error().Err(err).Msg("failed getting user")
 	}
 
 	user := models.NewUser(body.Email, body.Username)
@@ -259,8 +260,9 @@ func (h *AuthHandler) signup(c echo.Context) error {
 			if se.Kind == services.Exist {
 				return h.Validate(c, http.StatusConflict, echo.Map{"message": se.Message})
 			}
+		} else {
+			log.Error().Err(err).Msg("failed inserting new user")
 		}
-		log.Error().Err(err).Msg("failed inserting new user")
 		return err
 	}
 

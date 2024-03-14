@@ -1,0 +1,64 @@
+put:
+  summary: Add user role
+  description: Adds a role to the user.
+  operationId: addRole
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: role
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: ['user', 'admin', 'super']
+  responses:
+    '204':
+      description: Successfully added role
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '409':
+      $ref: '../../components/responses/Conflict.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+    '422':
+      $ref: '../../components/responses/UnprocessableEntity.yaml'
+delete:
+  summary: Remove user role
+  description: Removes a role from the user.
+  operationId: removeRole
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: role
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: ['user', 'admin', 'super']
+  responses:
+    '204':
+      description: Successfully removed role
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'

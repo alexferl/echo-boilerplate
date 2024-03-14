@@ -48,7 +48,10 @@ func (u *User) Create(ctx context.Context, model *models.User) (*models.User, er
 }
 
 func (u *User) Read(ctx context.Context, id string) (*models.User, error) {
-	filter := bson.D{{"id", id}}
+	filter := bson.D{{"$or", bson.A{
+		bson.D{{"id", id}},
+		bson.D{{"username", id}},
+	}}}
 	user, err := u.mapper.FindOne(ctx, filter)
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {

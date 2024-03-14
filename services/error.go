@@ -17,10 +17,12 @@ const (
 	Exist                    // Item already exist.
 	NotExist                 // Item does not exist.
 	Deleted                  // Item was deleted.
+	Conflict
+	Permission
 )
 
 func (k Kind) String() string {
-	return [...]string{"other", "exist", "not_exist", "deleted"}[k-1]
+	return [...]string{"other", "exist", "not_exist", "deleted", "conflict", "permission"}[k-1]
 }
 
 // NewError instantiates a new error.

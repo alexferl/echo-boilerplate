@@ -1,0 +1,50 @@
+put:
+  summary: Lock a user
+  description: Locks a user.
+  operationId: lockUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully locked user
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '409':
+      $ref: '../../components/responses/Conflict.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+delete:
+  summary: Unlock a user
+  description: Unlocks a user.
+  operationId: unlockUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully unlocked user
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'

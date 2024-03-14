@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"slices"
 	"time"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/alexferl/echo-boilerplate/util/password"
 )
 
-type Role int
+type Role int8
 
 const (
 	UserRole Role = iota + 1
@@ -19,6 +20,40 @@ const (
 func (r Role) String() string {
 	return [...]string{"user", "admin", "super"}[r-1]
 }
+
+var RolesMap = map[string]Role{
+	"user":  UserRole,
+	"admin": AdminRole,
+	"super": SuperRole,
+}
+
+var (
+	ErrAdminRoleRequired = errors.New("admin or greater role required")
+
+	ErrBanSelf           = errors.New("cannot ban self")
+	ErrBanExist          = errors.New("user already banned")
+	ErrBanMorePrivileged = errors.New("cannot ban user with higher permissions")
+
+	ErrUnbanSelf           = errors.New("cannot unban self")
+	ErrUnbanExist          = errors.New("user already unbanned")
+	ErrUnbanMorePrivileged = errors.New("cannot unban user with higher permissions")
+
+	ErrLockSelf           = errors.New("cannot lock self")
+	ErrLockExist          = errors.New("user already locked")
+	ErrLockMorePrivileged = errors.New("cannot lock user with higher permissions")
+
+	ErrUnlockSelf           = errors.New("cannot unlock self")
+	ErrUnlockExist          = errors.New("user already unlocked")
+	ErrUnlockMorePrivileged = errors.New("cannot unlock user with higher permissions")
+
+	ErrRoleSelf = errors.New("cannot modify own roles")
+
+	ErrRoleAddExist          = errors.New("user already has role")
+	ErrRoleAddMorePrivileged = errors.New("cannot add a more privileged role")
+
+	ErrRoleRemoveNotExist       = errors.New("user doesn't have role")
+	ErrRoleRemoveMorePrivileged = errors.New("cannot remove a more privileged role")
+)
 
 type User struct {
 	*Model        `bson:",inline"`
@@ -125,7 +160,7 @@ func NewUser(email string, username string) *User {
 
 func NewUserWithRole(email string, username string, role Role) *User {
 	user := NewUser(email, username)
-	user.AddRole(role)
+	user.addRole(role)
 	return user
 }
 
@@ -176,46 +211,210 @@ func (u *User) ValidatePassword(s string) error {
 	return password.Verify([]byte(u.Password), []byte(s))
 }
 
-func (u *User) AddRole(role Role) {
-	if !slices.Contains(u.Roles, role.String()) {
-		u.Roles = append(u.Roles, role.String())
+func (u *User) HasRoleOrHigher(role Role) bool {
+	if slices.Max(stringSliceToRolesSlice(u.Roles)) >= role {
+		return true
 	}
+	return false
 }
 
-func (u *User) Ban(id string) {
+func stringSliceToRolesSlice(roles []string) []Role {
+	var rs []Role
+	for _, r := range roles {
+		rs = append(rs, RolesMap[r])
+	}
+	return rs
+}
+
+// compare checks if u has a higher role than user
+// and returns true if it does.
+// It also returns true if both highest roles equals the SuperRole
+// as users with the SuperRole are allowed to interact (ban, lock etc.)
+// with each others.
+func (u *User) compare(user *User) bool {
+	roles := stringSliceToRolesSlice(u.Roles)
+	otherRoles := stringSliceToRolesSlice(user.Roles)
+	highestRole := slices.Max(roles)
+	otherHighestRole := slices.Max(otherRoles)
+
+	if highestRole == SuperRole && otherHighestRole == SuperRole {
+		return false
+	}
+
+	if highestRole >= otherHighestRole {
+		return true
+	}
+
+	return false
+}
+
+// hasRoleOrHigher check if user as at least role and returns true if it does.
+func hasRoleOrHigher(user *User, role Role) bool {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) >= role {
+		return true
+	}
+	return false
+}
+
+func (u *User) addRole(role Role) {
+	u.Roles = append(u.Roles, role.String())
+}
+
+func (u *User) AddRole(user *User, role Role) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrRoleSelf, Conflict)
+	}
+
+	if !hasRoleOrHigher(user, role) {
+		return NewError(ErrRoleAddMorePrivileged, Permission)
+	}
+
+	if slices.Contains(u.Roles, role.String()) {
+		return NewError(ErrRoleAddExist, Conflict)
+	}
+
+	u.addRole(role)
+
+	return nil
+}
+
+func (u *User) removeRole(role Role) {
+	idx := slices.Index(u.Roles, role.String())
+	u.Roles = slices.Delete(u.Roles, idx, idx+1)
+}
+
+func (u *User) RemoveRole(user *User, role Role) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrRoleSelf, Conflict)
+	}
+
+	if !hasRoleOrHigher(user, role) {
+		return NewError(ErrRoleRemoveMorePrivileged, Permission)
+	}
+
+	if !slices.Contains(u.Roles, role.String()) {
+		return NewError(ErrRoleRemoveNotExist, Conflict)
+	}
+
+	u.removeRole(role)
+
+	return nil
+}
+
+func (u *User) Ban(user *User) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrBanSelf, Conflict)
+	}
+
+	if u.compare(user) {
+		return NewError(ErrBanMorePrivileged, Permission)
+	}
+
+	if u.IsBanned {
+		return NewError(ErrBanExist, Conflict)
+	}
+
 	u.IsBanned = true
 	t := time.Now()
 	u.BannedAt = &t
-	u.BannedBy = &Ref{Id: id}
+	u.BannedBy = &Ref{Id: user.Id}
 	u.UnbannedAt = nil
 	u.UnbannedBy = nil
+
+	return nil
 }
 
-func (u *User) Unban(id string) {
+func (u *User) Unban(user *User) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrUnbanSelf, Conflict)
+	}
+
+	if u.compare(user) {
+		return NewError(ErrUnbanMorePrivileged, Permission)
+	}
+
+	if !u.IsBanned {
+		return NewError(ErrUnbanExist, Conflict)
+	}
+
 	u.IsBanned = false
 	t := time.Now()
 	u.BannedAt = nil
 	u.BannedBy = nil
 	u.UnbannedAt = &t
-	u.UnbannedBy = &Ref{Id: id}
+	u.UnbannedBy = &Ref{Id: user.Id}
+
+	return nil
 }
 
-func (u *User) Lock(id string) {
+func (u *User) Lock(user *User) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrLockSelf, Conflict)
+	}
+
+	if u.compare(user) {
+		return NewError(ErrLockMorePrivileged, Permission)
+	}
+
+	if u.IsLocked {
+		return NewError(ErrLockExist, Conflict)
+	}
+
 	u.IsLocked = true
 	t := time.Now()
 	u.LockedAt = &t
-	u.LockedBy = &Ref{Id: id}
+	u.LockedBy = &Ref{Id: user.Id}
 	u.UnlockedAt = nil
 	u.UnlockedBy = nil
+
+	return nil
 }
 
-func (u *User) Unlock(id string) {
+func (u *User) Unlock(user *User) error {
+	if slices.Max(stringSliceToRolesSlice(user.Roles)) < AdminRole {
+		return NewError(ErrAdminRoleRequired, Permission)
+	}
+
+	if user.Id == u.Id {
+		return NewError(ErrUnlockSelf, Conflict)
+	}
+
+	if u.compare(user) {
+		return NewError(ErrUnlockMorePrivileged, Permission)
+	}
+
+	if !u.IsLocked {
+		return NewError(ErrUnlockExist, Conflict)
+	}
+
 	u.IsLocked = false
 	t := time.Now()
 	u.LockedAt = nil
 	u.LockedBy = nil
 	u.UnlockedAt = &t
-	u.UnlockedBy = &Ref{Id: id}
+	u.UnlockedBy = &Ref{Id: user.Id}
+
+	return nil
 }
 
 func (u *User) Login() ([]byte, []byte, error) {
@@ -263,12 +462,7 @@ func (u *User) ValidateRefreshToken(s string) error {
 }
 
 func (u *User) getTokens() ([]byte, []byte, error) {
-	claims := map[string]any{
-		"roles":     u.Roles,
-		"is_banned": u.IsBanned,
-		"is_locked": u.IsLocked,
-	}
-	access, refresh, err := jwt.GenerateTokens(u.Id, claims)
+	access, refresh, err := jwt.GenerateTokens(u.Id, nil)
 	if err != nil {
 		return nil, nil, err
 	}
