@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -39,8 +38,8 @@ func (s *TaskTestSuite) TestTask_Create() {
 		Return(m, nil)
 
 	task, err := s.svc.Create(context.Background(), id, m)
-	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), task.CreatedBy)
+	s.Assert().NoError(err)
+	s.Assert().NotNil(task.CreatedBy)
 }
 
 func (s *TaskTestSuite) TestTask_Read() {
@@ -53,8 +52,8 @@ func (s *TaskTestSuite) TestTask_Read() {
 		Return(m, nil)
 
 	task, err := s.svc.Read(context.Background(), id)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), id, task.Id)
+	s.Assert().NoError(err)
+	s.Assert().Equal(id, task.Id)
 }
 
 func (s *TaskTestSuite) TestTask_Read_Err() {
@@ -67,11 +66,11 @@ func (s *TaskTestSuite) TestTask_Read_Err() {
 		Return(nil, data.ErrNoDocuments)
 
 	_, err := s.svc.Read(context.Background(), id)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.NotExist, se.Kind)
+		s.Assert().Equal(services.NotExist, se.Kind)
 	}
 }
 
@@ -85,8 +84,8 @@ func (s *TaskTestSuite) TestTask_Update() {
 		Return(m, nil)
 
 	task, err := s.svc.Update(context.Background(), id, m)
-	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), task.UpdatedBy)
+	s.Assert().NoError(err)
+	s.Assert().NotNil(task.UpdatedBy)
 }
 
 func (s *TaskTestSuite) TestTask_Delete() {
@@ -99,18 +98,18 @@ func (s *TaskTestSuite) TestTask_Delete() {
 		Return(m, nil)
 
 	err := s.svc.Delete(context.Background(), id, m)
-	assert.NoError(s.T(), err)
+	s.Assert().NoError(err)
 
 	s.mapper.EXPECT().
 		FindOneById(mock.Anything, mock.Anything).
 		Return(m, nil)
 
 	_, err = s.svc.Read(context.Background(), id)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.Deleted, se.Kind)
+		s.Assert().Equal(services.Deleted, se.Kind)
 	}
 }
 
@@ -126,7 +125,7 @@ func (s *TaskTestSuite) TestTask_Find() {
 		Limit:     1,
 		Skip:      0,
 	})
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), int64(1), count)
-	assert.Equal(s.T(), models.Tasks{}, tasks)
+	s.Assert().NoError(err)
+	s.Assert().Equal(int64(1), count)
+	s.Assert().Equal(models.Tasks{}, tasks)
 }

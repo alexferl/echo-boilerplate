@@ -13,7 +13,6 @@ import (
 	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -82,7 +81,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_200() {
 			if viper.GetBool(config.CSRFEnabled) {
 				expected = 3
 			}
-			if assert.Equal(s.T(), expected, len(resp.Result().Cookies())) {
+			if s.Assert().Equal(expected, len(resp.Result().Cookies())) {
 				cookies := 0
 				for _, c := range resp.Result().Cookies() {
 					if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
@@ -95,14 +94,14 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_200() {
 						cookies++
 					}
 				}
-				assert.Equal(s.T(), expected, cookies)
+				s.Assert().Equal(expected, cookies)
 			}
 
-			assert.Equal(s.T(), http.StatusOK, resp.Code)
-			assert.NotEqual(s.T(), "", result.AccessToken)
-			assert.NotEqual(s.T(), "", result.ExpiresIn)
-			assert.NotEqual(s.T(), "", result.RefreshToken)
-			assert.NotEqual(s.T(), "", result.TokenType)
+			s.Assert().Equal(http.StatusOK, resp.Code)
+			s.Assert().NotEqual("", result.AccessToken)
+			s.Assert().NotEqual("", result.ExpiresIn)
+			s.Assert().NotEqual("", result.RefreshToken)
+			s.Assert().NotEqual("", result.TokenType)
 		})
 	}
 }
@@ -140,8 +139,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_401() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-			assert.Contains(s.T(), "invalid email or password", result.Message)
+			s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+			s.Assert().Contains("invalid email or password", result.Message)
 		})
 	}
 }
@@ -155,7 +154,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Login_400() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
+	s.Assert().Equal(http.StatusBadRequest, resp.Code)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Cookie() {
@@ -177,7 +176,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Cookie() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusNoContent, resp.Code)
+	s.Assert().Equal(http.StatusNoContent, resp.Code)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Invalid() {
@@ -194,8 +193,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Invalid() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), jwtMw.ErrTokenInvalid, result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal(jwtMw.ErrTokenInvalid, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Mismatch() {
@@ -217,8 +216,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Cookie_Mismatch() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token mismatch", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token mismatch", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Token() {
@@ -244,7 +243,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_204_Token() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusNoContent, resp.Code)
+	s.Assert().Equal(http.StatusNoContent, resp.Code)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Body_Missing_Key() {
@@ -259,8 +258,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Body_Missing_Key() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
-	assert.Equal(s.T(), jwtMw.ErrBodyMissingKey, result.Message)
+	s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
+	s.Assert().Equal(jwtMw.ErrBodyMissingKey, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Token_Missing() {
@@ -273,8 +272,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_400_Token_Missing() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
+	s.Assert().Equal(http.StatusBadRequest, resp.Code)
+	s.Assert().Equal(jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Token_Mismatch() {
@@ -300,8 +299,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Logout_401_Token_Mismatch() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token mismatch", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token mismatch", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
@@ -335,7 +334,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
 	if viper.GetBool(config.CSRFEnabled) {
 		expected = 3
 	}
-	if assert.Equal(s.T(), expected, len(resp.Result().Cookies())) {
+	if s.Assert().Equal(expected, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
 			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
@@ -348,14 +347,14 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Cookie() {
 				cookies++
 			}
 		}
-		assert.Equal(s.T(), expected, cookies)
+		s.Assert().Equal(expected, cookies)
 	}
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.NotEqual(s.T(), "", result.AccessToken)
-	assert.NotEqual(s.T(), "", result.ExpiresIn)
-	assert.NotEqual(s.T(), "", result.RefreshToken)
-	assert.NotEqual(s.T(), "", result.TokenType)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().NotEqual("", result.AccessToken)
+	s.Assert().NotEqual("", result.ExpiresIn)
+	s.Assert().NotEqual("", result.RefreshToken)
+	s.Assert().NotEqual("", result.TokenType)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Cookie_Missing() {
@@ -368,8 +367,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Cookie_Missing() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
+	s.Assert().Equal(http.StatusBadRequest, resp.Code)
+	s.Assert().Equal(jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Cookie_Invalid() {
@@ -391,8 +390,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Cookie_Invalid() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token mismatch", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token mismatch", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Token() {
@@ -426,7 +425,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Token() {
 	if viper.GetBool(config.CSRFEnabled) {
 		expected = 3
 	}
-	if assert.Equal(s.T(), expected, len(resp.Result().Cookies())) {
+	if s.Assert().Equal(expected, len(resp.Result().Cookies())) {
 		cookies := 0
 		for _, c := range resp.Result().Cookies() {
 			if c.Name == viper.GetString(config.JWTAccessTokenCookieName) {
@@ -439,14 +438,14 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_200_Token() {
 				cookies++
 			}
 		}
-		assert.Equal(s.T(), expected, cookies)
+		s.Assert().Equal(expected, cookies)
 	}
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.NotEqual(s.T(), "", result.AccessToken)
-	assert.NotEqual(s.T(), "", result.ExpiresIn)
-	assert.NotEqual(s.T(), "", result.RefreshToken)
-	assert.NotEqual(s.T(), "", result.TokenType)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().NotEqual("", result.AccessToken)
+	s.Assert().NotEqual("", result.ExpiresIn)
+	s.Assert().NotEqual("", result.RefreshToken)
+	s.Assert().NotEqual("", result.TokenType)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Token_Missing() {
@@ -459,8 +458,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_400_Token_Missing() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusBadRequest, resp.Code)
-	assert.Equal(s.T(), jwtMw.ErrRequestMalformed, result.Message)
+	s.Assert().Equal(http.StatusBadRequest, resp.Code)
+	s.Assert().Equal(jwtMw.ErrRequestMalformed, result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Invalid() {
@@ -479,8 +478,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Invalid() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token invalid", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token invalid", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Mismatch() {
@@ -507,8 +506,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Refresh_401_Token_Mismatch() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token mismatch", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token mismatch", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_200() {
@@ -539,7 +538,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
+	s.Assert().Equal(http.StatusOK, resp.Code)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
@@ -567,8 +566,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_409() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusConflict, resp.Code)
-	assert.Equal(s.T(), services.ErrUserExist.Error(), result.Message)
+	s.Assert().Equal(http.StatusConflict, resp.Code)
+	s.Assert().Equal(services.ErrUserExist.Error(), result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_422() {
@@ -581,7 +580,7 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Signup_422() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+	s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
@@ -606,13 +605,13 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_200() {
 
 	typ, _ := token.Get("type")
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), token.Expiration(), result.Exp)
-	assert.Equal(s.T(), token.IssuedAt(), result.Iat)
-	assert.Equal(s.T(), token.Issuer(), result.Iss)
-	assert.Equal(s.T(), token.NotBefore(), result.Nbf)
-	assert.Equal(s.T(), token.Subject(), result.Sub)
-	assert.Equal(s.T(), typ, result.Type)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(token.Expiration(), result.Exp)
+	s.Assert().Equal(token.IssuedAt(), result.Iat)
+	s.Assert().Equal(token.Issuer(), result.Iss)
+	s.Assert().Equal(token.NotBefore(), result.Nbf)
+	s.Assert().Equal(token.Subject(), result.Sub)
+	s.Assert().Equal(typ, result.Type)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Token_401() {
@@ -625,8 +624,8 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Token_401() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token invalid", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token invalid", result.Message)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
@@ -651,13 +650,13 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_200() {
 
 	typ, _ := token.Get("type")
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), token.Expiration(), result.Exp)
-	assert.Equal(s.T(), token.IssuedAt(), result.Iat)
-	assert.Equal(s.T(), token.Issuer(), result.Iss)
-	assert.Equal(s.T(), token.NotBefore(), result.Nbf)
-	assert.Equal(s.T(), token.Subject(), result.Sub)
-	assert.Equal(s.T(), typ, result.Type)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(token.Expiration(), result.Exp)
+	s.Assert().Equal(token.IssuedAt(), result.Iat)
+	s.Assert().Equal(token.Issuer(), result.Iss)
+	s.Assert().Equal(token.NotBefore(), result.Nbf)
+	s.Assert().Equal(token.Subject(), result.Sub)
+	s.Assert().Equal(typ, result.Type)
 }
 
 func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_401() {
@@ -671,6 +670,6 @@ func (s *AuthHandlerTestSuite) TestAuthHandler_Cookie_401() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-	assert.Equal(s.T(), "token invalid", result.Message)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal("token invalid", result.Message)
 }

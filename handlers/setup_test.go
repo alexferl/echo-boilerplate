@@ -1,11 +1,12 @@
 package handlers_test
 
 import (
+	api "github.com/alexferl/golib/http/api/server"
+
 	"github.com/alexferl/echo-boilerplate/handlers"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/server"
 	_ "github.com/alexferl/echo-boilerplate/testing"
-	api "github.com/alexferl/golib/http/api/server"
 )
 
 func getUser() *models.User {

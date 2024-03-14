@@ -11,7 +11,6 @@ import (
 	"github.com/alexferl/echo-openapi"
 	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -72,8 +71,8 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Get_200() {
 	var result models.TaskResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), s.user.Id, result.CreatedBy.Id)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(s.user.Id, result.CreatedBy.Id)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_401() {
@@ -99,8 +98,8 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_401() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-			assert.Equal(s.T(), "token invalid", result.Message)
+			s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+			s.Assert().Equal("token invalid", result.Message)
 		})
 	}
 }
@@ -151,8 +150,8 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_404() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-			assert.Equal(s.T(), services.ErrTaskNotFound.Error(), result.Message)
+			s.Assert().Equal(http.StatusNotFound, resp.Code)
+			s.Assert().Equal(services.ErrTaskNotFound.Error(), result.Message)
 		})
 	}
 }
@@ -203,8 +202,8 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_410() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusGone, resp.Code)
-			assert.Equal(s.T(), services.ErrTaskDeleted.Error(), result.Message)
+			s.Assert().Equal(http.StatusGone, resp.Code)
+			s.Assert().Equal(services.ErrTaskDeleted.Error(), result.Message)
 		})
 	}
 }
@@ -234,7 +233,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_422() {
 
 			s.server.ServeHTTP(resp, req)
 
-			assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+			s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 		})
 	}
 }
@@ -276,9 +275,9 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_200() {
 	var result models.TaskResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), title, result.Title)
-	assert.Equal(s.T(), s.user.Id, result.UpdatedBy.Id)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(title, result.Title)
+	s.Assert().Equal(s.user.Id, result.UpdatedBy.Id)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Update_403() {
@@ -309,7 +308,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Update_403() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusForbidden, resp.Code)
+	s.Assert().Equal(http.StatusForbidden, resp.Code)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_200() {
@@ -349,9 +348,9 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Transition_200() {
 	var result models.TaskResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), s.user.Id, result.CompletedBy.Id)
-	assert.True(s.T(), result.Completed)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(s.user.Id, result.CompletedBy.Id)
+	s.Assert().True(result.Completed)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_200() {
@@ -379,7 +378,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusNoContent, resp.Code)
+	s.Assert().Equal(http.StatusNoContent, resp.Code)
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_403() {
@@ -404,7 +403,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Delete_403() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusForbidden, resp.Code)
+	s.Assert().Equal(http.StatusForbidden, resp.Code)
 }
 
 func createTasks(num int, user *models.User) models.Tasks {
@@ -449,15 +448,15 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_List_200() {
 		`<http://example.com/tasks?per_page=1&page=1>; rel=first, ` +
 		`<http://example.com/tasks?per_page=1&page=1>; rel=prev`
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), num, len(result.Tasks))
-	assert.Equal(s.T(), "2", h.Get("X-Page"))
-	assert.Equal(s.T(), "1", h.Get("X-Per-Page"))
-	assert.Equal(s.T(), "10", h.Get("X-Total"))
-	assert.Equal(s.T(), "10", h.Get("X-Total-Pages"))
-	assert.Equal(s.T(), "3", h.Get("X-Next-Page"))
-	assert.Equal(s.T(), "1", h.Get("X-Prev-Page"))
-	assert.Equal(s.T(), link, h.Get("Link"))
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(num, len(result.Tasks))
+	s.Assert().Equal("2", h.Get("X-Page"))
+	s.Assert().Equal("1", h.Get("X-Per-Page"))
+	s.Assert().Equal("10", h.Get("X-Total"))
+	s.Assert().Equal("10", h.Get("X-Total-Pages"))
+	s.Assert().Equal("3", h.Get("X-Next-Page"))
+	s.Assert().Equal("1", h.Get("X-Prev-Page"))
+	s.Assert().Equal(link, h.Get("Link"))
 }
 
 func (s *TaskHandlerTestSuite) TestTaskHandler_Create_200() {
@@ -483,7 +482,7 @@ func (s *TaskHandlerTestSuite) TestTaskHandler_Create_200() {
 	var result models.TaskResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), payload.Title, result.Title)
-	assert.Equal(s.T(), s.user.Id, result.CreatedBy.Id)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(payload.Title, result.Title)
+	s.Assert().Equal(s.user.Id, result.CreatedBy.Id)
 }

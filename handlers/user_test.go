@@ -11,7 +11,6 @@ import (
 	"github.com/alexferl/echo-openapi"
 	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -77,8 +76,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_GetCurrentUser_200() {
 	var result models.UserResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), s.user.Id, result.Id)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(s.user.Id, result.Id)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
@@ -111,8 +110,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_200() {
 	var result models.UserResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), updatedUser.Name, result.Name)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(updatedUser.Name, result.Name)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_422() {
@@ -132,7 +131,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_UpdateCurrentUser_422() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+	s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
@@ -155,8 +154,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
 	var result models.UserResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), s.user.Id, result.Id)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(s.user.Id, result.Id)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
@@ -189,8 +188,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 	var result models.UserResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), updatedUser.Name, result.Name)
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(updatedUser.Name, result.Name)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
@@ -222,8 +221,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_404() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrUserNotFound.Error(), result.Message)
+	s.Assert().Equal(http.StatusNotFound, resp.Code)
+	s.Assert().Equal(services.ErrUserNotFound.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
@@ -256,8 +255,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_410() {
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusGone, resp.Code)
-	assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
+	s.Assert().Equal(http.StatusGone, resp.Code)
+	s.Assert().Equal(services.ErrUserDeleted.Error(), result.Message)
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_204() {
@@ -301,7 +300,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_204() {
 
 			s.server.ServeHTTP(resp, req)
 
-			assert.Equal(s.T(), http.StatusNoContent, resp.Code)
+			s.Assert().Equal(http.StatusNoContent, resp.Code)
 		})
 	}
 }
@@ -334,8 +333,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_401() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
-			assert.Equal(s.T(), "token invalid", result.Message)
+			s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+			s.Assert().Equal("token invalid", result.Message)
 		})
 	}
 }
@@ -373,7 +372,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_403() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusForbidden, resp.Code)
+			s.Assert().Equal(http.StatusForbidden, resp.Code)
 		})
 	}
 }
@@ -415,8 +414,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_404() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-			assert.Equal(s.T(), services.ErrUserNotFound.Error(), result.Message)
+			s.Assert().Equal(http.StatusNotFound, resp.Code)
+			s.Assert().Equal(services.ErrUserNotFound.Error(), result.Message)
 		})
 	}
 }
@@ -454,7 +453,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_409() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusConflict, resp.Code)
+			s.Assert().Equal(http.StatusConflict, resp.Code)
 		})
 	}
 }
@@ -496,8 +495,8 @@ func (s *UserHandlerTestSuite) TestUserHandler_410() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusGone, resp.Code)
-			assert.Equal(s.T(), services.ErrUserDeleted.Error(), result.Message)
+			s.Assert().Equal(http.StatusGone, resp.Code)
+			s.Assert().Equal(services.ErrUserDeleted.Error(), result.Message)
 		})
 	}
 }
@@ -527,7 +526,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_Roles_422() {
 			var result echo.HTTPError
 			_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-			assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+			s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 		})
 	}
 }
@@ -572,15 +571,15 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 		`<http://example.com/users?per_page=1&page=1>; rel=first, ` +
 		`<http://example.com/users?per_page=1&page=1>; rel=prev`
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), 10, len(result.Users))
-	assert.Equal(s.T(), "2", h.Get("X-Page"))
-	assert.Equal(s.T(), "1", h.Get("X-Per-Page"))
-	assert.Equal(s.T(), "10", h.Get("X-Total"))
-	assert.Equal(s.T(), "10", h.Get("X-Total-Pages"))
-	assert.Equal(s.T(), "3", h.Get("X-Next-Page"))
-	assert.Equal(s.T(), "1", h.Get("X-Prev-Page"))
-	assert.Equal(s.T(), link, h.Get("Link"))
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(10, len(result.Users))
+	s.Assert().Equal("2", h.Get("X-Page"))
+	s.Assert().Equal("1", h.Get("X-Per-Page"))
+	s.Assert().Equal("10", h.Get("X-Total"))
+	s.Assert().Equal("10", h.Get("X-Total-Pages"))
+	s.Assert().Equal("3", h.Get("X-Next-Page"))
+	s.Assert().Equal("1", h.Get("X-Prev-Page"))
+	s.Assert().Equal(link, h.Get("Link"))
 }
 
 func (s *UserHandlerTestSuite) TestUserHandler_List_403() {
@@ -596,5 +595,5 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_403() {
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusForbidden, resp.Code)
+	s.Assert().Equal(http.StatusForbidden, resp.Code)
 }
