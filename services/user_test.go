@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -42,10 +41,10 @@ func (s *UserTestSuite) TestUser_Create() {
 		Return(m, nil)
 
 	user, err := s.svc.Create(context.Background(), m)
-	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), user.CreatedBy)
-	assert.Equal(s.T(), email, user.Email)
-	assert.Equal(s.T(), username, user.Username)
+	s.Assert().NoError(err)
+	s.Assert().NotNil(user.CreatedBy)
+	s.Assert().Equal(email, user.Email)
+	s.Assert().Equal(username, user.Username)
 }
 
 func (s *UserTestSuite) TestUser_Create_Err() {
@@ -60,11 +59,11 @@ func (s *UserTestSuite) TestUser_Create_Err() {
 		Return(nil, &mongo.WriteError{Code: 11000})
 
 	_, err := s.svc.Create(context.Background(), m)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.Exist, se.Kind)
+		s.Assert().Equal(services.Exist, se.Kind)
 	}
 }
 
@@ -80,10 +79,10 @@ func (s *UserTestSuite) TestUser_Read() {
 		Return(m, nil)
 
 	user, err := s.svc.Read(context.Background(), id)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), id, user.Id)
-	assert.Equal(s.T(), email, user.Email)
-	assert.Equal(s.T(), username, user.Username)
+	s.Assert().NoError(err)
+	s.Assert().Equal(id, user.Id)
+	s.Assert().Equal(email, user.Email)
+	s.Assert().Equal(username, user.Username)
 }
 
 func (s *UserTestSuite) TestUser_Read_Err() {
@@ -98,11 +97,11 @@ func (s *UserTestSuite) TestUser_Read_Err() {
 		Return(nil, data.ErrNoDocuments)
 
 	_, err := s.svc.Read(context.Background(), id)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.NotExist, se.Kind)
+		s.Assert().Equal(services.NotExist, se.Kind)
 	}
 }
 
@@ -118,8 +117,8 @@ func (s *UserTestSuite) TestUser_Update() {
 		Return(m, nil)
 
 	task, err := s.svc.Update(context.Background(), id, m)
-	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), task.UpdatedBy)
+	s.Assert().NoError(err)
+	s.Assert().NotNil(task.UpdatedBy)
 }
 
 func (s *UserTestSuite) TestUser_Delete() {
@@ -134,18 +133,18 @@ func (s *UserTestSuite) TestUser_Delete() {
 		Return(m, nil)
 
 	err := s.svc.Delete(context.Background(), id, m)
-	assert.NoError(s.T(), err)
+	s.Assert().NoError(err)
 
 	s.mapper.EXPECT().
 		FindOne(mock.Anything, mock.Anything).
 		Return(m, nil)
 
 	_, err = s.svc.Read(context.Background(), id)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.Deleted, se.Kind)
+		s.Assert().Equal(services.Deleted, se.Kind)
 	}
 }
 
@@ -158,9 +157,9 @@ func (s *UserTestSuite) TestUser_Find() {
 		Limit: 1,
 		Skip:  0,
 	})
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), int64(1), count)
-	assert.Equal(s.T(), models.Users{}, tasks)
+	s.Assert().NoError(err)
+	s.Assert().Equal(int64(1), count)
+	s.Assert().Equal(models.Users{}, tasks)
 }
 
 func (s *UserTestSuite) TestUser_FindOneByEmailOrUsername() {
@@ -175,10 +174,10 @@ func (s *UserTestSuite) TestUser_FindOneByEmailOrUsername() {
 		Return(m, nil)
 
 	user, err := s.svc.FindOneByEmailOrUsername(context.Background(), email, username)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), id, user.Id)
-	assert.Equal(s.T(), email, user.Email)
-	assert.Equal(s.T(), username, user.Username)
+	s.Assert().NoError(err)
+	s.Assert().Equal(id, user.Id)
+	s.Assert().Equal(email, user.Email)
+	s.Assert().Equal(username, user.Username)
 }
 
 func (s *UserTestSuite) TestUser_FindOneByEmailOrUsername_Err() {
@@ -193,10 +192,10 @@ func (s *UserTestSuite) TestUser_FindOneByEmailOrUsername_Err() {
 		Return(nil, data.ErrNoDocuments)
 
 	_, err := s.svc.FindOneByEmailOrUsername(context.Background(), email, username)
-	assert.Error(s.T(), err)
+	s.Assert().Error(err)
 	var se *services.Error
-	assert.ErrorAs(s.T(), err, &se)
+	s.Assert().ErrorAs(err, &se)
 	if errors.As(err, &se) {
-		assert.Equal(s.T(), services.NotExist, se.Kind)
+		s.Assert().Equal(services.NotExist, se.Kind)
 	}
 }

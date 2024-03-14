@@ -12,7 +12,6 @@ import (
 	"github.com/alexferl/echo-openapi"
 	api "github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -97,7 +96,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 	var result models.PersonalAccessToken
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
+	s.Assert().Equal(http.StatusOK, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_401() {
@@ -107,7 +106,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_409() {
@@ -135,7 +134,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusConflict, resp.Code)
+	s.Assert().Equal(http.StatusConflict, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_422() {
@@ -157,7 +156,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+	s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Create_422_Exp() {
@@ -185,7 +184,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Cre
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnprocessableEntity, resp.Code)
+	s.Assert().Equal(http.StatusUnprocessableEntity, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_List_200() {
@@ -211,8 +210,8 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 	var result models.PersonalAccessTokensResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
-	assert.Equal(s.T(), num, len(result.Tokens))
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(num, len(result.Tokens))
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_List_401() {
@@ -222,7 +221,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Lis
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get_200() {
@@ -251,7 +250,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 	var result models.PersonalAccessToken
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusOK, resp.Code)
+	s.Assert().Equal(http.StatusOK, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get_404() {
@@ -277,8 +276,8 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
+	s.Assert().Equal(http.StatusNotFound, resp.Code)
+	s.Assert().Equal(services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_204() {
@@ -308,7 +307,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusNoContent, resp.Code)
+	s.Assert().Equal(http.StatusNoContent, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_401() {
@@ -318,7 +317,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_404() {
@@ -344,8 +343,8 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 	var result echo.HTTPError
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
-	assert.Equal(s.T(), http.StatusNotFound, resp.Code)
-	assert.Equal(s.T(), services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
+	s.Assert().Equal(http.StatusNotFound, resp.Code)
+	s.Assert().Equal(services.ErrPersonalAccessTokenNotFound.Error(), result.Message)
 }
 
 func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Revoke_409() {
@@ -372,5 +371,5 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 
 	s.server.ServeHTTP(resp, req)
 
-	assert.Equal(s.T(), http.StatusConflict, resp.Code)
+	s.Assert().Equal(http.StatusConflict, resp.Code)
 }

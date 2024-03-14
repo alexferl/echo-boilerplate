@@ -26,6 +26,17 @@ import (
 	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
+var (
+	ErrBanned            = errors.New("account banned")
+	ErrLocked            = errors.New("account locked")
+	ErrCookieMissing     = errors.New("missing access token cookie")
+	ErrCSRFHeaderMissing = errors.New("missing CSRF token header")
+	ErrCSRFInvalid       = errors.New("invalid CSRF token")
+	ErrTokenInvalid      = errors.New("token invalid")
+	ErrTokenMismatch     = errors.New("token mismatch")
+	ErrTokenRevoked      = errors.New("token is revoked")
+)
+
 func New() *server.Server {
 	client, err := data.MewMongoClient()
 	if err != nil {
@@ -90,7 +101,7 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 			user, err := userSvc.Read(ctx, t.Subject())
 			if err != nil {
 				log.Error().Err(err).Msg("failed getting user")
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+				return echo.NewHTTPError(http.StatusServiceUnavailable)
 			}
 
 			c.Set("user", user)
@@ -98,10 +109,10 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 			c.Set("roles", user.Roles)
 
 			if user.IsBanned {
-				return echo.NewHTTPError(http.StatusForbidden, "account banned")
+				return echo.NewHTTPError(http.StatusForbidden, ErrBanned.Error())
 			}
 			if user.IsLocked {
-				return echo.NewHTTPError(http.StatusForbidden, "account locked")
+				return echo.NewHTTPError(http.StatusForbidden, ErrLocked.Error())
 			}
 
 			// CSRF
@@ -112,21 +123,20 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 					default: // Validate token only for requests which are not defined as 'safe' by RFC7231
 						cookie, err := c.Cookie(viper.GetString(config.JWTAccessTokenCookieName))
 						if err != nil {
-							return echo.NewHTTPError(http.StatusBadRequest, "missing access token cookie")
+							return echo.NewHTTPError(http.StatusBadRequest, ErrCookieMissing)
 						}
 
 						h := c.Request().Header.Get(viper.GetString(config.CSRFHeaderName))
 						if h == "" {
-							return echo.NewHTTPError(http.StatusBadRequest, "missing CSRF token header")
+							return echo.NewHTTPError(http.StatusBadRequest, ErrCSRFHeaderMissing)
 						}
 
 						if !hash.ValidMAC([]byte(cookie.Value), []byte(h), []byte(viper.GetString(config.CSRFSecretKey))) {
-							return echo.NewHTTPError(http.StatusForbidden, "invalid CSRF token")
+							return echo.NewHTTPError(http.StatusForbidden, ErrCSRFInvalid)
 						}
 					}
 				}
 			}
-
 			// Personal Access Tokens
 			claims := t.PrivateClaims()
 			typ := claims["type"]
@@ -136,18 +146,18 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 					var se *services.Error
 					if errors.As(err, &se) {
 						if se.Kind == services.NotExist {
-							return echo.NewHTTPError(http.StatusUnauthorized, "token invalid")
+							return echo.NewHTTPError(http.StatusUnauthorized, ErrTokenInvalid)
 						}
 					}
-					return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+					return echo.NewHTTPError(http.StatusServiceUnavailable)
 				}
 
 				if err = pat.Validate(encodedToken); err != nil {
-					return echo.NewHTTPError(http.StatusUnauthorized, "token mismatch")
+					return echo.NewHTTPError(http.StatusUnauthorized, ErrTokenMismatch)
 				}
 
 				if pat.IsRevoked {
-					return echo.NewHTTPError(http.StatusUnauthorized, "token is revoked")
+					return echo.NewHTTPError(http.StatusUnauthorized, ErrTokenRevoked)
 				}
 			}
 
