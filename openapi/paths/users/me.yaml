@@ -16,7 +16,7 @@ get:
             $ref: '../../components/schemas/users/me/CurrentUser.yaml'
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
-put:
+patch:
   summary: Update current user
   description: Returns the updated current user.
   operationId: updateCurrentUser

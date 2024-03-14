@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -14,23 +13,21 @@ import (
 	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/services"
-	"github.com/alexferl/echo-boilerplate/util/jwt"
 )
 
 type PersonalAccessTokenTestSuite struct {
 	suite.Suite
 	mapper *services.MockPersonalAccessTokenMapper
 	svc    *services.PersonalAccessToken
-	token  jwx.Token
+	user   *models.User
 }
 
 func (s *PersonalAccessTokenTestSuite) SetupTest() {
 	s.mapper = services.NewMockPersonalAccessTokenMapper(s.T())
 	s.svc = services.NewPersonalAccessToken(s.mapper)
 	user := models.NewUser("test@email.com", "test")
-	access, _, _ := user.Login()
-	token, _ := jwt.ParseEncoded(access)
-	s.token = token
+	user.Id = "100"
+	s.user = user
 }
 
 func TestPersonalAccessToken(t *testing.T) {
@@ -40,7 +37,7 @@ func TestPersonalAccessToken(t *testing.T) {
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessToken_Create() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 
 	s.mapper.EXPECT().
@@ -56,7 +53,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessToken_Create() {
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 	id := "123"
 	m.Id = id
@@ -75,7 +72,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read() {
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read_Err() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 	id := "123"
 	m.Id = id
@@ -96,7 +93,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read_Err
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Revoke() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 	id := "123"
 	m.Id = id
@@ -133,7 +130,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Find() {
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_FindOne() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 	id := "123"
 	userId := "456"
@@ -155,7 +152,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_FindOne(
 func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_FindOne_Err() {
 	name := "my_token"
 	expiresAt := time.Now().Add((7 * 24) * time.Hour).Format("2006-01-02")
-	m, err := models.NewPersonalAccessToken(s.token, name, expiresAt)
+	m, err := models.NewPersonalAccessToken(s.user.Id, name, expiresAt)
 	assert.NoError(s.T(), err)
 	id := "123"
 	userId := "456"

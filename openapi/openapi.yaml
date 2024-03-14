@@ -53,10 +53,14 @@ paths:
     $ref: './paths/tasks/{id}_transition.yaml'
   /users:
     $ref: './paths/users/users.yaml'
-  /users/{id}:
-    $ref: './paths/users/{id}.yaml'
-  /users/{id}/status:
-    $ref: './paths/users/{id}_status.yaml'
+  /users/{id_or_username}:
+    $ref: './paths/users/{id_or_username}.yaml'
+  /users/{id_or_username}/ban:
+    $ref: './paths/users/{id_or_username}_ban.yaml'
+  /users/{id_or_username}/lock:
+    $ref: './paths/users/{id_or_username}_lock.yaml'
+  /users/{id_or_username}/roles/{role}:
+    $ref: './paths/users/{id_or_username}_roles_{role}.yaml'
 components:
   securitySchemes:
     cookieAuth:

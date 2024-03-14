@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/xid"
 
 	"github.com/alexferl/echo-boilerplate/util/jwt"
@@ -72,7 +71,7 @@ type PersonalAccessTokenResponse struct {
 	UserId    string     `json:"user_id" bson:"user_id"`
 }
 
-func NewPersonalAccessToken(token jwx.Token, name string, expiresAt string) (*PersonalAccessToken, error) {
+func NewPersonalAccessToken(userId string, name string, expiresAt string) (*PersonalAccessToken, error) {
 	t, err := time.Parse("2006-01-02", expiresAt)
 	if err != nil {
 		return nil, err
@@ -83,8 +82,7 @@ func NewPersonalAccessToken(token jwx.Token, name string, expiresAt string) (*Pe
 		return nil, ErrExpiresAtPast
 	}
 
-	roles := jwt.GetRoles(token)
-	pat, err := jwt.GeneratePersonalToken(token.Subject(), t.Sub(now), map[string]any{"roles": roles})
+	pat, err := jwt.GeneratePersonalToken(userId, t.Sub(now), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +93,6 @@ func NewPersonalAccessToken(token jwx.Token, name string, expiresAt string) (*Pe
 		ExpiresAt: &t,
 		Name:      name,
 		Token:     string(pat),
-		UserId:    token.Subject(),
+		UserId:    userId,
 	}, nil
 }

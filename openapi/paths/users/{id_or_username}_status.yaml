@@ -1,40 +1,14 @@
-get:
-  summary: Get a user
-  description: Returns a single user.
-  operationId: getUser
-  security:
-    - cookieAuth: []
-    - bearerAuth: []
-  tags:
-    - users
-  parameters:
-    - name: id
-      in: path
-      required: true
-      schema:
-        type: string
-  responses:
-    '200':
-      description: Successfully returned a user
-      content:
-        application/json:
-          schema:
-            $ref: '../../components/schemas/users/User.yaml'
-    '401':
-      $ref: '../../components/responses/Unauthorized.yaml'
-    '410':
-      $ref: '../../components/responses/Gone.yaml'
 put:
-  summary: Update user
+  summary: Update user status
   description: Returns the updated user.
-  operationId: updateUser
+  operationId: updateUserStatus
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
     - users
   parameters:
-    - name: id
+    - name: id_or_username
       in: path
       required: true
       schema:
@@ -44,7 +18,7 @@ put:
     content:
       application/json:
         schema:
-          $ref: '../../components/schemas/users/Update.yaml'
+          $ref: '../../components/schemas/users/Status.yaml'
   responses:
     '200':
       description: Successfully returned user modifications
@@ -56,6 +30,8 @@ put:
       $ref: '../../components/responses/Unauthorized.yaml'
     '403':
       $ref: '../../components/responses/Forbidden.yaml'
+    '409':
+      $ref: '../../components/responses/Conflict.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
     '422':

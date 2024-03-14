@@ -9,13 +9,10 @@ import (
 	"github.com/alexferl/echo-openapi"
 	"github.com/alexferl/golib/http/api/server"
 	"github.com/labstack/echo/v4"
-	jwx "github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alexferl/echo-boilerplate/data"
 	"github.com/alexferl/echo-boilerplate/models"
 	"github.com/alexferl/echo-boilerplate/services"
-	"github.com/alexferl/echo-boilerplate/util/jwt"
 	"github.com/alexferl/echo-boilerplate/util/pagination"
 )
 
@@ -43,7 +40,7 @@ func (h *TaskHandler) Register(s *server.Server) {
 	s.Add(http.MethodPost, "/tasks", h.create)
 	s.Add(http.MethodGet, "/tasks", h.list)
 	s.Add(http.MethodGet, "/tasks/:id", h.get)
-	s.Add(http.MethodPut, "/tasks/:id", h.update)
+	s.Add(http.MethodPatch, "/tasks/:id", h.update)
 	s.Add(http.MethodPut, "/tasks/:id/transition", h.transition)
 	s.Add(http.MethodDelete, "/tasks/:id", h.delete)
 }
@@ -53,7 +50,7 @@ type CreateTaskRequest struct {
 }
 
 func (h *TaskHandler) create(c echo.Context) error {
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	body := &CreateTaskRequest{}
 	if err := c.Bind(body); err != nil {
@@ -67,7 +64,7 @@ func (h *TaskHandler) create(c echo.Context) error {
 	model := models.NewTask()
 	model.Title = body.Title
 
-	task, err := h.svc.Create(ctx, token.Subject(), model)
+	task, err := h.svc.Create(ctx, currentUser.Id, model)
 	if err != nil {
 		log.Error().Err(err).Msg("failed creating task")
 		return err
@@ -109,16 +106,10 @@ func (h *TaskHandler) get(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
+		sErr := h.readTask(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting task")
-		return err
 	}
 
 	return h.Validate(c, http.StatusOK, task.Response())
@@ -130,7 +121,7 @@ type UpdateTaskRequest struct {
 
 func (h *TaskHandler) update(c echo.Context) error {
 	id := c.Param("id")
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	body := &UpdateTaskRequest{}
 	if err := c.Bind(body); err != nil {
@@ -143,19 +134,13 @@ func (h *TaskHandler) update(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
+		sErr := h.readTask(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting task")
-		return err
 	}
 
-	if token.Subject() != task.CreatedBy.(*models.User).Id && !jwt.HasRoles(token, models.AdminRole.String(), models.SuperRole.String()) {
+	if currentUser.Id != task.CreatedBy.(*models.User).Id && !currentUser.HasRoleOrHigher(models.AdminRole) {
 		return h.Validate(c, http.StatusForbidden, echo.Map{"message": "you don't have access"})
 	}
 
@@ -163,7 +148,7 @@ func (h *TaskHandler) update(c echo.Context) error {
 		task.Title = *body.Title
 	}
 
-	res, err := h.svc.Update(ctx, token.Subject(), task)
+	res, err := h.svc.Update(ctx, currentUser.Id, task)
 	if err != nil {
 		log.Error().Err(err).Msg("failed updating task")
 		return err
@@ -178,7 +163,7 @@ type TransitionTaskRequest struct {
 
 func (h *TaskHandler) transition(c echo.Context) error {
 	id := c.Param("id")
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	body := &TransitionTaskRequest{}
 	if err := c.Bind(body); err != nil {
@@ -191,27 +176,21 @@ func (h *TaskHandler) transition(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		var se *services.Error
-		if errors.As(err, &se) {
-			if se.Kind == services.NotExist {
-				return h.Validate(c, http.StatusNotFound, echo.Map{"message": se.Message})
-			} else if se.Kind == services.Deleted {
-				return h.Validate(c, http.StatusGone, echo.Map{"message": se.Message})
-			}
+		sErr := h.readTask(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting task")
-		return err
 	}
 
 	if *body.Completed != task.Completed {
 		if *body.Completed {
-			task.Complete(token.Subject())
+			task.Complete(currentUser.Id)
 		} else {
 			task.Incomplete()
 		}
 	}
 
-	res, err := h.svc.Update(ctx, token.Subject(), task)
+	res, err := h.svc.Update(ctx, currentUser.Id, task)
 	if err != nil {
 		log.Error().Err(err).Msg("failed updating task")
 		return err
@@ -222,33 +201,42 @@ func (h *TaskHandler) transition(c echo.Context) error {
 
 func (h *TaskHandler) delete(c echo.Context) error {
 	id := c.Param("id")
-	token := c.Get("token").(jwx.Token)
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		if errors.Is(err, data.ErrNoDocuments) {
-			return h.Validate(c, http.StatusNotFound, echo.Map{"message": "task not found"})
+		sErr := h.readTask(c, err)
+		if sErr != nil {
+			return sErr()
 		}
-		log.Error().Err(err).Msg("failed getting task")
-		return err
 	}
 
-	if task.DeletedAt != nil {
-		return h.Validate(c, http.StatusGone, echo.Map{"message": "task was deleted"})
-	}
-
-	if token.Subject() != task.CreatedBy.(*models.User).Id && !jwt.HasRoles(token, models.AdminRole.String(), models.SuperRole.String()) {
+	if currentUser.Id != task.CreatedBy.(*models.User).Id && !currentUser.HasRoleOrHigher(models.AdminRole) {
 		return h.Validate(c, http.StatusForbidden, echo.Map{"message": "you don't have access"})
 	}
 
-	err = h.svc.Delete(ctx, token.Subject(), task)
+	err = h.svc.Delete(ctx, currentUser.Id, task)
 	if err != nil {
 		log.Error().Err(err).Msg("failed deleting task")
 		return err
 	}
 
 	return h.Validate(c, http.StatusNoContent, nil)
+}
+
+func (h *TaskHandler) readTask(c echo.Context, err error) func() error {
+	var se *services.Error
+	if errors.As(err, &se) {
+		msg := echo.Map{"message": se.Message}
+		if se.Kind == services.NotExist {
+			return func() error { return h.Validate(c, http.StatusNotFound, msg) }
+		} else if se.Kind == services.Deleted {
+			return func() error { return h.Validate(c, http.StatusGone, msg) }
+		}
+	}
+	log.Error().Err(err).Msg("failed getting task")
+	return func() error { return err }
 }

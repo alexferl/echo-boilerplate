@@ -1,0 +1,50 @@
+put:
+  summary: Ban a user
+  description: Bans a user.
+  operationId: banUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully banned user
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '409':
+      $ref: '../../components/responses/Conflict.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
+delete:
+  summary: Unban a user
+  description: Unbans a user.
+  operationId: unbanUser
+  security:
+    - cookieAuth: []
+    - bearerAuth: []
+  tags:
+    - users
+  parameters:
+    - name: id_or_username
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '204':
+      description: Successfully unbanned user
+    '401':
+      $ref: '../../components/responses/Unauthorized.yaml'
+    '403':
+      $ref: '../../components/responses/Forbidden.yaml'
+    '410':
+      $ref: '../../components/responses/Gone.yaml'
