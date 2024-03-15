@@ -1,6 +1,6 @@
 get:
   summary: List users
-  description: Returns a list of users. Admin role required.
+  description: Returns a list of users. Admin or higher role required.
   operationId: listUsers
   security:
     - cookieAuth: []

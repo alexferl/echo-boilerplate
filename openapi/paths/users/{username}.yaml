@@ -1,6 +1,6 @@
 get:
   summary: Get a user
-  description: Returns a single user.
+  description: Returns a single user. Admin or higher role will return more fields.
   operationId: getUser
   security:
     - cookieAuth: []
@@ -20,15 +20,15 @@ get:
         application/json:
           schema:
             oneOf:
-              - $ref: '../../components/schemas/users/User.yaml'
               - $ref: '../../components/schemas/users/me/CurrentUser.yaml'
+              - $ref: '../../components/schemas/users/User.yaml'
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
     '410':
       $ref: '../../components/responses/Gone.yaml'
 patch:
   summary: Update user
-  description: Returns the updated user.
+  description: Returns the updated user. Admin or higher role required.
   operationId: updateUser
   security:
     - cookieAuth: []

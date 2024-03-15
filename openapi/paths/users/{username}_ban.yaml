@@ -1,6 +1,6 @@
 put:
   summary: Ban a user
-  description: Bans a user.
+  description: Bans a user. Admin or higher role required.
   operationId: banUser
   security:
     - cookieAuth: []
@@ -26,7 +26,7 @@ put:
       $ref: '../../components/responses/Gone.yaml'
 delete:
   summary: Unban a user
-  description: Unbans a user.
+  description: Unbans a user. Admin or higher role required.
   operationId: unbanUser
   security:
     - cookieAuth: []

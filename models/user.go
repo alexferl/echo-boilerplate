@@ -83,7 +83,7 @@ type UserResponse struct {
 	Id        string     `json:"id"`
 	Bio       string     `json:"bio"`
 	CreatedAt *time.Time `json:"created_at"`
-	Email     string     `json:"email"`
+	Email     string     `json:"email,omitempty"`
 	Name      string     `json:"name"`
 	Roles     []string   `json:"-"`
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -138,7 +138,6 @@ func (u *User) AdminResponse() *UserAdminResponse {
 			Id:        u.Id,
 			Bio:       u.Bio,
 			CreatedAt: u.CreatedAt,
-			Email:     u.Email,
 			Name:      u.Name,
 			UpdatedAt: u.UpdatedAt,
 			Username:  u.Username,
