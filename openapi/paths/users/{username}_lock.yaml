@@ -1,6 +1,6 @@
 put:
   summary: Lock a user
-  description: Locks a user.
+  description: Locks a user. Admin or higher role required.
   operationId: lockUser
   security:
     - cookieAuth: []
@@ -26,7 +26,7 @@ put:
       $ref: '../../components/responses/Gone.yaml'
 delete:
   summary: Unlock a user
-  description: Unlocks a user.
+  description: Unlocks a user. Admin or higher role required.
   operationId: unlockUser
   security:
     - cookieAuth: []

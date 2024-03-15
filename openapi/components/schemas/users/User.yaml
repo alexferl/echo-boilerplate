@@ -5,7 +5,6 @@ required:
   - id
   - bio
   - created_at
-  - email
   - is_banned
   - is_locked
   - name

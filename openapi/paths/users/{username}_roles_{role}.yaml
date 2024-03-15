@@ -1,6 +1,6 @@
 put:
   summary: Add user role
-  description: Adds a role to the user.
+  description: Adds a role to the user. Admin or higher role required.
   operationId: addRole
   security:
     - cookieAuth: []
@@ -34,7 +34,7 @@ put:
       $ref: '../../components/responses/UnprocessableEntity.yaml'
 delete:
   summary: Remove user role
-  description: Removes a role from the user.
+  description: Removes a role from the user. Admin or higher role required.
   operationId: removeRole
   security:
     - cookieAuth: []
