@@ -57,94 +57,50 @@ var (
 
 type User struct {
 	*Model        `bson:",inline"`
-	BannedAt      *time.Time `json:"banned_at" bson:"banned_at"`
-	BannedBy      any        `json:"banned_by" bson:"banned_by"`
-	Bio           string     `json:"bio" bson:"bio"`
-	Email         string     `json:"email" bson:"email"`
-	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
-	IsLocked      bool       `json:"is_locked" bson:"is_locked"`
-	LastLoginAt   *time.Time `json:"-" bson:"last_login_at"`
-	LastLogoutAt  *time.Time `json:"-" bson:"last_logout_at"`
-	LastRefreshAt *time.Time `json:"-" bson:"last_refresh_at"`
-	LockedAt      *time.Time `json:"locked_at" bson:"locked_at"`
-	LockedBy      any        `json:"locked_by" bson:"locked_by"`
-	Name          string     `json:"name" bson:"name"`
-	Password      string     `json:"-" bson:"password"`
-	RefreshToken  string     `json:"-" bson:"refresh_token"`
-	Roles         []string   `json:"-" bson:"roles"`
-	UnbannedAt    *time.Time `json:"unbanned_at" bson:"unbanned_at"`
-	UnbannedBy    any        `json:"unbanned_by" bson:"unbanned_by"`
-	UnlockedAt    *time.Time `json:"unlocked_at" bson:"unlocked_at"`
-	UnlockedBy    any        `json:"unlocked_by" bson:"unlocked_by"`
-	Username      string     `json:"username" bson:"username"`
-}
-
-type Users []User
-
-func (users Users) Response() *UsersResponse {
-	res := make([]UserResponse, 0)
-	for _, user := range users {
-		res = append(res, *user.Response())
-	}
-	return &UsersResponse{Users: res}
-}
-
-type UsersResponse struct {
-	Users []UserResponse `json:"users"`
-}
-
-type PublicUsersResponse struct {
-	Users []UserPublic `json:"users"`
-}
-
-func (users Users) Public() *PublicUsersResponse {
-	res := make([]UserPublic, 0)
-	for _, user := range users {
-		res = append(res, *user.Public())
-	}
-	return &PublicUsersResponse{Users: res}
+	BannedAt      *time.Time `bson:"banned_at"`
+	BannedBy      any        `bson:"banned_by"`
+	Bio           string     `bson:"bio"`
+	Email         string     `bson:"email"`
+	IsBanned      bool       `bson:"is_banned"`
+	IsLocked      bool       `bson:"is_locked"`
+	LastLoginAt   *time.Time `bson:"last_login_at"`
+	LastLogoutAt  *time.Time `bson:"last_logout_at"`
+	LastRefreshAt *time.Time `bson:"last_refresh_at"`
+	LockedAt      *time.Time `bson:"locked_at"`
+	LockedBy      any        `bson:"locked_by"`
+	Name          string     `bson:"name"`
+	Password      string     `bson:"password"`
+	RefreshToken  string     `bson:"refresh_token"`
+	Roles         []string   `bson:"roles"`
+	UnbannedAt    *time.Time `bson:"unbanned_at"`
+	UnbannedBy    any        `bson:"unbanned_by"`
+	UnlockedAt    *time.Time `bson:"unlocked_at"`
+	UnlockedBy    any        `bson:"unlocked_by"`
+	Username      string     `bson:"username"`
 }
 
 type UserResponse struct {
-	Id        string     `json:"id" bson:"id"`
-	Bio       string     `json:"bio" bson:"bio"`
-	Email     string     `json:"email" bson:"email"`
-	Name      string     `json:"name" bson:"name"`
-	Username  string     `json:"username" bson:"username"`
-	CreatedAt *time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at" bson:"updated_at"`
+	Id        string     `json:"id"`
+	Bio       string     `json:"bio"`
+	CreatedAt *time.Time `json:"created_at"`
+	Email     string     `json:"email"`
+	Name      string     `json:"name"`
+	Roles     []string   `json:"-"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	Username  string     `json:"username"`
 }
 
 type UserAdminResponse struct {
-	Id            string     `json:"id" bson:"id"`
-	Bio           string     `json:"bio" bson:"bio"`
-	Email         string     `json:"email" bson:"email"`
-	IsBanned      bool       `json:"is_banned" bson:"is_banned"`
-	IsLocked      bool       `json:"is_locked" bson:"is_locked"`
-	Name          string     `json:"name" bson:"name"`
-	Roles         []string   `json:"roles" bson:"roles"`
-	Username      string     `json:"username" bson:"username"`
-	CreatedAt     *time.Time `json:"created_at" bson:"created_at"`
-	CreatedBy     *User      `json:"created_by" bson:"created_by"`
-	DeletedAt     *time.Time `json:"-" bson:"deleted_at"`
-	DeletedBy     string     `json:"-" bson:"deleted_by"`
-	UpdatedAt     *time.Time `json:"updated_at" bson:"updated_at"`
-	UpdatedBy     *User      `json:"updated_by" bson:"updated_by"`
-	LastLoginAt   *time.Time `json:"last_login_at" bson:"last_login_at"`
-	LastLogoutAt  *time.Time `json:"last_logout_at" bson:"last_logout_at"`
-	LastRefreshAt *time.Time `json:"last_refresh_at" bson:"last_refresh_at"`
-	BannedAt      *time.Time `json:"banned_at" bson:"banned_at"`
-	BannedBy      string     `json:"banned_by" bson:"banned_by"`
-	UnbannedAt    *time.Time `json:"unbanned_at" bson:"unbanned_at"`
-	UnbannedBy    string     `json:"unbanned_by" bson:"unbanned_by"`
-	LockedAt      *time.Time `json:"locked_at" bson:"locked_at"`
-	LockedBy      string     `json:"locked_by" bson:"locked_by"`
-	UnlockedAt    *time.Time `json:"unlocked_at" bson:"unlocked_at"`
-	UnlockedBy    string     `json:"unlocked_by" bson:"unlocked_by"`
+	UserResponse
+	IsBanned      bool       `json:"is_banned"`
+	IsLocked      bool       `json:"is_locked"`
+	LastLoginAt   *time.Time `json:"last_login_at"`
+	LastLogoutAt  *time.Time `json:"last_logout_at"`
+	LastRefreshAt *time.Time `json:"last_refresh_at"`
 }
 
-type UserPublic struct {
-	Id       string `json:"id" bson:"id"`
+type UserRef struct {
+	Ref
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
 }
@@ -153,8 +109,8 @@ func NewUser(email string, username string) *User {
 	return &User{
 		Model:    NewModel(),
 		Email:    email,
-		Username: username,
 		Roles:    []string{UserRole.String()},
+		Username: username,
 	}
 }
 
@@ -164,6 +120,47 @@ func NewUserWithRole(email string, username string, role Role) *User {
 	return user
 }
 
+func (u *User) Response() *UserResponse {
+	return &UserResponse{
+		Id:        u.Id,
+		Bio:       u.Bio,
+		CreatedAt: u.CreatedAt,
+		Email:     u.Email,
+		Name:      u.Name,
+		UpdatedAt: u.UpdatedAt,
+		Username:  u.Username,
+	}
+}
+
+func (u *User) AdminResponse() *UserAdminResponse {
+	return &UserAdminResponse{
+		UserResponse: UserResponse{
+			Id:        u.Id,
+			Bio:       u.Bio,
+			CreatedAt: u.CreatedAt,
+			Email:     u.Email,
+			Name:      u.Name,
+			UpdatedAt: u.UpdatedAt,
+			Username:  u.Username,
+		},
+		IsBanned:      u.IsBanned,
+		IsLocked:      u.IsLocked,
+		LastLoginAt:   u.LastLoginAt,
+		LastLogoutAt:  u.LastLogoutAt,
+		LastRefreshAt: u.LastRefreshAt,
+	}
+}
+
+func (u *User) Ref() *UserRef {
+	return &UserRef{
+		Ref: Ref{
+			Id: u.Id,
+		},
+		Username: u.Username,
+		Name:     u.Name,
+	}
+}
+
 func (u *User) SetPassword(s string) error {
 	b, err := password.Hash([]byte(s))
 	if err != nil {
@@ -171,40 +168,6 @@ func (u *User) SetPassword(s string) error {
 	}
 	u.Password = b
 	return nil
-}
-
-func (u *User) Response() *UserResponse {
-	return &UserResponse{
-		Id:        u.Id,
-		Username:  u.Username,
-		Email:     u.Email,
-		Name:      u.Name,
-		Bio:       u.Bio,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
-	}
-}
-
-func (u *User) AdminResponse() *UserAdminResponse {
-	return &UserAdminResponse{
-		Id:        u.Id,
-		Username:  u.Username,
-		Email:     u.Email,
-		Name:      u.Name,
-		Bio:       u.Bio,
-		IsBanned:  u.IsBanned,
-		IsLocked:  u.IsLocked,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
-	}
-}
-
-func (u *User) Public() *UserPublic {
-	return &UserPublic{
-		Id:       u.Id,
-		Username: u.Username,
-		Name:     u.Name,
-	}
 }
 
 func (u *User) ValidatePassword(s string) error {
@@ -479,6 +442,32 @@ func (u *User) encryptRefreshToken(token []byte) error {
 	u.RefreshToken = b
 
 	return nil
+}
+
+type Users []User
+
+type UsersResponse struct {
+	Users []UserResponse `json:"users"`
+}
+
+func (users Users) Response() *UsersResponse {
+	res := make([]UserResponse, 0)
+	for _, user := range users {
+		res = append(res, *user.Response())
+	}
+	return &UsersResponse{Users: res}
+}
+
+type UsersAdminResponse struct {
+	Users []UserAdminResponse `json:"users"`
+}
+
+func (users Users) AdminResponse() *UsersAdminResponse {
+	res := make([]UserAdminResponse, 0)
+	for _, user := range users {
+		res = append(res, *user.AdminResponse())
+	}
+	return &UsersAdminResponse{Users: res}
 }
 
 type UserSearchParams struct {

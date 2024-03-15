@@ -242,7 +242,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
+		Read(mock.Anything, mock.Anything, mock.Anything).
 		Return(newPAT, nil)
 
 	s.server.ServeHTTP(resp, req)
@@ -265,7 +265,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Get
 		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
+		Read(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, &services.Error{
 			Kind:    services.NotExist,
 			Message: services.ErrPersonalAccessTokenNotFound.Error(),
@@ -298,7 +298,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
+		Read(mock.Anything, mock.Anything, mock.Anything).
 		Return(newPAT, nil)
 
 	s.svc.EXPECT().
@@ -332,7 +332,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
+		Read(mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, &services.Error{
 			Kind:    services.NotExist,
 			Message: services.ErrPersonalAccessTokenNotFound.Error(),
@@ -366,7 +366,7 @@ func (s *PersonalAccessTokenHandlerTestSuite) TestPersonalAccessTokenHandler_Rev
 		Return(s.user, nil).Once()
 
 	s.svc.EXPECT().
-		Read(mock.Anything, mock.Anything).
+		Read(mock.Anything, mock.Anything, mock.Anything).
 		Return(newPAT, nil)
 
 	s.server.ServeHTTP(resp, req)

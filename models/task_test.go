@@ -52,7 +52,24 @@ func TestTask_CustomBSON(t *testing.T) {
 	assert.Equal(t, id, m.CreatedBy.(*User).Id)
 	assert.Equal(t, id, m.DeletedBy.(*User).Id)
 	assert.Equal(t, id, m.UpdatedBy.(*User).Id)
-	assert.IsType(t, &UserPublic{}, m.Response().CompletedBy)
-	assert.IsType(t, &UserPublic{}, m.Response().CreatedBy)
-	assert.IsType(t, &UserPublic{}, m.Response().UpdatedBy)
+	assert.IsType(t, &UserRef{}, m.Response().CompletedBy)
+	assert.IsType(t, &UserRef{}, m.Response().CreatedBy)
+	assert.IsType(t, &UserRef{}, m.Response().UpdatedBy)
+}
+
+func TestTasks(t *testing.T) {
+	user := NewUser("test@example.com", "test")
+
+	task1 := NewTask()
+	task1.Create("1")
+	task1.CreatedBy = user
+
+	task2 := NewTask()
+	task2.Create("1")
+	task2.CreatedBy = user
+
+	tasks := Tasks{*task1, *task2}
+	resp := tasks.Response()
+
+	assert.Len(t, resp.Tasks, 2)
 }

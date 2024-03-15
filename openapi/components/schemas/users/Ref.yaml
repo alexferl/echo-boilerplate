@@ -1,17 +1,20 @@
 type: object
 additionalProperties: false
+required:
+  - id
+  - name
+  - username
 properties:
   id:
     type: string
     description: Unique identifier for this object
     example: cdmt48tfcls65a7mb590
-    readOnly: true
+  name:
+    type: string
+    description: The name of the user
+    example: Test
   username:
     type: string
     pattern: '^[0-9a-zA-Z._]+$'
     description: The username of the user
     example: test
-  name:
-    type: string
-    description: The name of the user
-    example: Test

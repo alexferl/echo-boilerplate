@@ -243,6 +243,40 @@ func (s *ServerTestSuite) TestServer_PAT_401_Revoked() {
 	s.Assert().Equal(ErrTokenRevoked.Error(), result.Message)
 }
 
+func (s *ServerTestSuite) TestServer_PAT_401_Expired() {
+	pat, _ := models.NewPersonalAccessToken(
+		s.user.Id,
+		fmt.Sprintf("my_token"),
+		time.Now().Add((7*24)*time.Hour).Format("2006-01-02"),
+	)
+
+	past := time.Now().Add(-(7 * 24) * time.Hour)
+	pat.ExpiresAt = &past
+
+	req := httptest.NewRequest(http.MethodGet, "/me", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pat.Token))
+	resp := httptest.NewRecorder()
+
+	_ = pat.Encrypt()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
+
+	s.patSvc.EXPECT().
+		FindOne(mock.Anything, mock.Anything, mock.Anything).
+		Return(pat, nil).Once()
+
+	s.server.ServeHTTP(resp, req)
+
+	var result echo.HTTPError
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+	s.Assert().Equal(http.StatusUnauthorized, resp.Code)
+	s.Assert().Equal(ErrTokenExpired.Error(), result.Message)
+}
+
 func (s *ServerTestSuite) TestServer_PAT_503() {
 	pat, _ := models.NewPersonalAccessToken(
 		s.user.Id,

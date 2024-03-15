@@ -11,42 +11,28 @@ import (
 
 type Task struct {
 	*Model      `bson:",inline"`
-	Completed   bool       `json:"completed" bson:"completed"`
-	CompletedAt *time.Time `json:"completed_at" bson:"completed_at"`
-	CompletedBy any        `json:"completed_by" bson:"completed_by"`
-	Title       string     `json:"title" bson:"title"`
+	Completed   bool       `bson:"completed"`
+	CompletedAt *time.Time `bson:"completed_at"`
+	CompletedBy any        `bson:"completed_by"`
+	Title       string     `bson:"title"`
 }
 
-type Tasks []Task
-
-type TasksResponse struct {
-	Tasks []TaskResponse `json:"tasks"`
-}
-
-func (t Tasks) Response() *TasksResponse {
-	res := make([]TaskResponse, 0)
-	for _, task := range t {
-		res = append(res, *task.Response())
-	}
-	return &TasksResponse{Tasks: res}
+type TaskResponse struct {
+	Id          string     `json:"id"`
+	Completed   bool       `json:"completed"`
+	CompletedAt *time.Time `json:"completed_at"`
+	CompletedBy *UserRef   `json:"completed_by"`
+	CreatedAt   *time.Time `json:"created_at"`
+	CreatedBy   *UserRef   `json:"created_by"`
+	DeletedAt   *time.Time `json:"-"`
+	DeletedBy   *UserRef   `json:"-"`
+	Title       string     `json:"title"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+	UpdatedBy   *UserRef   `json:"updated_by"`
 }
 
 func NewTask() *Task {
 	return &Task{Model: NewModel()}
-}
-
-type TaskResponse struct {
-	Id          string      `json:"id"`
-	Completed   bool        `json:"completed"`
-	CompletedAt *time.Time  `json:"completed_at"`
-	CompletedBy *UserPublic `json:"completed_by"`
-	CreatedAt   *time.Time  `json:"created_at"`
-	CreatedBy   *UserPublic `json:"created_by"`
-	DeletedAt   *time.Time  `json:"-"`
-	DeletedBy   *UserPublic `json:"-"`
-	Title       string      `json:"title"`
-	UpdatedAt   *time.Time  `json:"updated_at"`
-	UpdatedBy   *UserPublic `json:"updated_by"`
 }
 
 func (t *Task) Response() *TaskResponse {
@@ -55,17 +41,17 @@ func (t *Task) Response() *TaskResponse {
 		Completed:   t.Completed,
 		CompletedAt: t.CompletedAt,
 		CreatedAt:   t.CreatedAt,
-		CreatedBy:   t.CreatedBy.(*User).Public(),
+		CreatedBy:   t.CreatedBy.(*User).Ref(),
 		Title:       t.Title,
 		UpdatedAt:   t.UpdatedAt,
 	}
 
 	if t.CompletedBy != nil {
-		resp.CompletedBy = t.CompletedBy.(*User).Public()
+		resp.CompletedBy = t.CompletedBy.(*User).Ref()
 	}
 
 	if t.UpdatedBy != nil {
-		resp.UpdatedBy = t.UpdatedBy.(*User).Public()
+		resp.UpdatedBy = t.UpdatedBy.(*User).Ref()
 	}
 
 	return resp
@@ -172,6 +158,20 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 	}
 
 	return nil
+}
+
+type Tasks []Task
+
+type TasksResponse struct {
+	Tasks []TaskResponse `json:"tasks"`
+}
+
+func (t Tasks) Response() *TasksResponse {
+	res := make([]TaskResponse, 0)
+	for _, task := range t {
+		res = append(res, *task.Response())
+	}
+	return &TasksResponse{Tasks: res}
 }
 
 type TaskSearchParams struct {

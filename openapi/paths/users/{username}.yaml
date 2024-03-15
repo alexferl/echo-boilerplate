@@ -8,7 +8,7 @@ get:
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:
@@ -19,7 +19,9 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/users/User.yaml'
+            oneOf:
+              - $ref: '../../components/schemas/users/User.yaml'
+              - $ref: '../../components/schemas/users/me/CurrentUser.yaml'
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
     '410':
@@ -34,7 +36,7 @@ patch:
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:

@@ -14,6 +14,14 @@ func TestUser(t *testing.T) {
 	id := "1"
 	user := NewUserWithRole(email, username, AdminRole)
 	assert.NotEqual(t, "", user.Id)
+	user.Id = id
+
+	hasUser := user.HasRoleOrHigher(UserRole)
+	assert.True(t, hasUser)
+	hasAdmin := user.HasRoleOrHigher(AdminRole)
+	assert.True(t, hasAdmin)
+	hasSuper := user.HasRoleOrHigher(SuperRole)
+	assert.False(t, hasSuper)
 
 	user.addRole(SuperRole)
 	assert.True(t, slices.Contains(user.Roles, SuperRole.String()))
@@ -55,6 +63,24 @@ func TestUser(t *testing.T) {
 	user.Logout()
 	assert.Equal(t, "", user.RefreshToken)
 	assert.NotNil(t, user.LastLogoutAt)
+
+	resp := user.Response()
+	assert.Equal(t, id, resp.Id)
+	assert.Equal(t, email, resp.Email)
+	assert.Equal(t, username, resp.Username)
+
+	admin := user.AdminResponse()
+	assert.False(t, admin.IsLocked)
+}
+
+func TestUsers(t *testing.T) {
+	user1 := NewUser("test1@example.com", "test1")
+	user2 := NewUser("test2@example.com", "test2")
+
+	users := Users{*user1, *user2}
+	resp := users.Response()
+
+	assert.Len(t, resp.Users, 2)
 }
 
 func TestBan(t *testing.T) {

@@ -158,6 +158,30 @@ func (s *UserHandlerTestSuite) TestUserHandler_Get_200() {
 	s.Assert().Equal(s.user.Id, result.Id)
 }
 
+func (s *UserHandlerTestSuite) TestUserHandler_Get_200_Admin() {
+	req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.adminAccessToken))
+	resp := httptest.NewRecorder()
+
+	// middleware
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.admin, nil).Once()
+
+	s.svc.EXPECT().
+		Read(mock.Anything, mock.Anything).
+		Return(s.user, nil).Once()
+
+	s.server.ServeHTTP(resp, req)
+
+	var result models.UserAdminResponse
+	_ = json.Unmarshal(resp.Body.Bytes(), &result)
+
+	s.Assert().Equal(http.StatusOK, resp.Code)
+	s.Assert().Equal(s.user.Id, result.Id)
+}
+
 func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 	updatedUser := s.user
 	updatedUser.Name = "updated name"
@@ -185,7 +209,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_Update_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	var result models.UserResponse
+	var result models.UserAdminResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	s.Assert().Equal(http.StatusOK, resp.Code)
@@ -562,7 +586,7 @@ func (s *UserHandlerTestSuite) TestUserHandler_List_200() {
 
 	s.server.ServeHTTP(resp, req)
 
-	var result models.PublicUsersResponse
+	var result models.UsersAdminResponse
 	_ = json.Unmarshal(resp.Body.Bytes(), &result)
 
 	h := resp.Header()
