@@ -35,6 +35,7 @@ var (
 	ErrTokenInvalid      = errors.New("token invalid")
 	ErrTokenMismatch     = errors.New("token mismatch")
 	ErrTokenRevoked      = errors.New("token is revoked")
+	ErrTokenExpired      = errors.New("token is expired")
 )
 
 func New() *server.Server {
@@ -152,6 +153,10 @@ func newServer(userSvc handlers.UserService, patSvc handlers.PersonalAccessToken
 
 				if pat.IsRevoked {
 					return echo.NewHTTPError(http.StatusUnauthorized, ErrTokenRevoked)
+				}
+
+				if time.Now().After(*pat.ExpiresAt) {
+					return echo.NewHTTPError(http.StatusUnauthorized, ErrTokenExpired)
 				}
 			}
 

@@ -200,9 +200,9 @@ func (_c *MockPersonalAccessTokenService_FindOne_Call) RunAndReturn(run func(con
 	return _c
 }
 
-// Read provides a mock function with given fields: ctx, id
-func (_m *MockPersonalAccessTokenService) Read(ctx context.Context, id string) (*models.PersonalAccessToken, error) {
-	ret := _m.Called(ctx, id)
+// Read provides a mock function with given fields: ctx, userId, id
+func (_m *MockPersonalAccessTokenService) Read(ctx context.Context, userId string, id string) (*models.PersonalAccessToken, error) {
+	ret := _m.Called(ctx, userId, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Read")
@@ -210,19 +210,19 @@ func (_m *MockPersonalAccessTokenService) Read(ctx context.Context, id string) (
 
 	var r0 *models.PersonalAccessToken
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*models.PersonalAccessToken, error)); ok {
-		return rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*models.PersonalAccessToken, error)); ok {
+		return rf(ctx, userId, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.PersonalAccessToken); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.PersonalAccessToken); ok {
+		r0 = rf(ctx, userId, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.PersonalAccessToken)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, userId, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -237,14 +237,15 @@ type MockPersonalAccessTokenService_Read_Call struct {
 
 // Read is a helper method to define mock.On call
 //   - ctx context.Context
+//   - userId string
 //   - id string
-func (_e *MockPersonalAccessTokenService_Expecter) Read(ctx interface{}, id interface{}) *MockPersonalAccessTokenService_Read_Call {
-	return &MockPersonalAccessTokenService_Read_Call{Call: _e.mock.On("Read", ctx, id)}
+func (_e *MockPersonalAccessTokenService_Expecter) Read(ctx interface{}, userId interface{}, id interface{}) *MockPersonalAccessTokenService_Read_Call {
+	return &MockPersonalAccessTokenService_Read_Call{Call: _e.mock.On("Read", ctx, userId, id)}
 }
 
-func (_c *MockPersonalAccessTokenService_Read_Call) Run(run func(ctx context.Context, id string)) *MockPersonalAccessTokenService_Read_Call {
+func (_c *MockPersonalAccessTokenService_Read_Call) Run(run func(ctx context.Context, userId string, id string)) *MockPersonalAccessTokenService_Read_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -254,7 +255,7 @@ func (_c *MockPersonalAccessTokenService_Read_Call) Return(_a0 *models.PersonalA
 	return _c
 }
 
-func (_c *MockPersonalAccessTokenService_Read_Call) RunAndReturn(run func(context.Context, string) (*models.PersonalAccessToken, error)) *MockPersonalAccessTokenService_Read_Call {
+func (_c *MockPersonalAccessTokenService_Read_Call) RunAndReturn(run func(context.Context, string, string) (*models.PersonalAccessToken, error)) *MockPersonalAccessTokenService_Read_Call {
 	_c.Call.Return(run)
 	return _c
 }

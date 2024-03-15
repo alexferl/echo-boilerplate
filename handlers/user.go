@@ -40,14 +40,14 @@ func NewUserHandler(openapi *openapi.Handler, svc UserService) *UserHandler {
 func (h *UserHandler) Register(s *server.Server) {
 	s.Add(http.MethodGet, "/me", h.getCurrentUser)
 	s.Add(http.MethodPatch, "/me", h.updateCurrentUser)
-	s.Add(http.MethodGet, "/users/:id_or_username", h.get)
-	s.Add(http.MethodPatch, "/users/:id_or_username", h.update)
-	s.Add(http.MethodPut, "/users/:id_or_username/ban", h.ban)
-	s.Add(http.MethodDelete, "/users/:id_or_username/ban", h.unban)
-	s.Add(http.MethodPut, "/users/:id_or_username/lock", h.lock)
-	s.Add(http.MethodDelete, "/users/:id_or_username/lock", h.unlock)
-	s.Add(http.MethodPut, "/users/:id_or_username/roles/:role", h.addRole)
-	s.Add(http.MethodDelete, "/users/:id_or_username/roles/:role", h.removeRole)
+	s.Add(http.MethodGet, "/users/:username", h.get)
+	s.Add(http.MethodPatch, "/users/:username", h.update)
+	s.Add(http.MethodPut, "/users/:username/ban", h.ban)
+	s.Add(http.MethodDelete, "/users/:username/ban", h.unban)
+	s.Add(http.MethodPut, "/users/:username/lock", h.lock)
+	s.Add(http.MethodDelete, "/users/:username/lock", h.unlock)
+	s.Add(http.MethodPut, "/users/:username/roles/:role", h.addRole)
+	s.Add(http.MethodDelete, "/users/:username/roles/:role", h.removeRole)
 	s.Add(http.MethodGet, "/users", h.list)
 }
 
@@ -107,7 +107,8 @@ func (h *UserHandler) updateCurrentUser(c echo.Context) error {
 }
 
 func (h *UserHandler) get(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
@@ -120,6 +121,10 @@ func (h *UserHandler) get(c echo.Context) error {
 		}
 	}
 
+	if currentUser.HasRoleOrHigher(models.AdminRole) {
+		return h.Validate(c, http.StatusOK, user.AdminResponse())
+	}
+
 	return h.Validate(c, http.StatusOK, user.Response())
 }
 
@@ -129,7 +134,7 @@ type UpdateUserRequest struct {
 }
 
 func (h *UserHandler) update(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	currentUser := c.Get("user").(*models.User)
 
 	body := &UpdateUserRequest{}
@@ -163,11 +168,11 @@ func (h *UserHandler) update(c echo.Context) error {
 		return err
 	}
 
-	return h.Validate(c, http.StatusOK, res.Response())
+	return h.Validate(c, http.StatusOK, res.AdminResponse())
 }
 
 func (h *UserHandler) ban(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -199,7 +204,7 @@ func (h *UserHandler) ban(c echo.Context) error {
 }
 
 func (h *UserHandler) unban(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -231,7 +236,7 @@ func (h *UserHandler) unban(c echo.Context) error {
 }
 
 func (h *UserHandler) lock(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -263,7 +268,7 @@ func (h *UserHandler) lock(c echo.Context) error {
 }
 
 func (h *UserHandler) unlock(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
@@ -295,7 +300,7 @@ func (h *UserHandler) unlock(c echo.Context) error {
 }
 
 func (h *UserHandler) addRole(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	role := c.Param("role")
 	currentUser := c.Get("user").(*models.User)
 
@@ -328,7 +333,7 @@ func (h *UserHandler) addRole(c echo.Context) error {
 }
 
 func (h *UserHandler) removeRole(c echo.Context) error {
-	id := c.Param("id_or_username")
+	id := c.Param("username")
 	role := c.Param("role")
 	currentUser := c.Get("user").(*models.User)
 
@@ -378,7 +383,7 @@ func (h *UserHandler) list(c echo.Context) error {
 
 	pagination.SetHeaders(c.Request(), c.Response().Header(), int(count), page, perPage)
 
-	return h.Validate(c, http.StatusOK, users.Public())
+	return h.Validate(c, http.StatusOK, users.AdminResponse())
 }
 
 func (h *UserHandler) readUser(c echo.Context, err error) func() error {

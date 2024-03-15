@@ -38,8 +38,8 @@ func (t *PersonalAccessToken) Create(ctx context.Context, model *models.Personal
 	return token, nil
 }
 
-func (t *PersonalAccessToken) Read(ctx context.Context, id string) (*models.PersonalAccessToken, error) {
-	filter := bson.D{{"id", id}}
+func (t *PersonalAccessToken) Read(ctx context.Context, userId string, id string) (*models.PersonalAccessToken, error) {
+	filter := bson.D{{"user_id", userId}, {"id", id}}
 	token, err := t.mapper.FindOne(ctx, filter)
 	if err != nil {
 		if errors.Is(err, data.ErrNoDocuments) {

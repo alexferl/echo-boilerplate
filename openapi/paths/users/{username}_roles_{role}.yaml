@@ -8,7 +8,7 @@ put:
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:
@@ -42,7 +42,7 @@ delete:
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:

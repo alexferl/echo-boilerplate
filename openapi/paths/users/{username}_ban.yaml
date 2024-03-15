@@ -1,21 +1,21 @@
 put:
-  summary: Lock a user
-  description: Locks a user.
-  operationId: lockUser
+  summary: Ban a user
+  description: Bans a user.
+  operationId: banUser
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:
         type: string
   responses:
     '204':
-      description: Successfully locked user
+      description: Successfully banned user
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
     '403':
@@ -25,23 +25,23 @@ put:
     '410':
       $ref: '../../components/responses/Gone.yaml'
 delete:
-  summary: Unlock a user
-  description: Unlocks a user.
-  operationId: unlockUser
+  summary: Unban a user
+  description: Unbans a user.
+  operationId: unbanUser
   security:
     - cookieAuth: []
     - bearerAuth: []
   tags:
     - users
   parameters:
-    - name: id_or_username
+    - name: username
       in: path
       required: true
       schema:
         type: string
   responses:
     '204':
-      description: Successfully unlocked user
+      description: Successfully unbanned user
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
     '403':

@@ -19,13 +19,13 @@ p, user, /me/personal_access_tokens/:id, (GET)|(DELETE)
 p, user, /tasks, (GET)|(POST)
 p, user, /tasks/:id, (GET)|(PATCH)|(DELETE)
 p, user, /tasks/:id/transition, PUT
-p, user, /users/:id_or_username, GET
+p, user, /users/:username, GET
 
 p, admin, /users, GET
-p, admin, /users/:id_or_username, PATCH
-p, admin, /users/:id_or_username/ban, (PUT)|(DELETE)
-p, admin, /users/:id_or_username/lock, (PUT)|(DELETE)
-p, admin, /users/:id_or_username/roles/:role, (PUT)|(DELETE)
+p, admin, /users/:username, PATCH
+p, admin, /users/:username/ban, (PUT)|(DELETE)
+p, admin, /users/:username/lock, (PUT)|(DELETE)
+p, admin, /users/:username/roles/:role, (PUT)|(DELETE)
 
 g, *, any
 g, user, any

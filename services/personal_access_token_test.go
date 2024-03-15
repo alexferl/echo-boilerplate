@@ -61,7 +61,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read() {
 		FindOne(mock.Anything, mock.Anything).
 		Return(m, nil)
 
-	pat, err := s.svc.Read(context.Background(), id)
+	pat, err := s.svc.Read(context.Background(), s.user.Id, id)
 	s.Assert().NoError(err)
 	s.Assert().Equal(id, pat.Id)
 	s.Assert().Equal(name, pat.Name)
@@ -80,7 +80,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Read_Err
 		FindOne(mock.Anything, mock.Anything).
 		Return(nil, data.ErrNoDocuments)
 
-	_, err = s.svc.Read(context.Background(), id)
+	_, err = s.svc.Read(context.Background(), s.user.Id, id)
 	s.Assert().Error(err)
 	var se *services.Error
 	s.Assert().ErrorAs(err, &se)
@@ -108,7 +108,7 @@ func (s *PersonalAccessTokenTestSuite) TestPersonalAccessTokenTestSuite_Revoke()
 		FindOne(mock.Anything, mock.Anything).
 		Return(m, nil)
 
-	pat, err := s.svc.Read(context.Background(), id)
+	pat, err := s.svc.Read(context.Background(), s.user.Id, id)
 	s.Assert().NoError(err)
 	s.Assert().True(pat.IsRevoked)
 	s.Assert().Equal(id, pat.Id)

@@ -11,20 +11,16 @@ properties:
     type: string
     description: Access token
     example: eyJhbGciOi...
-    readOnly: true
   expires_in:
     type: number
     description: access_token expiry in seconds
     example: 3600
-    readOnly: true
   refresh_token:
     type: string
     description: Refresh token
     example: eyJhbGciOi...
-    readOnly: true
   token_type:
     type: string
     description: Type of token
-    readOnly: true
     enum:
       - Bearer

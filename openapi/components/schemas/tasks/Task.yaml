@@ -1,15 +1,20 @@
 type: object
 additionalProperties: false
+required:
+  - id
+  - completed
+  - completed_at
+  - completed_by
+  - created_at
+  - created_by
+  - title
+  - updated_at
+  - updated_by
 properties:
   id:
     type: string
     description: Unique identifier for this object
     example: '1'
-    readOnly: true
-  title:
-    type: string
-    description: The title of the task
-    example: My Task
   completed:
     type: boolean
     example: true
@@ -23,7 +28,7 @@ properties:
     type: object
     nullable: true
     allOf:
-      - $ref: '../users/PublicUser.yaml'
+      - $ref: '../users/Ref.yaml'
   created_at:
     type: string
     format: date-time
@@ -31,7 +36,11 @@ properties:
     example: '2022-11-12T14:54:18.103Z'
     nullable: true
   created_by:
-    $ref: '../users/PublicUser.yaml'
+    $ref: '../users/Ref.yaml'
+  title:
+    type: string
+    description: The title of the task
+    example: My Task
   updated_at:
     type: string
     format: date-time
@@ -42,4 +51,4 @@ properties:
     type: object
     nullable: true
     allOf:
-      - $ref: '../users/PublicUser.yaml'
+      - $ref: '../users/Ref.yaml'

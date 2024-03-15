@@ -19,7 +19,9 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/personal_access_tokens/CreateResponse.yaml'
+            allOf:
+              - $ref: '../../components/schemas/personal_access_tokens/Token.yaml'
+              - $ref: '../../components/schemas/personal_access_tokens/Create_response.yaml'
     '401':
       $ref: '../../components/responses/Unauthorized.yaml'
     '422':

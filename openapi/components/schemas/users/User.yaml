@@ -1,29 +1,35 @@
 type: object
 description: User response
 additionalProperties: false
+required:
+  - id
+  - bio
+  - created_at
+  - email
+  - is_banned
+  - is_locked
+  - name
+  - updated_at
+  - username
 properties:
   id:
     type: string
     description: Unique identifier for this object
     example: cdmt48tfcls65a7mb590
-    readOnly: true
-  username:
-    type: string
-    pattern: '^[0-9a-zA-Z._]+$'
-    description: Username of the user
-    example: test
-  email:
-    type: string
-    description: Email of the user
-    example: test@example.com
-  name:
-    type: string
-    description: Name of the user
-    example: Test
   bio:
     type: string
     description: Biography of the user
     example: This is my bio.
+  created_at:
+    type: string
+    format: date-time
+    description: User creation date time
+    example: '2022-11-12T09:11:42.420Z'
+    nullable: true
+  email:
+    type: string
+    description: Email of the user
+    example: test@example.com
   is_banned:
     type: boolean
     description: True if account is banned
@@ -32,17 +38,36 @@ properties:
     type: boolean
     description: True if account is locked
     example: false
-  created_at:
+  last_login_at:
     type: string
     format: date-time
-    description: User creation date time
-    example: '2022-11-12T09:11:42.420Z'
+    description: User last login date time
+    example: '2022-11-12T10:23:56.069Z'
     nullable: true
+  last_logout_at:
+    type: string
+    format: date-time
+    description: User last logout date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true
+  last_refresh_at:
+    type: string
+    format: date-time
+    description: User last token refresh date time
+    example: '2022-11-12T10:23:56.069Z'
+    nullable: true
+  name:
+    type: string
+    description: Name of the user
+    example: Test
   updated_at:
     type: string
     format: date-time
     description: User last update date time
     example: '2022-11-12T10:23:56.069Z'
     nullable: true
-  updated_by:
-    $ref: '../users/PublicUser.yaml'
+  username:
+    type: string
+    pattern: '^[0-9a-zA-Z._]+$'
+    description: Username of the user
+    example: test

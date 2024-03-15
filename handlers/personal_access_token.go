@@ -17,7 +17,7 @@ import (
 
 type PersonalAccessTokenService interface {
 	Create(ctx context.Context, model *models.PersonalAccessToken) (*models.PersonalAccessToken, error)
-	Read(ctx context.Context, id string) (*models.PersonalAccessToken, error)
+	Read(ctx context.Context, userId string, id string) (*models.PersonalAccessToken, error)
 	Find(ctx context.Context, userId string) (models.PersonalAccessTokens, error)
 	FindOne(ctx context.Context, userId string, name string) (*models.PersonalAccessToken, error)
 	Revoke(ctx context.Context, model *models.PersonalAccessToken) error
@@ -43,8 +43,8 @@ func NewPersonalAccessTokenHandler(openapi *openapi.Handler, svc PersonalAccessT
 }
 
 type CreatePersonalAccessTokenRequest struct {
-	Name      string `json:"name" bson:"name"`
-	ExpiresAt string `json:"expires_at" bson:"expires_at"`
+	Name      string `json:"name"`
+	ExpiresAt string `json:"expires_at"`
 }
 
 func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
@@ -99,7 +99,7 @@ func (h *PersonalAccessTokenHandler) create(c echo.Context) error {
 
 	pat.Token = decodedToken
 
-	return h.Validate(c, http.StatusOK, pat.Response())
+	return h.Validate(c, http.StatusOK, pat.CreateResponse())
 }
 
 func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
@@ -119,11 +119,12 @@ func (h *PersonalAccessTokenHandler) list(c echo.Context) error {
 
 func (h *PersonalAccessTokenHandler) get(c echo.Context) error {
 	id := c.Param("id")
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	pat, err := h.svc.Read(ctx, id)
+	pat, err := h.svc.Read(ctx, currentUser.Id, id)
 	if err != nil {
 		var se *services.Error
 		if errors.As(err, &se) {
@@ -140,11 +141,12 @@ func (h *PersonalAccessTokenHandler) get(c echo.Context) error {
 
 func (h *PersonalAccessTokenHandler) revoke(c echo.Context) error {
 	id := c.Param("id")
+	currentUser := c.Get("user").(*models.User)
 
 	ctx, cancel := context.WithTimeout(c.Request().Context(), time.Second*10)
 	defer cancel()
 
-	pat, err := h.svc.Read(ctx, id)
+	pat, err := h.svc.Read(ctx, currentUser.Id, id)
 	if err != nil {
 		var se *services.Error
 		if errors.As(err, &se) {
