@@ -115,10 +115,7 @@ func (h *UserHandler) get(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	if currentUser.HasRoleOrHigher(models.AdminRole) {
@@ -148,10 +145,7 @@ func (h *UserHandler) update(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	if body.Name != nil {
@@ -180,18 +174,12 @@ func (h *UserHandler) ban(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.Ban(currentUser)
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "banning")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "banning")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
@@ -212,18 +200,12 @@ func (h *UserHandler) unban(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.Unban(currentUser)
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "unbanning")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "unbanning")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
@@ -244,18 +226,12 @@ func (h *UserHandler) lock(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.Lock(currentUser)
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "locking")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "locking")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
@@ -276,18 +252,12 @@ func (h *UserHandler) unlock(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.Unlock(currentUser)
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "locking")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "locking")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
@@ -309,18 +279,12 @@ func (h *UserHandler) addRole(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.AddRole(currentUser, models.RolesMap[role])
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "locking")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "locking")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
@@ -342,18 +306,12 @@ func (h *UserHandler) removeRole(c echo.Context) error {
 
 	user, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readUser(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readUser(c, err)()
 	}
 
 	err = user.RemoveRole(currentUser, models.RolesMap[role])
 	if err != nil {
-		mErr := h.checkModelErr(c, err, "locking")
-		if mErr != nil {
-			return mErr()
-		}
+		return h.checkModelErr(c, err, "locking")()
 	}
 
 	_, err = h.svc.Update(ctx, currentUser.Id, user)
