@@ -106,10 +106,7 @@ func (h *TaskHandler) get(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readTask(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readTask(c, err)()
 	}
 
 	return h.Validate(c, http.StatusOK, task.Response())
@@ -134,10 +131,7 @@ func (h *TaskHandler) update(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readTask(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readTask(c, err)()
 	}
 
 	if currentUser.Id != task.CreatedBy.(*models.User).Id && !currentUser.HasRoleOrHigher(models.AdminRole) {
@@ -176,10 +170,7 @@ func (h *TaskHandler) transition(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readTask(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readTask(c, err)()
 	}
 
 	if *body.Completed != task.Completed {
@@ -208,10 +199,7 @@ func (h *TaskHandler) delete(c echo.Context) error {
 
 	task, err := h.svc.Read(ctx, id)
 	if err != nil {
-		sErr := h.readTask(c, err)
-		if sErr != nil {
-			return sErr()
-		}
+		return h.readTask(c, err)()
 	}
 
 	if currentUser.Id != task.CreatedBy.(*models.User).Id && !currentUser.HasRoleOrHigher(models.AdminRole) {
