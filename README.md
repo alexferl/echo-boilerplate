@@ -1,3 +1,5 @@
+> **Archived**: I'm now using my own [framework](https://github.com/alexferl/zerohttp) for projects. I also have an example app [here](https://github.com/alexferl/zerohttp-example) that you might be interested in. 
+
 # echo-boilerplate [![Go Report Card](https://goreportcard.com/badge/github.com/alexferl/echo-boilerplate)](https://goreportcard.com/report/github.com/alexferl/echo-boilerplate) [![codecov](https://codecov.io/gh/alexferl/echo-boilerplate/branch/master/graph/badge.svg)](https://codecov.io/gh/alexferl/echo-boilerplate)
 
 A Go 1.22+ boilerplate app using the minimalist [echo](https://github.com/labstack/echo) framework and with
